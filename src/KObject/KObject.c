@@ -74,7 +74,7 @@ void kset_init(struct kset* set)
 OSError kset_append(struct kset*set , struct kobject* obj)
 {
     DL_APPEND(set->_listHead, kobject_get(obj));
-    obj->parent = &set->obj;
+    obj->_parent = &set->obj;
 
     return OSError_None;
 }
@@ -95,7 +95,7 @@ int kset_contains(struct kset* set , struct kobject *obj)
 OSError kset_remove(struct kset*set , struct kobject* obj)
 {
     DL_DELETE(set->_listHead, obj);
-    obj->parent = NULL;
+    obj->_parent = NULL;
     kobject_put(obj);
     return OSError_None;
 }

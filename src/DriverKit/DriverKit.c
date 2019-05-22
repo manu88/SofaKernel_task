@@ -9,7 +9,7 @@
 #include "DriverKit.h"
 #include "deviceTree.h"
 
-OSError DriverKitInit(IODevice* root, const uint8_t* fromDatas, size_t bufferSize)
+OSError DriverKitInit(IONode* root, const uint8_t* fromDatas, size_t bufferSize)
 {
     
     OSError ret = DeviceTreeContructDeviceTree(root, fromDatas, bufferSize);

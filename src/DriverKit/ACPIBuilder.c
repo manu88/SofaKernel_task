@@ -21,7 +21,7 @@ int StackInit(Stack* stack)
     return 1;
 }
 
-IODevice* StackTop(const Stack* stack)
+IONode* StackTop(const Stack* stack)
 {
     ALWAYS_ASSERT(stack);
     
@@ -34,23 +34,23 @@ IODevice* StackTop(const Stack* stack)
 }
 
 
-IODevice* StackPop(Stack* stack)
+IONode* StackPop(Stack* stack)
 {
     ALWAYS_ASSERT(stack);
     
-    IODevice* cur = stack->sta[stack->pos--];
+    IONode* cur = stack->sta[stack->pos--];
 
     return cur;
 }
 
-void StackPush(Stack* stack, IODevice* dev)
+void StackPush(Stack* stack, IONode* dev)
 {
     stack->sta[++stack->pos] = dev;
     ALWAYS_ASSERT(stack);
 }
 
 
-static IODevice* resolveNodeRelativeTo(const AMLName* name , IODevice* current, IODevice* root  , IONodeType type )
+static IONode* resolveNodeRelativeTo(const AMLName* name , IONode* current, IONode* root  , IONodeType type )
 {
     ALWAYS_ASSERT(name);
     
@@ -62,7 +62,7 @@ static IODevice* resolveNodeRelativeTo(const AMLName* name , IODevice* current, 
     
     for(int i=0;i<AMLNameCountParents(name);++i)
     {
-        current =  (IODevice*) current->base.obj.parent;
+        current =  (IONode*) kobject_getParent(&current->base.obj);// current->base.obj.parent;
     }
     
     for (int i=0;i<AMLNameCountSegments(name);++i)
@@ -70,14 +70,14 @@ static IODevice* resolveNodeRelativeTo(const AMLName* name , IODevice* current, 
         char toBuffer[5] = "";
         if(AMLNameGetSegment(name, i, toBuffer))
         {
-            IODevice* newN =(IODevice*) kset_getChildByName((const struct kset*) current, toBuffer);
+            IONode* newN =(IONode*) kset_getChildByName((const struct kset*) current, toBuffer);
             if(newN == NULL)
             {
                 //printf("Create '%s' node\n" , toBuffer);
-                newN = malloc(sizeof(IODevice));
+                newN = malloc(sizeof(IONode));
                 ALWAYS_ASSERT(newN);
-                ALWAYS_ASSERT(IODeviceInit(newN,type, toBuffer) == OSError_None);
-                ALWAYS_ASSERT(IODeviceAddChild(current, newN) == OSError_None);
+                ALWAYS_ASSERT(IONodeInit(newN,type, toBuffer) == OSError_None);
+                ALWAYS_ASSERT(IONodeAddChild(current, newN) == OSError_None);
                 
             }
             current = newN;
@@ -112,7 +112,7 @@ static int _DeviceTree_startResourceTemplate(AMLDecompiler* decomp, const Parser
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
-    ALWAYS_ASSERT(treeCtx->expectingName[0] != 0);
+    ALWAYS_ASSERT(treeCtx->expectedName[0] != 0);
     
     
     return 0;
@@ -122,8 +122,8 @@ static int _DeviceTree_endResourceTemplate(AMLDecompiler* decomp, const ParserCo
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
-    ALWAYS_ASSERT(treeCtx->expectingName[0] != 0);
-    treeCtx->expectingName[0] = 0;
+    ALWAYS_ASSERT(treeCtx->expectedName[0] != 0);
+    treeCtx->expectedName[0] = 0;
     
     return 0;
 }
@@ -141,8 +141,8 @@ static int _DeviceTree_onString(AMLDecompiler* decomp,const ParserContext* conte
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
-    ALWAYS_ASSERT(treeCtx->expectingName[0] != 0);
-    treeCtx->expectingName[0] = 0;
+    ALWAYS_ASSERT(treeCtx->expectedName[0] != 0);
+    treeCtx->expectedName[0] = 0;
     
     return 0;
 }
@@ -177,8 +177,8 @@ static int _DeviceTree_onBuffer(AMLDecompiler* decomp, const ParserContext* cont
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
-    ALWAYS_ASSERT(treeCtx->expectingName[0] != 0);
-    treeCtx->expectingName[0] = 0;
+    ALWAYS_ASSERT(treeCtx->expectedName[0] != 0);
+    treeCtx->expectedName[0] = 0;
     
     return 0;
 }
@@ -190,7 +190,7 @@ static int _DeviceTree_startScope(AMLDecompiler* decomp,const ParserContext* con
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
-    IODevice* newScope = resolveNodeRelativeTo(&scpe->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef, IONodeType_Node);
+    IONode* newScope = resolveNodeRelativeTo(&scpe->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef, IONodeType_Node);
     ALWAYS_ASSERT(newScope);
     
     StackPush(&treeCtx->devStack, newScope);
@@ -214,7 +214,7 @@ static int _DeviceTree_startDevice(AMLDecompiler* decomp,const ParserContext* co
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
-    IODevice* newScope = resolveNodeRelativeTo(&device->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef , IONodeType_Device);
+    IONode* newScope = resolveNodeRelativeTo(&device->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef , IONodeType_Device);
     ALWAYS_ASSERT(newScope);
     
     StackPush(&treeCtx->devStack, newScope);
@@ -235,11 +235,11 @@ static int _DeviceTree_startName(AMLDecompiler* decomp,const ParserContext* cont
 {
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
-    IODevice* currentNode = StackTop(&treeCtx->devStack);
+    IONode* currentNode = StackTop(&treeCtx->devStack);
     ALWAYS_ASSERT(currentNode);
     
-    ALWAYS_ASSERT(treeCtx->expectingName[0] == 0);
-    memcpy(treeCtx->expectingName, name, 5);
+    ALWAYS_ASSERT(treeCtx->expectedName[0] == 0);
+    memcpy(treeCtx->expectedName, name, 5);
     
     return 0;
 }
@@ -248,19 +248,19 @@ static int _DeviceTree_onValue(AMLDecompiler* decomp,const ParserContext* contex
 {
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
-    IODevice* currentNode = StackTop(&treeCtx->devStack);
+    IONode* currentNode = StackTop(&treeCtx->devStack);
     ALWAYS_ASSERT(currentNode);
     
     
-    //ALWAYS_ASSERT(treeCtx->expectingName[0] != 0);
+    //ALWAYS_ASSERT(treeCtx->expectedName[0] != 0);
     
     
-    if (strcmp(treeCtx->expectingName, "_HID") == 0)
+    if (strcmp(treeCtx->expectedName, "_HID") == 0)
     {
         currentNode->hid = value;
     }
     
-    treeCtx->expectingName[0] = 0;
+    treeCtx->expectedName[0] = 0;
     return 0;
 }
 
@@ -273,8 +273,8 @@ static int _DeviceTree_startPackage(AMLDecompiler* decomp,const ParserContext* c
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
-    ALWAYS_ASSERT(treeCtx->expectingName[0] != 0);
-    treeCtx->expectingName[0] = 0;
+    ALWAYS_ASSERT(treeCtx->expectedName[0] != 0);
+    treeCtx->expectedName[0] = 0;
     
     return 0;
 }

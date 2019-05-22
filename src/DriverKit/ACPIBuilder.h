@@ -14,23 +14,23 @@
 #define MAX_STACK 32
 typedef struct
 {
-    IODevice* sta[MAX_STACK];
+    IONode* sta[MAX_STACK];
     int pos;
 } Stack;
 
 int       StackInit(Stack* stack);
-IODevice* StackPop(Stack* stack);
-void      StackPush(Stack* stack , IODevice*dev);
+IONode* StackPop(Stack* stack);
+void      StackPush(Stack* stack , IONode*dev);
 
-IODevice* StackTop(const Stack* stack);
+IONode* StackTop(const Stack* stack);
 
 typedef struct
 {
-    IODevice *rootDevRef;
+    IONode *rootDevRef;
     
     Stack devStack;
     
-    char expectingName[5];
+    char expectedName[5];
     
     
 } DeviceTreeContext;

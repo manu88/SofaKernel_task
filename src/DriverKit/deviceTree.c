@@ -14,7 +14,7 @@
 #include "ACPIBuilder.h"
 
 
-static void _printObject(const IODevice* object , int indent)
+static void _printObject(const IONode* object , int indent)
 {
     
     for(int i =0;i<indent;i++)
@@ -46,7 +46,7 @@ static void _printObject(const IODevice* object , int indent)
     struct kobject *child = NULL;
     kset_foreach( ((struct kset*)object), child)
     {
-        _printObject((IODevice*)child, indent +1);
+        _printObject((IONode*)child, indent +1);
         /*
          if (child->type == INodeType_Folder)
          {
@@ -56,7 +56,7 @@ static void _printObject(const IODevice* object , int indent)
     }
 }
 
-void DriverKitDump(IODevice* root)
+void DriverKitDump(IONode* root)
 {
     printf("--- DriverKit Tree ---\n");
     
@@ -65,7 +65,7 @@ void DriverKitDump(IODevice* root)
     printf("--- DriverKit Tree ---\n");
 }
 
-OSError DeviceTreeContructDeviceTree(IODevice* root, const uint8_t* fromDatas, size_t bufferSize)
+OSError DeviceTreeContructDeviceTree(IONode* root, const uint8_t* fromDatas, size_t bufferSize)
 {
     AMLDecompiler decomp;
     DeviceTreeContext ctx = {0};
@@ -74,7 +74,7 @@ OSError DeviceTreeContructDeviceTree(IODevice* root, const uint8_t* fromDatas, s
     
     ctx.rootDevRef = root;
     
-    memset(ctx.expectingName,0,5);
+    memset(ctx.expectedName,0,5);
     StackPush(&ctx.devStack, root);
     //ctx.currentDevice = root;
     
@@ -100,7 +100,7 @@ OSError DeviceTreeContructDeviceTree(IODevice* root, const uint8_t* fromDatas, s
     return OSError_None;
 }
 
-IODevice* DeviceTreeGetDeviceWithPath(IODevice* root, const char* path)
+IONode* DeviceTreeGetDeviceWithPath(IONode* root, const char* path)
 {
     if (strlen(path) == 0)
         return NULL;
@@ -111,7 +111,7 @@ IODevice* DeviceTreeGetDeviceWithPath(IODevice* root, const char* path)
     char *seg = NULL;
     seg = strtok(p, ".");
     
-    IODevice* currentRoot = root;
+    IONode* currentRoot = root;
     
     while (seg != NULL)
     {
@@ -122,7 +122,7 @@ IODevice* DeviceTreeGetDeviceWithPath(IODevice* root, const char* path)
             return NULL;
         }
         
-        currentRoot = (IODevice*) kset_getChildByName( (struct kset*) currentRoot, seg);
+        currentRoot = (IONode*) kset_getChildByName( (struct kset*) currentRoot, seg);
         /*
          kset_foreach( ((struct kset*)currentRoot), child)
          {
@@ -138,5 +138,5 @@ IODevice* DeviceTreeGetDeviceWithPath(IODevice* root, const char* path)
     }
     
     
-    return (IODevice*) currentRoot;
+    return (IONode*) currentRoot;
 }

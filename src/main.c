@@ -110,8 +110,8 @@ static OSError baseSystemInit(KernelTaskContext *context)
     ALWAYS_ASSERT(acpiBuffer);
     kprintf("Start Parsing ACPI table\n");
     
-    IODevice root = {0};
-    IODeviceInit(&root, IONodeType_Node, "DeviceTree");
+    IONode root = {0};
+    IONodeInit(&root, IONodeType_Node, "DeviceTree");
     DriverKitInit(&root, acpiBuffer, acpiBufferSize);
     
     return OSError_None;

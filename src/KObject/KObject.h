@@ -66,7 +66,7 @@ struct kobject {
     //char                    name[KOBJ_NAME_LEN];
     struct kref             kref;
 //    struct list_head        entry;
-    struct kobject          *parent;
+    struct kobject          *_parent;
 //    struct kset             *kset;
     struct kobj_type        *ktype;
 //    struct dentry           *dentry;
@@ -85,6 +85,11 @@ void kobject_put(struct kobject *ko) NO_NULL_POINTERS;
 static inline NO_NULL_POINTERS const char* kobject_name(const struct kobject* obj) 
 {
     return obj->k_name;
+}
+
+static inline NO_NULL_POINTERS struct kobject* kobject_getParent( const struct kobject* obj) 
+{
+    return obj->_parent;
 }
 
 /* kset def */
@@ -107,6 +112,7 @@ OSError kset_remove(struct kset*set , struct kobject* obj) NO_NULL_POINTERS;
 int kset_contains(struct kset* set , struct kobject *obj) NO_NULL_POINTERS;
 
 size_t  kset_count(const struct kset* set) NO_NULL_POINTERS;
+
 
 struct kobject* kset_getChildByName( const struct kset* set , const char* name ) NO_NULL_POINTERS;
 

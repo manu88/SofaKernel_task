@@ -22,9 +22,9 @@
 #include "IODevice.h"
 #include "../Sofa.h"
 
-OSError DeviceTreeContructDeviceTree(IODevice* root, const uint8_t* fromDatas, size_t bufferSize) NO_NULL_ARGS(1, 1);
+OSError DeviceTreeContructDeviceTree(IONode* root, const uint8_t* fromDatas, size_t bufferSize) NO_NULL_ARGS(1, 1);
 
 
-IODevice* DeviceTreeGetDeviceWithPath(IODevice* root, const char* path) NO_NULL_POINTERS;
+IONode* DeviceTreeGetDeviceWithPath(IONode* root, const char* path) NO_NULL_POINTERS;
 
 

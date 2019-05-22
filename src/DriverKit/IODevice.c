@@ -11,9 +11,9 @@
 
 
 
-OSError IODeviceInit(IODevice* device,IONodeType type, const char* name)
+OSError IONodeInit(IONode* device,IONodeType type, const char* name)
 {
-    memset(device, 0, sizeof(IODevice));
+    memset(device, 0, sizeof(IONode));
     kset_init(&device->base);
     
     device->base.obj.k_name =  strdup(name);
@@ -22,7 +22,7 @@ OSError IODeviceInit(IODevice* device,IONodeType type, const char* name)
     return OSError_None;
 }
 
-OSError IODeviceAddChild( IODevice* baseDev, IODevice* child)
+OSError IONodeAddChild( IONode* baseDev, IONode* child)
 {
     if (baseDev == child)
     {

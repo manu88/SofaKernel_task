@@ -36,10 +36,7 @@ typedef enum
     
 } IOCategory;
 
-typedef struct _IONode
-{
-    
-}IONode;
+
 
 typedef struct
 {
@@ -49,8 +46,8 @@ typedef struct
     IONodeType type;
     uint64_t hid;
      
-}IODevice;
+}IONode;
 
-OSError IODeviceInit(IODevice* device,IONodeType type, const char* name) NO_NULL_POINTERS;
+OSError IONodeInit(IONode* node,IONodeType type, const char* name) NO_NULL_POINTERS;
 
-OSError IODeviceAddChild( IODevice* baseDev, IODevice* child) NO_NULL_POINTERS;
+OSError IONodeAddChild( IONode* node, IONode* child) NO_NULL_POINTERS;
