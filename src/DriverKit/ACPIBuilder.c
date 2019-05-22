@@ -10,6 +10,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../Bootstrap.h"
+#include <EISAID.h>
 #include "ACPIBuilder.h"
 #include "deviceTree.h"
 
@@ -74,7 +76,7 @@ static IONode* resolveNodeRelativeTo(const AMLName* name , IONode* current, IONo
             if(newN == NULL)
             {
                 //printf("Create '%s' node\n" , toBuffer);
-                newN = malloc(sizeof(IONode));
+                newN = kmalloc(sizeof(IONode));
                 ALWAYS_ASSERT(newN);
                 ALWAYS_ASSERT(IONodeInit(newN,type, toBuffer) == OSError_None);
                 ALWAYS_ASSERT(IONodeAddChild(current, newN) == OSError_None);
@@ -122,6 +124,7 @@ static int _DeviceTree_endResourceTemplate(AMLDecompiler* decomp, const ParserCo
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
+    
     ALWAYS_ASSERT(treeCtx->expectedName[0] != 0);
     treeCtx->expectedName[0] = 0;
     
@@ -129,10 +132,20 @@ static int _DeviceTree_endResourceTemplate(AMLDecompiler* decomp, const ParserCo
 }
 static int _DeviceTree_onLargeItem(AMLDecompiler* decomp,const ParserContext* context, LargeResourceItemsType itemType, const uint8_t* buffer , size_t bufferSize)
 {
+    DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
+    ALWAYS_ASSERT(treeCtx);
+    
+    
+    
     return 0;
 }
 static int _DeviceTree_onSmallItem(AMLDecompiler* decomp,const ParserContext* context, SmallResourceItemsType itemType, const uint8_t* buffer , size_t bufferSize)
 {
+    DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
+    ALWAYS_ASSERT(treeCtx);
+    
+
+    
     return 0;
 }
 
@@ -140,6 +153,8 @@ static int _DeviceTree_onString(AMLDecompiler* decomp,const ParserContext* conte
 {
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
+    
+    
     
     ALWAYS_ASSERT(treeCtx->expectedName[0] != 0);
     treeCtx->expectedName[0] = 0;
@@ -152,10 +167,20 @@ static int _DeviceTree_onDefinitionBlock(AMLDecompiler* decomp,const ParserConte
 }
 static int _DeviceTree_onOperationRegion(AMLDecompiler* decomp,const ParserContext* context, const ACPIOperationRegion* reg)
 {
+    DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
+    ALWAYS_ASSERT(treeCtx);
+    
+
+    
     return 0;
 }
 static int _DeviceTree_startField(AMLDecompiler* decomp,const ParserContext* context, const ACPIField* field)
 {
+    DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
+    ALWAYS_ASSERT(treeCtx);
+    
+    
+    
     return 0;
 }
 static int _DeviceTree_onFieldElement(AMLDecompiler* decomp,const ParserContext* context, const ACPIFieldElement* fieldElement)
@@ -176,6 +201,9 @@ static int _DeviceTree_onBuffer(AMLDecompiler* decomp, const ParserContext* cont
 {
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
+    
+
+    
     
     ALWAYS_ASSERT(treeCtx->expectedName[0] != 0);
     treeCtx->expectedName[0] = 0;
@@ -259,6 +287,12 @@ static int _DeviceTree_onValue(AMLDecompiler* decomp,const ParserContext* contex
     {
         currentNode->hid = value;
     }
+    else
+    {
+        char eisaid[8] = "";
+        getEisaidString(treeCtx->rootDevRef->hid, eisaid);
+        ALWAYS_ASSERT( strcmp(eisaid, "PNP0A06"));
+    }
     
     treeCtx->expectedName[0] = 0;
     return 0;
@@ -266,12 +300,19 @@ static int _DeviceTree_onValue(AMLDecompiler* decomp,const ParserContext* contex
 
 static int _DeviceTree_onMethod(AMLDecompiler* decomp,const ParserContext* context, const ACPIMethod* method)
 {
+    DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
+    ALWAYS_ASSERT(treeCtx);
+    
+
+    
     return 0;
 }
 static int _DeviceTree_startPackage(AMLDecompiler* decomp,const ParserContext* context, const ACPIPackage* package)
 {
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
+    
+    
     
     ALWAYS_ASSERT(treeCtx->expectedName[0] != 0);
     treeCtx->expectedName[0] = 0;
@@ -292,6 +333,11 @@ static int _DeviceTree_endPackage(AMLDecompiler* decomp,const ParserContext* con
 
 static int _DeviceTree_startIndexField(AMLDecompiler* decomp,const ParserContext* context, const ACPIIndexField* field)
 {
+    DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
+    ALWAYS_ASSERT(treeCtx);
+    
+
+    
     return 0;
 }
 static int _DeviceTree_onIndexFieldElement(AMLDecompiler* decomp,const ParserContext* context, const ACPIIndexFieldElement* fieldElement)

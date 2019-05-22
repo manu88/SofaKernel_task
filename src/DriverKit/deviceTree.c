@@ -14,56 +14,7 @@
 #include "ACPIBuilder.h"
 
 
-static void _printObject(const IONode* object , int indent)
-{
-    
-    for(int i =0;i<indent;i++)
-        printf("|\t");
-    
-    printf("|'%s' Type %i \n" , object->base.obj.k_name , object->type  );//, child->type == INodeType_Folder? "Folder":"File");
-    
-    
-    
-    if( object->type != IONodeType_Node)
-    {
-        for(int i =0;i<indent+1;i++)
-            printf("|\t");
-        
-        if (isEisaId(object->hid))
-        {
-            char eisaID[8] = "";
-            if(getEisaidString( object->hid , eisaID))
-            {
-                printf("- HID '%s' \n" ,  eisaID);
-            }
-        }
-        else
-        {
-            printf("- HID 0x%llx \n" ,  object->hid);
-        }
-    }
-    
-    struct kobject *child = NULL;
-    kset_foreach( ((struct kset*)object), child)
-    {
-        _printObject((IONode*)child, indent +1);
-        /*
-         if (child->type == INodeType_Folder)
-         {
-         _printNode(child , indent + 1);
-         }
-         */
-    }
-}
 
-void DriverKitDump(IONode* root)
-{
-    printf("--- DriverKit Tree ---\n");
-    
-    _printObject( root , 0);
-    
-    printf("--- DriverKit Tree ---\n");
-}
 
 OSError DeviceTreeContructDeviceTree(IONode* root, const uint8_t* fromDatas, size_t bufferSize)
 {
@@ -95,7 +46,7 @@ OSError DeviceTreeContructDeviceTree(IONode* root, const uint8_t* fromDatas, siz
         return OSError_Some;
     }
     
-    DriverKitDump(root);
+
     
     return OSError_None;
 }

@@ -18,6 +18,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdint.h>
 #include "../Sofa.h"
 #include "utlist.h"
 
@@ -56,12 +57,21 @@ struct kobj_type
     void (*release)(struct kobject *);
 };
 
+#define MAX_DESC_SIZE 64
 
+typedef struct _KClass
+{
+    const char* name;
+    
+    void (*getInfos)(const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
+} KClass;
+
+
+#define KClassMake( name , getInfos) { name  , getInfos}
 /* kobject def */
 
-//#define KOBJ_NAME_LEN   20
-
-struct kobject {
+struct kobject
+{
     const char                    *k_name;
     //char                    name[KOBJ_NAME_LEN];
     struct kref             kref;
@@ -70,7 +80,9 @@ struct kobject {
 //    struct kset             *kset;
     struct kobj_type        *ktype;
 //    struct dentry           *dentry;
-    
+
+    uint8_t isSet:1;
+    const KClass * class;
     
     // when in a set
     struct kobject *prev, *next;
@@ -90,6 +102,12 @@ static inline NO_NULL_POINTERS const char* kobject_name(const struct kobject* ob
 static inline NO_NULL_POINTERS struct kobject* kobject_getParent( const struct kobject* obj) 
 {
     return obj->_parent;
+}
+
+
+static inline NO_NULL_POINTERS uint8_t kobject_isSet( const struct kobject* obj)
+{
+    return obj->isSet;
 }
 
 /* kset def */
@@ -119,4 +137,6 @@ struct kobject* kset_getChildByName( const struct kset* set , const char* name )
 #define kset_foreach(set, el) DL_FOREACH(set->_listHead, el)
 
 
+
+void kobject_printTree( const struct kobject* obj) NO_NULL_POINTERS;
 

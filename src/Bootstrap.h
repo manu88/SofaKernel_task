@@ -31,7 +31,7 @@
 
 typedef struct
 {
-    struct kobject base;
+    
 #ifndef SOFA_TESTS_ONLY
     seL4_BootInfo *info;
 
@@ -55,4 +55,7 @@ typedef struct
 } KernelTaskContext;
 
 
-int bootstrapSystem(KernelTaskContext* context);
+int bootstrapSystem(KernelTaskContext* context) NO_NULL_POINTERS;
+
+
+void* kmalloc(size_t size) NO_NULL_POINTERS WARN_UNUSED_RESULT;

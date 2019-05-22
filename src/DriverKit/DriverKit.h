@@ -10,4 +10,11 @@
 #include "../Sofa.h"
 #include "IODevice.h"
 
-OSError DriverKitInit(IONode* node, const uint8_t* fromDatas, size_t bufferSize) NO_NULL_ARGS(1, 1);
+
+typedef struct _IODriverBase IODriverBase;
+
+OSError DriverKitInit(struct kset* node, const uint8_t* fromDatas, size_t bufferSize) NO_NULL_ARGS(1, 1);
+
+void DriverKitDump(void);
+
+OSError DriverKitRegisterDriver( IODriverBase* driver) NO_NULL_POINTERS;

@@ -66,7 +66,7 @@ static void lateSystemInit(KernelTaskContext *ctx);
 
 
 /* ****** */
-static IONode root = {0};
+static struct kset root = {0};
 static const char rootNodeName[] = "root";
 /* ****** */
 // globals to remove at some point
@@ -86,11 +86,7 @@ int main(void)
 #endif
     
     int err = bootstrapSystem(&ctx);
-    
-    kobject_init(&ctx.base);
-    ctx.base.k_name = rootNodeName;
-    
-    
+
     if( err != 0)
         return 0;
     
@@ -128,9 +124,11 @@ static OSError earlySystemInit(KernelTaskContext *context)
     ALWAYS_ASSERT(acpiBuffer);
     kprintf("Start Parsing ACPI table\n");
     
-    
-    ALWAYS_ASSERT(IONodeInit(&root, IONodeType_Node, "DeviceTree") == OSError_None);
+    kset_init(&root);
+    root.obj.k_name = rootNodeName;
+    //ALWAYS_ASSERT(IONodeInit(&root, IONodeType_Node, "DeviceTree") == OSError_None);
     ALWAYS_ASSERT(DriverKitInit(&root, acpiBuffer, acpiBufferSize) == OSError_None);
+    
     
     return OSError_None;
 }
@@ -139,11 +137,13 @@ static OSError baseSystemInit(KernelTaskContext *context)
 {
 
     ALWAYS_ASSERT( PCIDriverInit(&_pciDriver) == OSError_None);
-    
+    ALWAYS_ASSERT(DriverKitRegisterDriver( (IODriverBase*)&_pciDriver) == OSError_None);
     return OSError_None;
 }
 
 static void lateSystemInit(KernelTaskContext *ctx)
 {
-    
+    kobject_printTree( (const struct kobject *) &root);
+    //kobject_printTree(&root);
+    //DriverKitDump();
 }

@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Bootstrap.h"
+#include <stdlib.h>
 #include <allocman/bootstrap.h>
 #include <simple-default/simple-default.h>
 #include <simple-default/simple-default.h>
@@ -75,3 +76,7 @@ int bootstrapSystem(KernelTaskContext *context)
 
 
 
+void* kmalloc(size_t size)
+{
+    return malloc(size);
+}
