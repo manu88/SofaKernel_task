@@ -4,7 +4,7 @@
 #include "Bootstrap.h"
 
 #include "DriverKit/DriverKit.h"
-
+#include "Drivers/PCIDriver.h"
 
 
 #ifndef SOFA_TESTS_ONLY
@@ -48,10 +48,32 @@ static uint8_t* readAndFillBuffer(const char* fromFile , size_t* bufSize)
 
 #endif //#ifndef SOFA_TESTS_ONLY
 
+/*
+ Get ACPI
+ Init DriverKit
+ Creates DeviceTree
+ 
+ */
 static OSError earlySystemInit(KernelTaskContext *ctx);
+
+/*
+ Drivers loading + matching/probing
+ */
 static OSError baseSystemInit(KernelTaskContext *ctx);
+
+
 static void lateSystemInit(KernelTaskContext *ctx);
 
+
+/* ****** */
+static IONode root = {0};
+static const char rootNodeName[] = "root";
+/* ****** */
+// globals to remove at some point
+
+PCIDriver _pciDriver;
+
+/* ****** */
 int main(void)
 {
     KernelTaskContext ctx = {0};
@@ -66,6 +88,7 @@ int main(void)
     int err = bootstrapSystem(&ctx);
     
     kobject_init(&ctx.base);
+    ctx.base.k_name = rootNodeName;
     
     
     if( err != 0)
@@ -80,12 +103,7 @@ int main(void)
 }
 
 
-static OSError earlySystemInit(KernelTaskContext *ctx)
-{
-    return OSError_None;
-}
-
-static OSError baseSystemInit(KernelTaskContext *context)
+static OSError earlySystemInit(KernelTaskContext *context)
 {
     uint8_t *acpiBuffer = NULL;
     size_t acpiBufferSize = 0;
@@ -110,9 +128,17 @@ static OSError baseSystemInit(KernelTaskContext *context)
     ALWAYS_ASSERT(acpiBuffer);
     kprintf("Start Parsing ACPI table\n");
     
-    IONode root = {0};
-    IONodeInit(&root, IONodeType_Node, "DeviceTree");
-    DriverKitInit(&root, acpiBuffer, acpiBufferSize);
+    
+    ALWAYS_ASSERT(IONodeInit(&root, IONodeType_Node, "DeviceTree") == OSError_None);
+    ALWAYS_ASSERT(DriverKitInit(&root, acpiBuffer, acpiBufferSize) == OSError_None);
+    
+    return OSError_None;
+}
+
+static OSError baseSystemInit(KernelTaskContext *context)
+{
+
+    ALWAYS_ASSERT( PCIDriverInit(&_pciDriver) == OSError_None);
     
     return OSError_None;
 }

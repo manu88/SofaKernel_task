@@ -59,10 +59,10 @@ struct kobj_type
 
 /* kobject def */
 
-#define KOBJ_NAME_LEN   20
+//#define KOBJ_NAME_LEN   20
 
 struct kobject {
-    char                    *k_name;
+    const char                    *k_name;
     //char                    name[KOBJ_NAME_LEN];
     struct kref             kref;
 //    struct list_head        entry;
