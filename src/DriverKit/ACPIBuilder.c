@@ -81,6 +81,8 @@ static IONode* resolveNodeRelativeTo(const AMLName* name , IONode* current, IONo
                 ALWAYS_ASSERT(IONodeInit(newN,type, toBuffer) == OSError_None);
                 ALWAYS_ASSERT(IONodeAddChild(current, newN) == OSError_None);
                 
+                kobject_put((struct kobject *)newN);
+                
             }
             current = newN;
         }

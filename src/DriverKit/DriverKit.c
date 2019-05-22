@@ -23,23 +23,33 @@ static const char driverKitNodeName[] = "DriverKit";
 static const char deviceTreeName[]    = "DeviceTree";
 static const char driversNodeName[]   = "Drivers";
 
+
+
 OSError DriverKitInit(struct kset* root, const uint8_t* fromDatas, size_t bufferSize)
 {
 
     ALWAYS_ASSERT(IONodeInit(&_dkContext.driverKitNode, IONodeType_Node, driverKitNodeName) == OSError_None);
+
+    
     ALWAYS_ASSERT(IONodeInit(&_dkContext.deviceTree   , IONodeType_Node, deviceTreeName)    == OSError_None);
     ALWAYS_ASSERT(IONodeInit(&_dkContext.driversNode  , IONodeType_Node, driversNodeName)   == OSError_None);
     
     ALWAYS_ASSERT(kset_append(root, (struct kobject*) &_dkContext.driverKitNode) == OSError_None);
+    kobject_put((struct kobject *)&_dkContext.driverKitNode);
     
     ALWAYS_ASSERT(IONodeAddChild(&_dkContext.driverKitNode, &_dkContext.deviceTree) == OSError_None);
+    kobject_put((struct kobject *)&_dkContext.deviceTree);
     ALWAYS_ASSERT(IONodeAddChild(&_dkContext.driverKitNode, &_dkContext.driversNode) == OSError_None);
+    kobject_put((struct kobject *)&_dkContext.driversNode);
+    
     
     OSError ret = DeviceTreeContructDeviceTree(&_dkContext.deviceTree, fromDatas, bufferSize);
     
     
     return ret;
 }
+
+
 
 
 static void _printObject(const IONode* object , int indent)

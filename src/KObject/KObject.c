@@ -93,6 +93,7 @@ void kset_init(struct kset* set)
 
 OSError kset_append(struct kset*set , struct kobject* obj)
 {
+
     DL_APPEND(set->_listHead, kobject_get(obj));
     obj->_parent = &set->obj;
 

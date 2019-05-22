@@ -138,6 +138,7 @@ static OSError baseSystemInit(KernelTaskContext *context)
 
     ALWAYS_ASSERT( PCIDriverInit(&_pciDriver) == OSError_None);
     ALWAYS_ASSERT(DriverKitRegisterDriver( (IODriverBase*)&_pciDriver) == OSError_None);
+    kobject_put((struct kobject *)&_pciDriver);
     return OSError_None;
 }
 
