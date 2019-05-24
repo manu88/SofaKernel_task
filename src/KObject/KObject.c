@@ -73,13 +73,13 @@ void kobject_put(struct kobject *ko)
 
 static void KOBJgetInfos(const struct kobject *obj , char outDesc[MAX_DESC_SIZE] )
 {
-    snprintf(outDesc, MAX_DESC_SIZE, "'%s' Kobject %p (refc %i)" ,obj->k_name, (void*) obj , obj->kref.refcount );
+    snprintf(outDesc, MAX_DESC_SIZE, "Kobject %p (refc %i)" , (void*) obj , obj->kref.refcount );
 }
 
 static void KSETgetInfos(const struct kobject *obj , char outDesc[MAX_DESC_SIZE] )
 {
     struct kset *self = (struct kset *) obj;
-    snprintf(outDesc, MAX_DESC_SIZE, "'%s' Kset %p %zi children (refc %i)" ,obj->k_name, (void*) self, kset_count(self) , obj->kref.refcount );
+    snprintf(outDesc, MAX_DESC_SIZE, "Kset %p %zi children (refc %i)",  (void*) self, kset_count(self) , obj->kref.refcount );
 }
 
 
@@ -158,7 +158,7 @@ static void _printOBJ( const struct kobject* obj , int indent)
     
     obj->class->getInfos(obj , desc);
     
-    kprintf("%s\n" , desc);
+    kprintf("'%s' %s\n" , obj->k_name, desc);
     
     if (kobject_isSet(obj))
     {

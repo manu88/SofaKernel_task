@@ -10,16 +10,30 @@
 #include "IODevice.h"
 
 
+static void IONodegetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
+
+
+static const KClass ioNodeClass = KClassMake("IONode", IONodegetInfos);
+
 
 OSError IONodeInit(IONode* device, const char* name)
 {
     memset(device, 0, sizeof(IONode));
     kset_init(&device->base);
-    
+    device->_attachedDriver = NULL;
     device->base.obj.k_name =  strdup(name);
+    
+    device->base.obj.class = &ioNodeClass;
     //strncpy(device->name, name, 32);
 
     return OSError_None;
+}
+
+static void IONodegetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] )
+{
+    const IONode* self = (const IONode*) obj;
+    
+    snprintf(outDesc, MAX_DESC_SIZE, "INODE Attached Driver %p" , (const void*) self->_attachedDriver );
 }
 
 OSError IONodeAddChild( IONode* baseDev, IONode* child)

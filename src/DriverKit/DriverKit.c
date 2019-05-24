@@ -147,10 +147,12 @@ static NO_NULL_POINTERS  OSError _DriverKitTryProbeNode( IONode* node )
         if( retProbe == OSError_None)
         {
             kprintf("Attaching driver '%s' to device '%s'\n" , driver->base.k_name , node->base.obj.k_name);
+            
+            node->_attachedDriver = driver;
         }
     }
     
-    return OSError_None;
+    return OSError_Some;
 }
 
 static NO_NULL_POINTERS  OSError _DriverKitTryProbeNodeAndChildren( IONode* node )
@@ -158,6 +160,10 @@ static NO_NULL_POINTERS  OSError _DriverKitTryProbeNodeAndChildren( IONode* node
     
     
     OSError ret = _DriverKitTryProbeNode(node);
+    if (ret == OSError_None)
+    {
+        return ret;
+    }
         
     struct kobject* obj = NULL;
     kset_foreach((&node->base), obj)
