@@ -130,7 +130,7 @@ size_t  kset_count(const struct kset* set) NO_NULL_POINTERS;
 
 struct kobject* kset_getChildByName( const struct kset* set , const char* name ) NO_NULL_POINTERS;
 
-#define kset_foreach(set, el) DL_FOREACH(set->_listHead, el)
+#define kset_foreach( set, el) DL_FOREACH(set->_listHead, el)
 
 
 

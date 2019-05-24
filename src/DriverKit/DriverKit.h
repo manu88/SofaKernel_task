@@ -18,3 +18,7 @@ OSError DriverKitInit(struct kset* node, const uint8_t* fromDatas, size_t buffer
 void DriverKitDump(void);
 
 OSError DriverKitRegisterDriver( IODriverBase* driver) NO_NULL_POINTERS;
+OSError DriverKitRemoveDriver( IODriverBase* driver) NO_NULL_POINTERS;
+
+
+OSError DriverKitDoMatching(void);

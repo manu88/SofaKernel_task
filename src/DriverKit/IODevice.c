@@ -11,14 +11,14 @@
 
 
 
-OSError IONodeInit(IONode* device,IONodeType type, const char* name)
+OSError IONodeInit(IONode* device, const char* name)
 {
     memset(device, 0, sizeof(IONode));
     kset_init(&device->base);
     
     device->base.obj.k_name =  strdup(name);
     //strncpy(device->name, name, 32);
-    device->type = type;
+
     return OSError_None;
 }
 
@@ -30,4 +30,10 @@ OSError IONodeAddChild( IONode* baseDev, IONode* child)
     }
     
     return kset_append(&baseDev->base, &child->base.obj);
+}
+
+
+OSError IONodeRemoveChild( IONode* node, IONode* child)
+{
+    return kset_remove(&node->base, &child->base.obj);
 }

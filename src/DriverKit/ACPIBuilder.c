@@ -52,7 +52,7 @@ void StackPush(Stack* stack, IONode* dev)
 }
 
 
-static IONode* resolveNodeRelativeTo(const AMLName* name , IONode* current, IONode* root  , IONodeType type )
+static IONode* resolveNodeRelativeTo(const AMLName* name , IONode* current, IONode* root   )
 {
     ALWAYS_ASSERT(name);
     
@@ -78,7 +78,7 @@ static IONode* resolveNodeRelativeTo(const AMLName* name , IONode* current, IONo
                 //printf("Create '%s' node\n" , toBuffer);
                 newN = kmalloc(sizeof(IONode));
                 ALWAYS_ASSERT(newN);
-                ALWAYS_ASSERT(IONodeInit(newN,type, toBuffer) == OSError_None);
+                ALWAYS_ASSERT(IONodeInit(newN, toBuffer) == OSError_None);
                 ALWAYS_ASSERT(IONodeAddChild(current, newN) == OSError_None);
                 
                 kobject_put((struct kobject *)newN);
@@ -220,7 +220,7 @@ static int _DeviceTree_startScope(AMLDecompiler* decomp,const ParserContext* con
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
-    IONode* newScope = resolveNodeRelativeTo(&scpe->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef, IONodeType_Node);
+    IONode* newScope = resolveNodeRelativeTo(&scpe->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef);
     ALWAYS_ASSERT(newScope);
     
     StackPush(&treeCtx->devStack, newScope);
@@ -244,7 +244,7 @@ static int _DeviceTree_startDevice(AMLDecompiler* decomp,const ParserContext* co
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
-    IONode* newScope = resolveNodeRelativeTo(&device->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef , IONodeType_Device);
+    IONode* newScope = resolveNodeRelativeTo(&device->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef );
     ALWAYS_ASSERT(newScope);
     
     StackPush(&treeCtx->devStack, newScope);

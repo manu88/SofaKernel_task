@@ -11,9 +11,12 @@
 #include "../DriverKit/IODriverBase.h"
 
 
+
 typedef struct
 {
     IODriverBase base;
+    
+    
 } PCIDriver;
 
 OSError PCIDriverInit( PCIDriver* driver) NO_NULL_POINTERS;

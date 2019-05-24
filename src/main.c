@@ -91,8 +91,8 @@ int main(void)
         return 0;
     
     kprintf("Start SOFA\n");
-    ALWAYS_ASSERT( earlySystemInit(&ctx)  == OSError_None);
-    ALWAYS_ASSERT( baseSystemInit(&ctx)  == OSError_None);
+    ALWAYS_ASSERT_NO_ERR( earlySystemInit(&ctx) );
+    ALWAYS_ASSERT_NO_ERR( baseSystemInit(&ctx)  );
     lateSystemInit(&ctx);
     
     return 0;
@@ -127,7 +127,7 @@ static OSError earlySystemInit(KernelTaskContext *context)
     kset_init(&root);
     root.obj.k_name = rootNodeName;
     //ALWAYS_ASSERT(IONodeInit(&root, IONodeType_Node, "DeviceTree") == OSError_None);
-    ALWAYS_ASSERT(DriverKitInit(&root, acpiBuffer, acpiBufferSize) == OSError_None);
+    ALWAYS_ASSERT_NO_ERR(DriverKitInit(&root, acpiBuffer, acpiBufferSize) );
     
     
     return OSError_None;
@@ -136,9 +136,15 @@ static OSError earlySystemInit(KernelTaskContext *context)
 static OSError baseSystemInit(KernelTaskContext *context)
 {
 
-    ALWAYS_ASSERT( PCIDriverInit(&_pciDriver) == OSError_None);
-    ALWAYS_ASSERT(DriverKitRegisterDriver( (IODriverBase*)&_pciDriver) == OSError_None);
+    ALWAYS_ASSERT_NO_ERR( PCIDriverInit(&_pciDriver) );
+    ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDriver( (IODriverBase*)&_pciDriver) );
     kobject_put((struct kobject *)&_pciDriver);
+    
+    
+    
+    
+    ALWAYS_ASSERT_NO_ERR( DriverKitDoMatching() );
+    
     return OSError_None;
 }
 

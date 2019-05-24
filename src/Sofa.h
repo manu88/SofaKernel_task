@@ -80,3 +80,6 @@ typedef enum
     OSError_ParsingError = -20,
     
 } OSError;
+
+
+#define ALWAYS_ASSERT_NO_ERR(x) assert(x == OSError_None)

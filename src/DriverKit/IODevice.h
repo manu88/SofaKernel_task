@@ -21,33 +21,22 @@
 #include "../Sofa.h"
 #include "../KObject/KObject.h"
 
-typedef enum
-{
-    IONodeType_Device,
-    IONodeType_Node,
-    
-    
-} IONodeType;
 
 
-typedef enum
-{
-  IOCategory_PCIBus,
-    
-} IOCategory;
 
-
+typedef struct _IODriverBase IODriverBase;
 
 typedef struct
 {
     // needs to remain first!
     struct kset base;
     
-    IONodeType type;
     uint64_t hid;
+    IODriverBase* _attachedDriver;
      
 }IONode;
 
-OSError IONodeInit(IONode* node,IONodeType type, const char* name) NO_NULL_POINTERS;
+OSError IONodeInit(IONode* node, const char* name) NO_NULL_POINTERS;
 
 OSError IONodeAddChild( IONode* node, IONode* child) NO_NULL_POINTERS;
+OSError IONodeRemoveChild( IONode* node, IONode* child) NO_NULL_POINTERS;
