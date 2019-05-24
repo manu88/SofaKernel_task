@@ -65,9 +65,9 @@ void kobject_put(struct kobject *ko)
 {
     kref_put(&ko->kref, NULL);
     
-    if (ko->kref.refcount == 0 && ko->ktype && ko->ktype->release)
+    if (ko->kref.refcount == 0 && ko->class && ko->class->release)
     {
-        ko->ktype->release(ko);
+        ko->class->release(ko);
     }
 }
 

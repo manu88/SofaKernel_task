@@ -52,10 +52,6 @@ void kref_put(struct kref* k,void (*release)(struct kref *k)) NO_NULL_ARGS(1,1);
 /* ktype def */
 struct kobject;
 
-struct kobj_type
-{
-    void (*release)(struct kobject *);
-};
 
 #define MAX_DESC_SIZE 64
 
@@ -64,6 +60,7 @@ typedef struct _KClass
     const char* name;
     
     void (*getInfos)(const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
+    void (*release)(struct kobject *);
 } KClass;
 
 
@@ -78,8 +75,7 @@ struct kobject
 //    struct list_head        entry;
     struct kobject          *_parent;
 //    struct kset             *kset;
-    struct kobj_type        *ktype;
-//    struct dentry           *dentry;
+
 
     uint8_t isSet:1;
     const KClass * class;
