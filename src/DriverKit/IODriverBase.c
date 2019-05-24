@@ -17,7 +17,8 @@ static IODriverCallbacks _defaultMethods =
 {
     _Default_init,
     _Default_release,
-    _Default_probeDevice
+    _Default_probeDevice,
+    NULL // interupt
     
     //OSError (*start)(IODriverBase *driver  );
     //OSError (*stop)(IODriverBase *driver  );
@@ -31,6 +32,8 @@ OSError IODriverBaseInit(IODriverBase* base, const char* name)
     base->driverMethods = &_defaultMethods;
     return OSError_None;
 }
+
+
 
 
 static OSError _Default_init(IODriverBase *driver  )

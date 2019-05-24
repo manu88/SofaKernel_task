@@ -15,6 +15,7 @@
 typedef struct
 {
     IODriverBase base;
+    IONode* isaNode;
     
     
 } PCIDriver;

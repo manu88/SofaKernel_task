@@ -21,8 +21,7 @@ typedef struct
     
     OSError (*probeDevice)(IODriverBase* driver , IONode* node) NO_NULL_POINTERS;
     
-    //OSError (*start)(IODriverBase *driver  );
-    //OSError (*stop)(IODriverBase *driver  );
+    OSError (*onInterupt)(IODriverBase* driver , uint32_t intNum) NO_NULL_POINTERS;
     
 } IODriverCallbacks;
 
@@ -32,9 +31,10 @@ typedef struct _IODriverBase
     struct kobject base;
     IODriverCallbacks *driverMethods; // default methods will do nothing and return OSError_None
     
-    
     uint8_t isInit:1;
     
 } IODriverBase;
 
 OSError IODriverBaseInit(IODriverBase* base, const char* name) NO_NULL_POINTERS;
+
+

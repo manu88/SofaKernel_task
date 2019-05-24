@@ -46,8 +46,23 @@ OSError IONodeAddChild( IONode* baseDev, IONode* child)
     return kset_append(&baseDev->base, &child->base.obj);
 }
 
-
 OSError IONodeRemoveChild( IONode* node, IONode* child)
 {
     return kset_remove(&node->base, &child->base.obj);
+}
+
+
+IONode* IONodeGetChildName( const IONode* node, const char* name)
+{
+    struct kobject* obj = NULL;
+    
+    IONodeForEach(node , obj)
+    {
+        if (strcmp(obj->k_name, name) == 0)
+        {
+            return (IONode*) obj;
+        }
+    }
+    
+    return NULL;
 }

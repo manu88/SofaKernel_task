@@ -40,3 +40,7 @@ OSError IONodeInit(IONode* node, const char* name) NO_NULL_POINTERS;
 
 OSError IONodeAddChild( IONode* node, IONode* child) NO_NULL_POINTERS;
 OSError IONodeRemoveChild( IONode* node, IONode* child) NO_NULL_POINTERS;
+
+IONode* IONodeGetChildName( const IONode* node, const char* name) NO_NULL_POINTERS;
+
+#define IONodeForEach( node, el) kset_foreach( (&node->base) , el)

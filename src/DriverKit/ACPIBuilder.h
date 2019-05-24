@@ -19,7 +19,7 @@ typedef struct
 } Stack;
 
 int       StackInit(Stack* stack);
-IONode* StackPop(Stack* stack);
+IONode*   StackPop(Stack* stack);
 void      StackPush(Stack* stack , IONode*dev);
 
 IONode* StackTop(const Stack* stack);

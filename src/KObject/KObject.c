@@ -91,6 +91,12 @@ void kset_init(struct kset* set)
     set->_listHead = NULL;
 }
 
+void kset_initWithName(struct kset* set , const char* name)
+{
+    kset_init(set);
+    set->obj.k_name = name;
+}
+
 OSError kset_append(struct kset*set , struct kobject* obj)
 {
 

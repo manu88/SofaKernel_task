@@ -14,9 +14,9 @@
 
 static struct _DKContext
 {
-    IONode driverKitNode;
+    struct kset driverKitNode;
     IONode deviceTree;
-    IONode driversNode;
+    struct kset driversNode;
     
 } _dkContext = {0};
 
@@ -29,18 +29,23 @@ static const char driversNodeName[]   = "Drivers";
 OSError DriverKitInit(struct kset* root, const uint8_t* fromDatas, size_t bufferSize)
 {
 
-    ALWAYS_ASSERT(IONodeInit(&_dkContext.driverKitNode,  driverKitNodeName) == OSError_None);
-
+    //ALWAYS_ASSERT(IONodeInit(&_dkContext.driverKitNode,  driverKitNodeName) == OSError_None);
+    kset_initWithName(&_dkContext.driverKitNode , driverKitNodeName);
     
-    ALWAYS_ASSERT(IONodeInit(&_dkContext.deviceTree   ,  deviceTreeName)    == OSError_None);
-    ALWAYS_ASSERT(IONodeInit(&_dkContext.driversNode  ,  driversNodeName)   == OSError_None);
+    ALWAYS_ASSERT_NO_ERR( IONodeInit(&_dkContext.deviceTree, deviceTreeName));
+    
+    kset_initWithName(&_dkContext.driversNode, driversNodeName);
+    //ALWAYS_ASSERT(IONodeInit(&_dkContext.driversNode  ,  driversNodeName)   == OSError_None);
     
     ALWAYS_ASSERT(kset_append(root, (struct kobject*) &_dkContext.driverKitNode) == OSError_None);
     kobject_put((struct kobject *)&_dkContext.driverKitNode);
     
-    ALWAYS_ASSERT(IONodeAddChild(&_dkContext.driverKitNode, &_dkContext.deviceTree) == OSError_None);
+    ALWAYS_ASSERT_NO_ERR(kset_append(&_dkContext.driverKitNode, (struct kobject *)&_dkContext.deviceTree) );
+    //ALWAYS_ASSERT(IONodeAddChild(&_dkContext.driverKitNode, &_dkContext.deviceTree) == OSError_None);
     kobject_put((struct kobject *)&_dkContext.deviceTree);
-    ALWAYS_ASSERT(IONodeAddChild(&_dkContext.driverKitNode, &_dkContext.driversNode) == OSError_None);
+    
+    ALWAYS_ASSERT_NO_ERR(kset_append(&_dkContext.driverKitNode, (struct kobject *)&_dkContext.driversNode) );
+    //ALWAYS_ASSERT(IONodeAddChild(&_dkContext.driverKitNode, &_dkContext.driversNode) == OSError_None);
     kobject_put((struct kobject *)&_dkContext.driversNode);
     
     
@@ -98,7 +103,7 @@ void DriverKitDump()
 {
     printf("--- DriverKit Tree ---\n");
     
-    _printObject( &_dkContext.driverKitNode , 0);
+    _printObject((const IONode*) &_dkContext.driverKitNode , 0);
     
     printf("--- DriverKit Tree ---\n");
 }
@@ -106,7 +111,8 @@ void DriverKitDump()
 
 OSError DriverKitRegisterDriver( IODriverBase* driver)
 {
-    OSError ret = IONodeAddChild(&_dkContext.driversNode, (IONode*) driver);
+    OSError ret = kset_append(&_dkContext.driversNode, (struct kobject *)driver);
+    //OSError ret = IONodeAddChild(&_dkContext.driversNode, (IONode*) driver);
     
     if (ret == OSError_None)
     {
@@ -122,7 +128,8 @@ OSError DriverKitRegisterDriver( IODriverBase* driver)
 
 OSError DriverKitRemoveDriver( IODriverBase* driver)
 {
-    OSError ret = IONodeRemoveChild(&_dkContext.driversNode,(IONode*) driver);
+    OSError ret = kset_remove(&_dkContext.driversNode, (struct kobject *)driver);
+    //OSError ret = IONodeRemoveChild(&_dkContext.driversNode,(IONode*) driver);
     if (ret == OSError_None)
     {
         kprintf("DriverKit : remove Driver '%s'\n" , driver->base.k_name);
@@ -138,7 +145,7 @@ static NO_NULL_POINTERS  OSError _DriverKitTryProbeNode( IONode* node )
 {
     
     struct kobject* drv = NULL;
-    kset_foreach((&_dkContext.driversNode.base), drv)
+    kset_foreach((&_dkContext.driversNode), drv)
     {
         IODriverBase* driver = (IODriverBase*) drv;
         
@@ -187,4 +194,10 @@ OSError DriverKitDoMatching()
     
     kprintf("DriverKit : End matching process \n" );
     return ret;
+}
+
+OSError DriverKitRegisterInterupt(IODriverBase* base, uint32_t intNum)
+{
+    
+    return OSError_None;
 }

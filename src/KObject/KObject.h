@@ -114,7 +114,9 @@ struct kset
     struct kobject* _listHead;
 };
 
+
 void kset_init(struct kset* set) NO_NULL_POINTERS;
+void kset_initWithName(struct kset* set , const char* name) NO_NULL_POINTERS;
 
 // Will take ownership, ie retain the kobject
 OSError kset_append(struct kset*set , struct kobject* obj) NO_NULL_POINTERS;

@@ -22,3 +22,8 @@ OSError DriverKitRemoveDriver( IODriverBase* driver) NO_NULL_POINTERS;
 
 
 OSError DriverKitDoMatching(void);
+
+
+
+// Per driver operations
+OSError DriverKitRegisterInterupt(IODriverBase* base, uint32_t intNum) NO_NULL_ARGS(1, 1);

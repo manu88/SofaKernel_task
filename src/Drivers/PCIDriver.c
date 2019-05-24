@@ -7,6 +7,7 @@
 //
 
 #include "PCIDriver.h"
+#include "../DriverKit/IODevice.h"
 
 static const char pciName[] = "PCIDriver";
 
@@ -33,7 +34,7 @@ OSError PCIDriverInit( PCIDriver* driver)
     if(ret == OSError_None)
     {
         driver->base.driverMethods = &PCIMethods;
-        
+        driver->isaNode = NULL;
     }
     
     return ret;
@@ -52,8 +53,16 @@ static OSError PCIRelease(IODriverBase *driver  )
 
 static OSError PCIProbeDevice(IODriverBase* driver , IONode* node)
 {
+    PCIDriver* self = (PCIDriver*) driver;
     if( node->hid == 0x30ad041) // PNP0A03
     {
+        IONode* isaNode = IONodeGetChildName(node, "ISA");
+        if( isaNode)
+        {
+            self->isaNode = isaNode;
+            isaNode->_attachedDriver = driver;
+        }
+
         return OSError_None;
     }
     return OSError_Some;
