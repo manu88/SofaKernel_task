@@ -78,16 +78,15 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node)
             {
                 IONode* c = (IONode*) o;
                 
-                if( c->hid == 0x105D041) // PNP0501 COM port
+                if( c->hid == 0x105D041 || c->hid == 0x303d041 || c->hid == 0x130FD041) // PNP0501 COM port  PNP0303   keyboard PNP0F13  mouse
                 {
-                    kprintf("Got a com port \n");
+                    IODevice* dev = kmalloc( sizeof(IODevice));
+                    ALWAYS_ASSERT(dev);
                     
-                    IODevice* comDev = kmalloc( sizeof(IODevice));
-                    ALWAYS_ASSERT(comDev);
-                    
-                    ALWAYS_ASSERT_NO_ERR( IODeviceInit(comDev, c, c->base.obj.k_name) );
-                    ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDevice(comDev) );
+                    ALWAYS_ASSERT_NO_ERR( IODeviceInit(dev, c, c->base.obj.k_name) );
+                    ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDevice(dev) );
                 }
+                
             }
         }
 

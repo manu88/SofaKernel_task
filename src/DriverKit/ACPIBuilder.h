@@ -18,7 +18,7 @@
 #pragma once
 #include <AMLDecompiler.h>
 
-#include "IODevice.h"
+#include "IONode.h"
 
 #define MAX_STACK 32
 typedef struct

@@ -19,7 +19,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "IODevice.h"
+#include "IONode.h"
 #include "../Sofa.h"
 
 OSError DeviceTreeContructDeviceTree(IONode* root, const uint8_t* fromDatas, size_t bufferSize) NO_NULL_ARGS(1, 1);

@@ -19,7 +19,7 @@
 
 #include "../Sofa.h"
 #include "../KObject/KObject.h"
-#include "IODevice.h"
+#include "IONode.h"
 
 typedef struct _IODriverBase IODriverBase;
 

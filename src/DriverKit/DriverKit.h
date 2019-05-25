@@ -17,7 +17,7 @@
 
 #pragma once
 #include "../Sofa.h"
-#include "IODevice.h"
+#include "IONode.h"
 
 
 typedef struct _IODriverBase IODriverBase;
