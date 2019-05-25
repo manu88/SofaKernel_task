@@ -17,6 +17,8 @@
 
 #include "PCIDriver.h"
 #include "../DriverKit/IODevice.h"
+#include "../Bootstrap.h"
+#include "../DriverKit/DriverKit.h"
 
 static const char pciName[] = "PCIDriver";
 
@@ -70,6 +72,23 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node)
         {
             self->isaNode = isaNode;
             isaNode->_attachedDriver = driver;
+            
+            struct kobject*o = NULL;
+            IONodeForEach(isaNode, o)
+            {
+                IONode* c = (IONode*) o;
+                
+                if( c->hid == 0x105D041) // PNP0501 COM port
+                {
+                    kprintf("Got a com port \n");
+                    
+                    IODevice* comDev = kmalloc( sizeof(IODevice));
+                    ALWAYS_ASSERT(comDev);
+                    
+                    ALWAYS_ASSERT_NO_ERR( IODeviceInit(comDev, c, c->base.obj.k_name) );
+                    ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDevice(comDev) );
+                }
+            }
         }
 
         return OSError_None;

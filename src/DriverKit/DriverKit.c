@@ -27,35 +27,40 @@ static struct _DKContext
     IONode deviceTree;
     struct kset driversNode;
     
+    struct kset exportedDevicesTree;
+    
 } _dkContext = {0};
 
 static const char driverKitNodeName[] = "DriverKit";
 static const char deviceTreeName[]    = "DeviceTree";
 static const char driversNodeName[]   = "Drivers";
 
+static const char exportedDevicesTreeName[]   = "Devices";
+
 
 
 OSError DriverKitInit(struct kset* root, const uint8_t* fromDatas, size_t bufferSize)
 {
 
-    //ALWAYS_ASSERT(IONodeInit(&_dkContext.driverKitNode,  driverKitNodeName) == OSError_None);
+    kset_initWithName(&_dkContext.exportedDevicesTree , exportedDevicesTreeName);
+    ALWAYS_ASSERT(kset_append(root, (struct kobject*) &_dkContext.exportedDevicesTree) == OSError_None);
+    
     kset_initWithName(&_dkContext.driverKitNode , driverKitNodeName);
     
     ALWAYS_ASSERT_NO_ERR( IONodeInit(&_dkContext.deviceTree, deviceTreeName));
     
     kset_initWithName(&_dkContext.driversNode, driversNodeName);
-    //ALWAYS_ASSERT(IONodeInit(&_dkContext.driversNode  ,  driversNodeName)   == OSError_None);
     
     ALWAYS_ASSERT(kset_append(root, (struct kobject*) &_dkContext.driverKitNode) == OSError_None);
     kobject_put((struct kobject *)&_dkContext.driverKitNode);
     
     ALWAYS_ASSERT_NO_ERR(kset_append(&_dkContext.driverKitNode, (struct kobject *)&_dkContext.deviceTree) );
-    //ALWAYS_ASSERT(IONodeAddChild(&_dkContext.driverKitNode, &_dkContext.deviceTree) == OSError_None);
     kobject_put((struct kobject *)&_dkContext.deviceTree);
     
     ALWAYS_ASSERT_NO_ERR(kset_append(&_dkContext.driverKitNode, (struct kobject *)&_dkContext.driversNode) );
-    //ALWAYS_ASSERT(IONodeAddChild(&_dkContext.driverKitNode, &_dkContext.driversNode) == OSError_None);
     kobject_put((struct kobject *)&_dkContext.driversNode);
+    
+    
     
     
     OSError ret = DeviceTreeContructDeviceTree(&_dkContext.deviceTree, fromDatas, bufferSize);
@@ -210,3 +215,10 @@ OSError DriverKitRegisterInterupt(IODriverBase* base, uint32_t intNum)
     
     return OSError_None;
 }
+
+
+OSError DriverKitRegisterDevice(IODevice* device )
+{
+    return kset_append(&_dkContext.exportedDevicesTree, (struct kobject *)device);
+}
+

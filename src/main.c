@@ -22,7 +22,7 @@
 
 #include "DriverKit/DriverKit.h"
 #include "Drivers/PCIDriver.h"
-
+#include "Timer.h"
 
 #define IRQ_EP_BADGE       BIT(seL4_BadgeBits - 1)
 #define IRQ_BADGE_TIMER    (1 << 0)
@@ -37,7 +37,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include "Timer.h"
+
 
 static uint8_t* readAndFillBuffer(const char* fromFile , size_t* bufSize)
 {
@@ -80,6 +80,7 @@ static uint8_t* readAndFillBuffer(const char* fromFile , size_t* bufSize)
 static OSError earlySystemInit(KernelTaskContext *ctx);
 
 /*
+ FileSystem Init
  Drivers loading + matching/probing
  */
 static OSError baseSystemInit(KernelTaskContext *ctx);
@@ -185,6 +186,13 @@ static OSError earlySystemInit(KernelTaskContext *context)
 static OSError baseSystemInit(KernelTaskContext *context)
 {
     kprintf("Base System Init\n");
+    
+    struct kobject* fsNode = FileSystemInit();
+    ALWAYS_ASSERT( fsNode);
+    
+    ALWAYS_ASSERT_NO_ERR(kset_append(&root, fsNode));
+    kobject_put(fsNode);
+    
     ALWAYS_ASSERT_NO_ERR( PCIDriverInit(&_pciDriver) );
     ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDriver( (IODriverBase*)&_pciDriver) );
     kobject_put((struct kobject *)&_pciDriver);
@@ -203,6 +211,8 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  );
 static int OnTime(uintptr_t token)
 {
     printf("ON TIME\n");
+    
+    return 0;
 }
 static void lateSystemInit(KernelTaskContext *ctx)
 {
@@ -210,7 +220,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
     kobject_printTree( (const struct kobject *) &root);
 
 #ifndef SOFA_TESTS_ONLY
-    int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, NULL);
+    int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, 0);
     ALWAYS_ASSERT_NO_ERR(err);
 
     processLoop(ctx, ep_object.cptr);

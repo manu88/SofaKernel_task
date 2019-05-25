@@ -84,7 +84,7 @@ struct kobject
 };
 
 void kobject_init(struct kobject* object) NO_NULL_POINTERS;
-
+void kobject_initWithName(struct kobject* object, const char*name) NO_NULL_POINTERS;
 
 struct kobject *kobject_get(struct kobject *ko) NO_NULL_POINTERS;
 void kobject_put(struct kobject *ko) NO_NULL_POINTERS;

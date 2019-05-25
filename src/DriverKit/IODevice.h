@@ -28,7 +28,6 @@ typedef struct _IODriverBase IODriverBase;
 
 typedef struct
 {
-    // needs to remain first!
     struct kset base;
     
     uint64_t hid;
@@ -44,3 +43,14 @@ OSError IONodeRemoveChild( IONode* node, IONode* child) NO_NULL_POINTERS;
 IONode* IONodeGetChildName( const IONode* node, const char* name) NO_NULL_POINTERS;
 
 #define IONodeForEach( node, el) kset_foreach( (&node->base) , el)
+
+
+typedef struct _IODevice
+{
+    struct kobject base;
+    IONode* nodeRef;
+    
+} IODevice;
+
+
+OSError IODeviceInit(IODevice* dev, IONode* fromNode, const char* name) NO_NULL_POINTERS;

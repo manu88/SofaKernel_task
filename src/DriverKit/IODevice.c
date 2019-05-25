@@ -42,7 +42,7 @@ static void IONodegetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SI
 {
     const IONode* self = (const IONode*) obj;
     
-    snprintf(outDesc, MAX_DESC_SIZE, "INODE Attached Driver %p" , (const void*) self->_attachedDriver );
+    snprintf(outDesc, MAX_DESC_SIZE, "Attached Driver %p" , (const void*) self->_attachedDriver );
 }
 
 OSError IONodeAddChild( IONode* baseDev, IONode* child)
@@ -74,4 +74,27 @@ IONode* IONodeGetChildName( const IONode* node, const char* name)
     }
     
     return NULL;
+}
+
+
+static void IODevgetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
+
+
+static const KClass ioDeviceClass = KClassMake("IODevice", IODevgetInfos,NULL /*Release*/);
+
+
+OSError IODeviceInit(IODevice* dev, IONode* fromNode, const char* name)
+{
+    kobject_initWithName(&dev->base, name);
+    dev->base.class = &ioDeviceClass;
+    dev->nodeRef = fromNode;
+    
+    return OSError_None;
+}
+
+static void IODevgetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] )
+{
+    const IODevice* self = (const IODevice*) obj;
+    
+    snprintf(outDesc, MAX_DESC_SIZE, "Attached Node %p" , (const void*) self->nodeRef );
 }

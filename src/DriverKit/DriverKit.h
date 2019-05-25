@@ -36,3 +36,6 @@ OSError DriverKitDoMatching(void);
 
 // Per driver operations
 OSError DriverKitRegisterInterupt(IODriverBase* base, uint32_t intNum) NO_NULL_ARGS(1, 1);
+
+// add a device to '/dev'
+OSError DriverKitRegisterDevice(IODevice* device ) NO_NULL_POINTERS;

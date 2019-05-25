@@ -74,9 +74,15 @@ int bootstrapSystem(KernelTaskContext *context)
     return error;
 }
 
-
+static size_t mallocated = 0;
 
 void* kmalloc(size_t size)
 {
-    return malloc(size);
+    void* p = malloc(size);
+    if (p)
+    {
+        mallocated += size;
+    }
+    
+    return p;
 }

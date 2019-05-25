@@ -16,3 +16,8 @@
  */
 
 #pragma once
+
+#include "../Sofa.h"
+#include "../KObject/KObject.h"
+
+struct kobject* FileSystemInit( void);

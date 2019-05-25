@@ -17,3 +17,18 @@
 
 
 #include "FileSystem.h"
+
+static struct
+{
+    struct kset base;
+
+} _FSNode = {0};
+
+const char fsNodeName[] = "FileSystem";
+
+struct kobject* FileSystemInit( )
+{
+    kset_initWithName(&_FSNode.base, fsNodeName);
+    
+    return (struct kobject*) &_FSNode.base;
+}

@@ -33,9 +33,6 @@ typedef struct _Thread
     ThreadEntryPoint entryPoint;
 } Thread;
 
-
-
-
 int ThreadInit(Thread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig);
 
 

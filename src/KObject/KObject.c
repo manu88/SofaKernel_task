@@ -65,6 +65,12 @@ void kobject_init(struct kobject* object)
     object->class = &objClass;
 }
 
+void kobject_initWithName(struct kobject* object, const char*name)
+{
+    kobject_init(object);
+    object->k_name = name;
+}
+
 
 struct kobject *kobject_get(struct kobject *ko)
 {
@@ -83,13 +89,13 @@ void kobject_put(struct kobject *ko)
 
 static void KOBJgetInfos(const struct kobject *obj , char outDesc[MAX_DESC_SIZE] )
 {
-    snprintf(outDesc, MAX_DESC_SIZE, "Kobject %p (refc %i)" , (void*) obj , obj->kref.refcount );
+    snprintf(outDesc, MAX_DESC_SIZE, "(refc %i)" ,  obj->kref.refcount );
 }
 
 static void KSETgetInfos(const struct kobject *obj , char outDesc[MAX_DESC_SIZE] )
 {
     struct kset *self = (struct kset *) obj;
-    snprintf(outDesc, MAX_DESC_SIZE, "Kset %p %zi children (refc %i)",  (void*) self, kset_count(self) , obj->kref.refcount );
+    snprintf(outDesc, MAX_DESC_SIZE, "%zi children (refc %i)",   kset_count(self) , obj->kref.refcount );
 }
 
 
@@ -174,7 +180,7 @@ static void _printOBJ( const struct kobject* obj , int indent)
     
     obj->class->getInfos(obj , desc);
     
-    kprintf("'%s' %s\n" , obj->k_name, desc);
+    kprintf("'%s' %s %p %s\n" , obj->k_name, obj->class->name, (const void*)obj, desc);
     
     if (kobject_isSet(obj))
     {
