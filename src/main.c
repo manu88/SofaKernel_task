@@ -23,6 +23,11 @@
 #include "Drivers/PCIDriver.h"
 
 
+#define IRQ_EP_BADGE       BIT(seL4_BadgeBits - 1)
+#define IRQ_BADGE_TIMER    (1 << 0)
+#define IRQ_BADGE_NETWORK  (1 << 1)
+#define IRQ_BADGE_KEYBOARD (1 << 2)
+
 #ifndef SOFA_TESTS_ONLY
 #include <platsupport/plat/acpi/acpi.h>
 #include <sel4platsupport/io.h>
@@ -31,6 +36,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "Timer.h"
 
 static uint8_t* readAndFillBuffer(const char* fromFile , size_t* bufSize)
 {
@@ -84,6 +90,10 @@ static void lateSystemInit(KernelTaskContext *ctx);
 /* ****** */
 static struct kset root = {0};
 static const char rootNodeName[] = "root";
+
+#ifndef SOFA_TESTS_ONLY
+static vka_object_t ep_object = {0};
+#endif
 /* ****** */
 // globals to remove at some point
 
@@ -117,6 +127,7 @@ int main(void)
 
 static OSError earlySystemInit(KernelTaskContext *context)
 {
+    kprintf("Early System Init\n");
     uint8_t *acpiBuffer = NULL;
     size_t acpiBufferSize = 0;
 #ifdef SOFA_TESTS_ONLY
@@ -145,13 +156,34 @@ static OSError earlySystemInit(KernelTaskContext *context)
     //ALWAYS_ASSERT(IONodeInit(&root, IONodeType_Node, "DeviceTree") == OSError_None);
     ALWAYS_ASSERT_NO_ERR(DriverKitInit(&root, acpiBuffer, acpiBufferSize) );
     
+#ifndef SOFA_TESTS_ONLY
+/* create an endpoint. */
+    error = vka_alloc_endpoint(&context->vka, &ep_object);
+    ZF_LOGF_IFERR(error, "Failed to allocate new endpoint object.\n");
     
+    vka_cspace_make_path(&context->vka, ep_object.cptr, &context->ep_cap_path);
+    
+    error = vka_alloc_notification(&context->vka, &context->ntfn_object);
+    ALWAYS_ASSERT(error == 0);
+    
+    error = seL4_TCB_BindNotification(seL4_CapInitThreadTCB, context->ntfn_object.cptr);
+    ZF_LOGF_IFERR(error, "Unable to BindNotification.\n");
+    
+    cspacepath_t notification_path;
+    
+    vka_cspace_make_path( &context->vka, context->ntfn_object.cptr, &notification_path);
+    
+    /* System Timer */
+    
+    error = TimerInit(context , notification_path.capPtr);
+    ALWAYS_ASSERT( error == 0);
+#endif
     return OSError_None;
 }
 
 static OSError baseSystemInit(KernelTaskContext *context)
 {
-
+    kprintf("Base System Init\n");
     ALWAYS_ASSERT_NO_ERR( PCIDriverInit(&_pciDriver) );
     ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDriver( (IODriverBase*)&_pciDriver) );
     kobject_put((struct kobject *)&_pciDriver);
@@ -164,9 +196,124 @@ static OSError baseSystemInit(KernelTaskContext *context)
     return OSError_None;
 }
 
+static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  );
+
+
+static int OnTime(uintptr_t token)
+{
+    printf("ON TIME\n");
+}
 static void lateSystemInit(KernelTaskContext *ctx)
 {
+    kprintf("Late System Init\n");
     kobject_printTree( (const struct kobject *) &root);
+
+#ifndef SOFA_TESTS_ONLY
+    int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, NULL);
+    ALWAYS_ASSERT_NO_ERR(err);
+
+    processLoop(ctx, ep_object.cptr);
+#endif
     //kobject_printTree(&root);
     //DriverKitDump();
 }
+
+#ifndef SOFA_TESTS_ONLY
+static void processTimer(KernelTaskContext* context,seL4_Word sender_badge)
+{
+    kprintf("Process Timer \n");
+    sel4platsupport_handle_timer_irq(&context->timer, sender_badge);
+    int err = tm_update(&context->tm);
+}
+
+
+
+static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
+{
+    int error = 0;
+    while(1)
+    {
+        /*
+         uint64_t startTimeNS;
+         ltimer_get_time(&context->timer.ltimer, &startTimeNS);
+         */
+        seL4_Word sender_badge = 0;
+        seL4_MessageInfo_t message;
+        seL4_Word label;
+        
+        message = seL4_Recv(epPtr, &sender_badge);
+        
+        /*
+         uint64_t endTimeNS;
+         ltimer_get_time(&context->timer.ltimer, &endTimeNS);
+         
+         const uint64_t timeSpentNS = endTimeNS - startTimeNS;
+         */
+        /*
+         TimerWheelStep(&context->timersWheel, timeSpentNS/1000000);
+         
+         TimerTick remain = TimerWheelGetTimeout(&context->timersWheel);
+         if(remain <UINT64_MAX && remain != 0)
+         {
+         int error = UpdateTimeout(context, NS_IN_MS*remain);
+         assert(error == 0);
+         }
+         */
+        label = seL4_MessageInfo_get_label(message);
+        
+        if(sender_badge & IRQ_EP_BADGE)
+        {
+            
+            if (sender_badge & IRQ_BADGE_TIMER)
+            {
+                //         processTimer(context ,sender_badge);
+            }
+            else
+            {
+                /*
+                IOBaseDevice *dev = DriverKitGetDeviceForBadge( sender_badge - IRQ_EP_BADGE );
+                
+                if (dev)
+                {
+                    dev->HandleIRQ(dev , -1);
+                    //            continue;
+                }
+                 */
+                /*            else
+                 {
+                 printf("NOT FOUND device for badge %lx\n" , sender_badge - IRQ_EP_BADGE);
+                 
+                 }
+                 */
+            }
+            
+            processTimer(context ,sender_badge);
+        }
+        else if (label == seL4_VMFault)
+        {
+            printf("kernel_task : VM Fault \n");
+        }
+        /*
+        else if (label == seL4_NoFault)
+        {
+            Process* senderProcess =  ProcessTableGetByPID( sender_badge);
+            
+            if(!senderProcess)
+            {
+                printf("kernel_task : no sender process for badge %li\n", sender_badge);
+                assert(0);
+                continue;
+            }
+            
+            processSyscall(context,senderProcess , message , sender_badge );
+        }
+         */
+        else
+        {
+            printf("kernel_task.ProcessLoop : other msg \n");
+        }
+    } // end while(1)
+}
+
+
+#endif
