@@ -18,6 +18,7 @@
 #include <string.h>
 #include "Sofa.h"
 #include "Bootstrap.h"
+#include "FileSystem/FileSystem.h"
 
 #include "DriverKit/DriverKit.h"
 #include "Drivers/PCIDriver.h"
