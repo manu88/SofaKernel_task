@@ -227,7 +227,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
         uint8_t b = 0;
         ssize_t ret =  IODeviceRead(comDev, &b, 1);
     
-        kprintf("%c" , b);
+        kprintf("%c\n" , b);
         
         
     }

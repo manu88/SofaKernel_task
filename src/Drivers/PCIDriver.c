@@ -23,6 +23,19 @@
 #include "../Bootstrap.h"
 #include "../DriverKit/DriverKit.h"
 
+
+
+typedef struct
+{
+    IODevice base;
+    #ifndef SOFA_TESTS_ONLY
+    ps_chardevice_t _dev;
+    #endif
+    
+} IOComDevice;
+
+
+
 static const char pciName[] = "PCIDriver";
 
 
@@ -74,9 +87,7 @@ static IODeviceCallbacks _ComMethods =
     _ComWrite,
 };
 
-#ifndef SOFA_TESTS_ONLY
-static ps_chardevice_t comDev = {0};
-#endif
+
 static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx)
 {
     PCIDriver* self = (PCIDriver*) driver;
@@ -93,20 +104,28 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
             {
                 IONode* c = (IONode*) o;
                 
-                if( c->hid == 0x105D041 || c->hid == 0x303d041 || c->hid == 0x130FD041) // PNP0501 COM port  PNP0303   keyboard PNP0F13  mouse
+                if( c->hid == 0x105D041 )//com
+                {
+                    IOComDevice* dev = kmalloc( sizeof(IOComDevice));
+                    ALWAYS_ASSERT(dev);
+                    
+                    ALWAYS_ASSERT_NO_ERR( IODeviceInit(&dev->base, c, c->base.obj.k_name) );
+                    
+#ifndef SOFA_TESTS_ONLY
+                    ALWAYS_ASSERT(ps_cdev_init(PC99_SERIAL_COM1 , &ctx->opsIO ,&dev->_dev) );
+#endif
+                    dev->base.methods = &_ComMethods;
+                    
+                    ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDevice(dev) );
+                }
+                else if(  c->hid == 0x303d041 || c->hid == 0x130FD041) // PNP0501 COM port  PNP0303   keyboard PNP0F13  mouse
                 {
                     IODevice* dev = kmalloc( sizeof(IODevice));
                     ALWAYS_ASSERT(dev);
                     
                     ALWAYS_ASSERT_NO_ERR( IODeviceInit(dev, c, c->base.obj.k_name) );
                     
-                    if( c->hid == 0x105D041 )//com
-                    {
-#ifndef SOFA_TESTS_ONLY
-                        ALWAYS_ASSERT(ps_cdev_init(PC99_SERIAL_COM1 , &ctx->opsIO ,&comDev) );
-#endif
-                        dev->methods = &_ComMethods;
-                    }
+
                     ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDevice(dev) );
                 }
                 
@@ -121,12 +140,13 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
 
 static  ssize_t _ComRead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  )
 {
+    IOComDevice* self = (IOComDevice*) dev;
 #ifndef SOFA_TESTS_ONLY
-    int c = ps_cdev_getchar(&comDev);
+    int c = ps_cdev_getchar(&self->_dev);
     
     while (c<=0)
     {
-        c = ps_cdev_getchar(&comDev);
+        c = ps_cdev_getchar(&self->_dev);
     }
     
     toBuf[0] = c;
@@ -139,6 +159,7 @@ static  ssize_t _ComRead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  )
 
 static ssize_t _ComWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  )
 {
+    IOComDevice* self = (IOComDevice*) dev;
     kprintf("_ComWrite on device '%s'\n" , dev->base.k_name);
     return OSError_Some;
 }
