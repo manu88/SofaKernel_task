@@ -64,13 +64,12 @@ typedef struct _KClass
 } KClass;
 
 
-#define KClassMake( name , getInfos) { name  , getInfos}
+#define KClassMake( name , getInfos,release) { name  , getInfos,release}
 /* kobject def */
 
 struct kobject
 {
     const char                    *k_name;
-    //char                    name[KOBJ_NAME_LEN];
     struct kref             kref;
 //    struct list_head        entry;
     struct kobject          *_parent;

@@ -21,8 +21,18 @@
 static void KOBJgetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
 static void KSETgetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
 
-static const KClass objClass = KClassMake("KObject", KOBJgetInfos);
-static const KClass setClass = KClassMake("KSet", KSETgetInfos);
+static const KClass objClass =
+KClassMake(
+           "KObject",
+           KOBJgetInfos,
+           NULL // release
+           );
+static const KClass setClass =
+KClassMake(
+           "KSet",
+           KSETgetInfos,
+           NULL // release
+           );
 
 void kref_init(struct kref* k)
 {
