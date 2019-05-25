@@ -16,3 +16,34 @@
  */
 
 #pragma once
+#include "IONode.h"
+
+typedef struct _IODevice IODevice;
+typedef struct
+{
+    ssize_t (*read)(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  ) NO_NULL_POINTERS;
+    ssize_t (*write)(IODevice* dev, const uint8_t* buf , size_t bufSize  ) NO_NULL_POINTERS;
+} IODeviceCallbacks;
+
+typedef struct _IODevice
+{
+    struct kobject base;
+    IONode* nodeRef;
+    
+    IODeviceCallbacks* methods;
+    
+} IODevice;
+
+
+OSError IODeviceInit(IODevice* dev, IONode* fromNode, const char* name) NO_NULL_POINTERS;
+
+
+static inline NO_NULL_POINTERS ssize_t IODeviceRead( IODevice* dev, uint8_t* toBuf , size_t maxBufSize)
+{
+    return dev->methods->read(dev, toBuf , maxBufSize);
+}
+
+static inline NO_NULL_POINTERS ssize_t IODeviceWrite( IODevice* dev, const uint8_t* buf , size_t bufSize)
+{
+    return dev->methods->write(dev, buf , bufSize);
+}

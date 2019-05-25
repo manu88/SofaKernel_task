@@ -44,21 +44,4 @@ IONode* IONodeGetChildName( const IONode* node, const char* name) NO_NULL_POINTE
 
 #define IONodeForEach( node, el) kset_foreach( (&node->base) , el)
 
-typedef struct _IODevice IODevice;
-typedef struct
-{
-    ssize_t (*read)(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  ) NO_NULL_POINTERS;
-    ssize_t (*write)(IODevice* dev, const uint8_t* buf , size_t bufSize  ) NO_NULL_POINTERS;
-} IODeviceCallbacks;
 
-typedef struct _IODevice
-{
-    struct kobject base;
-    IONode* nodeRef;
-    
-    IODeviceCallbacks* methods;
-    
-} IODevice;
-
-
-OSError IODeviceInit(IODevice* dev, IONode* fromNode, const char* name) NO_NULL_POINTERS;

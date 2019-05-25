@@ -22,13 +22,13 @@
 #include "IONode.h"
 
 typedef struct _IODriverBase IODriverBase;
-
+typedef struct _KernelTaskContext KernelTaskContext;
 typedef struct
 {
     OSError (*init)(IODriverBase *driver  ) NO_NULL_POINTERS;
     OSError (*release)(IODriverBase *driver  ) NO_NULL_POINTERS;
     
-    OSError (*probeDevice)(IODriverBase* driver , IONode* node) NO_NULL_POINTERS;
+    OSError (*probeDevice)(IODriverBase* driver , IONode* node , KernelTaskContext* context) NO_NULL_POINTERS;
     
     OSError (*onInterupt)(IODriverBase* driver , uint32_t intNum) NO_NULL_POINTERS;
     

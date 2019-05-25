@@ -200,7 +200,7 @@ static OSError baseSystemInit(KernelTaskContext *context)
     
     
     
-    ALWAYS_ASSERT_NO_ERR( DriverKitDoMatching() );
+    ALWAYS_ASSERT_NO_ERR( DriverKitDoMatching( context) );
     
     return OSError_None;
 }
@@ -219,10 +219,26 @@ static void lateSystemInit(KernelTaskContext *ctx)
     kprintf("Late System Init\n");
     kobject_printTree( (const struct kobject *) &root);
 
+    IODevice* comDev =(IODevice*) kset_getChildByName(kset_getChildByName(&root, "Devices") , "COM1");
+    ALWAYS_ASSERT(comDev);
+    
+    while(1)
+    {
+        uint8_t b = 0;
+        ssize_t ret =  IODeviceRead(comDev, &b, 1);
+    
+        kprintf("%c" , b);
+        
+        
+    }
+    
+    
+    
 #ifndef SOFA_TESTS_ONLY
-    int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, 0);
-    ALWAYS_ASSERT_NO_ERR(err);
-
+//    int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, 0);
+//    ALWAYS_ASSERT_NO_ERR(err);
+    
+    kprintf("Start Looping\n");
     processLoop(ctx, ep_object.cptr);
 #endif
     //kobject_printTree(&root);

@@ -29,7 +29,7 @@
 
 #include "KObject/KObject.h"
 
-typedef struct
+typedef struct _KernelTaskContext
 {
     
 #ifndef SOFA_TESTS_ONLY

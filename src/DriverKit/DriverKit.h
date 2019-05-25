@@ -18,8 +18,9 @@
 #pragma once
 #include "../Sofa.h"
 #include "IONode.h"
+#include "IODevice.h"
 
-
+typedef struct _KernelTaskContext KernelTaskContext;
 typedef struct _IODriverBase IODriverBase;
 
 OSError DriverKitInit(struct kset* node, const uint8_t* fromDatas, size_t bufferSize) NO_NULL_ARGS(1, 1);
@@ -30,7 +31,7 @@ OSError DriverKitRegisterDriver( IODriverBase* driver) NO_NULL_POINTERS;
 OSError DriverKitRemoveDriver( IODriverBase* driver) NO_NULL_POINTERS;
 
 
-OSError DriverKitDoMatching(void);
+OSError DriverKitDoMatching( KernelTaskContext* context);
 
 
 

@@ -20,7 +20,7 @@
 
 static OSError _Default_init(IODriverBase *driver  ) NO_NULL_POINTERS;
 static OSError _Default_release(IODriverBase *driver  ) NO_NULL_POINTERS;
-static OSError _Default_probeDevice(IODriverBase* driver , IONode* node) NO_NULL_POINTERS;
+static OSError _Default_probeDevice(IODriverBase* driver , IONode* node, KernelTaskContext* ctx) NO_NULL_POINTERS;
 
 static IODriverCallbacks _defaultMethods =
 {
@@ -55,7 +55,7 @@ static OSError _Default_release(IODriverBase *driver  )
     return OSError_None;
 }
 
-static OSError _Default_probeDevice(IODriverBase* driver , IONode* node)
+static OSError _Default_probeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx)
 {
     return OSError_None;
 }

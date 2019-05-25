@@ -155,7 +155,7 @@ OSError DriverKitRemoveDriver( IODriverBase* driver)
 
 
 
-static NO_NULL_POINTERS  OSError _DriverKitTryProbeNode( IONode* node )
+static NO_NULL_POINTERS  OSError _DriverKitTryProbeNode( IONode* node , KernelTaskContext* context )
 {
     
     struct kobject* drv = NULL;
@@ -163,7 +163,7 @@ static NO_NULL_POINTERS  OSError _DriverKitTryProbeNode( IONode* node )
     {
         IODriverBase* driver = (IODriverBase*) drv;
         
-        OSError retProbe =  driver->driverMethods->probeDevice(driver , node);
+        OSError retProbe =  driver->driverMethods->probeDevice(driver , node , context);
         
         if( retProbe == OSError_None)
         {
@@ -176,11 +176,11 @@ static NO_NULL_POINTERS  OSError _DriverKitTryProbeNode( IONode* node )
     return OSError_Some;
 }
 
-static NO_NULL_POINTERS  OSError _DriverKitTryProbeNodeAndChildren( IONode* node )
+static NO_NULL_POINTERS  OSError _DriverKitTryProbeNodeAndChildren( IONode* node, KernelTaskContext* context )
 {
     
     
-    OSError ret = _DriverKitTryProbeNode(node);
+    OSError ret = _DriverKitTryProbeNode(node , context);
     if (ret == OSError_None)
     {
         return ret;
@@ -191,20 +191,20 @@ static NO_NULL_POINTERS  OSError _DriverKitTryProbeNodeAndChildren( IONode* node
     {
         IONode* child = (IONode* ) obj;
         
-        _DriverKitTryProbeNodeAndChildren(child);
+        _DriverKitTryProbeNodeAndChildren(child , context);
     }
     
     return OSError_None;
 }
 
 
-OSError DriverKitDoMatching()
+OSError DriverKitDoMatching(KernelTaskContext* context)
 {
     kprintf("DriverKit : Start matching process \n" );
     OSError ret = OSError_None;
     
     
-    ret = _DriverKitTryProbeNodeAndChildren(&_dkContext.deviceTree);
+    ret = _DriverKitTryProbeNodeAndChildren(&_dkContext.deviceTree , context);
     
     kprintf("DriverKit : End matching process \n" );
     return ret;
