@@ -184,6 +184,10 @@ static  ssize_t _ComRead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  )
 static ssize_t _ComWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  )
 {
     IOComDevice* self = (IOComDevice*) dev;
-    kprintf("_ComWrite on device '%s'\n" , dev->base.k_name);
-    return OSError_Some;
+    
+    for(size_t i=0;i<bufSize;++i)
+    {
+        ps_cdev_putchar(&self->_dev , (int) buf[i]);
+    }
+    return bufSize;
 }

@@ -227,7 +227,7 @@ static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
     IODevice* comDev =(IODevice*) kset_getChildByName(kset_getChildByName(&root, "Devices") , "COM1");
     ALWAYS_ASSERT(comDev);
     
-    ShellRun(comDev);
+    ShellRun(comDev ,&root);
     /*
     ALWAYS_ASSERT(self == &shellThread);
     
@@ -272,8 +272,8 @@ static void lateSystemInit(KernelTaskContext *ctx)
     
     
 #ifndef SOFA_TESTS_ONLY
-    int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, 0);
-    ALWAYS_ASSERT_NO_ERR(err);
+    //int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, 0);
+    //ALWAYS_ASSERT_NO_ERR(err);
     
     kprintf("Start Looping\n");
     processLoop(ctx, ep_object.cptr);

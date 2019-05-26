@@ -16,19 +16,74 @@
  */
 
 #include "Shell.h"
+#include <errno.h>
 
 
-OSError ShellRun( IODevice* comDev )
+static struct kset * _root = NULL;
+static int startsWith(const char *pre, const char *str)
 {
+    size_t lenpre = strlen(pre),
+    lenstr = strlen(str);
+    
+    return lenstr < lenpre ? 0 : strncmp(pre, str, lenpre) == 0;
+}
+
+static int execCmd( const char* cmd);
+
+OSError ShellRun( IODevice* comDev ,struct kset *root)
+{
+    _root = root;
+    char cmd[128] = "";
+    int cmdPos = 0;
     while(1)
     {
         uint8_t b = 0;
         ssize_t ret =  IODeviceRead(comDev, &b, 1);
         
-        kprintf("%c\n" , b);
+        if( b == '\n' || b == '\r')
+        {
+            printf("\n");
+            int ret = execCmd(cmd);
+            if( ret != 0)
+            {
+                printf("'%s' returned %i\n" , cmd,ret);
+            }
+            
+            //clean
+            memset(cmd, 0, 128);
+            cmdPos = 0;
+        }
+        else
+        {
+            IODeviceWrite(comDev, &b, 1);
+            cmd[cmdPos++] = b;
+            
+            
+        }
         
         
     }
     
     return OSError_None;
+}
+
+
+static int execCmd( const char* cmd)
+{
+    ALWAYS_ASSERT(_root);
+    if( startsWith("ls", cmd))
+    {
+        const char* arg = cmd + strlen("ls ");
+        
+        if (!arg)
+        {
+            kobject_printTree((struct kobject*) _root);
+        }
+    }
+    else
+    {
+        printf("unknown command '%s'\n" , cmd);
+        return -EINVAL;
+    }
+    return 0;
 }

@@ -20,4 +20,4 @@
 #include "Sofa.h"
 #include "DriverKit/IODevice.h"
 
-OSError ShellRun( IODevice* comDev );
+OSError ShellRun( IODevice* comDev,struct kset *root ) NO_NULL_POINTERS;
