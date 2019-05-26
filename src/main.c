@@ -25,6 +25,8 @@
 #include "Timer.h"
 #include "Thread.h"
 
+#include "Shell.h"
+
 #define IRQ_EP_BADGE       BIT(seL4_BadgeBits - 1)
 #define IRQ_BADGE_TIMER    (1 << 0)
 #define IRQ_BADGE_NETWORK  (1 << 1)
@@ -218,48 +220,60 @@ static int OnTime(uintptr_t token)
     return 0;
 }
 
-static void ThreadTest(Thread *self, void *arg, void *ipc_buf)
+static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
 {
     printf("Thread test Started\n");
-    assert(self == &shellThread);
+    
+    IODevice* comDev =(IODevice*) kset_getChildByName(kset_getChildByName(&root, "Devices") , "COM1");
+    ALWAYS_ASSERT(comDev);
+    
+    ShellRun(comDev);
+    /*
+    ALWAYS_ASSERT(self == &shellThread);
+    
+    
+    
     
     while(1)
     {
+        uint8_t b = 0;
+        ssize_t ret =  IODeviceRead(comDev, &b, 1);
+        
+        kprintf("%c\n" , b);
+        
         
     }
+     */
 }
 
 static void lateSystemInit(KernelTaskContext *ctx)
 {
     kprintf("Late System Init\n");
-    kobject_printTree( (const struct kobject *) &root);
+    //kobject_printTree( (const struct kobject *) &root);
 
     sel4utils_thread_config_t threadConf = thread_config_new(&ctx->simple);
+    
+    vka_object_t thread_ep_obj;
+    
+    int error = vka_alloc_endpoint(&ctx->vka, &thread_ep_obj);
+    ALWAYS_ASSERT(error == 0);
+    
+    thread_config_fault_endpoint(threadConf , thread_ep_obj.cptr);
+    
+    
     ALWAYS_ASSERT_NO_ERR(ThreadInit(&shellThread , &ctx->vka, &ctx->vspace, threadConf));
-    ALWAYS_ASSERT_NO_ERR( ThreadSetPriority(&shellThread  , seL4_MaxPrio) );
-    shellThread.entryPoint = ThreadTest;
+    
+    shellThread.entryPoint = ThreadShell;
     
     ALWAYS_ASSERT(ThreadStart(&shellThread , NULL , 1) == 0);
     
-    IODevice* comDev =(IODevice*) kset_getChildByName(kset_getChildByName(&root, "Devices") , "COM1");
-    ALWAYS_ASSERT(comDev);
     
-#ifndef SOFA_TESTS_ONLY
-    while(1)
-    {
-        uint8_t b = 0;
-        ssize_t ret =  IODeviceRead(comDev, &b, 1);
-    
-        kprintf("%c\n" , b);
-        
-        
-    }
-#endif
+
     
     
 #ifndef SOFA_TESTS_ONLY
-//    int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, 0);
-//    ALWAYS_ASSERT_NO_ERR(err);
+    int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, 0);
+    ALWAYS_ASSERT_NO_ERR(err);
     
     kprintf("Start Looping\n");
     processLoop(ctx, ep_object.cptr);
@@ -280,6 +294,8 @@ static void processTimer(KernelTaskContext* context,seL4_Word sender_badge)
 
 static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
 {
+    kprintf("Start Main Process Loop\n");
+    
     int error = 0;
     while(1)
     {
