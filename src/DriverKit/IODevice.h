@@ -18,6 +18,8 @@
 #pragma once
 #include "IONode.h"
 
+
+extern const KClass *IODeviceClass;
 typedef struct _IODevice IODevice;
 typedef struct
 {

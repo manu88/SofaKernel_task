@@ -67,6 +67,37 @@ OSError ShellRun( IODevice* comDev ,struct kset *root)
     return OSError_None;
 }
 
+static int DoRead( const char* args)
+{
+    
+    
+    
+    return 0;
+}
+
+static int DoWrite( const char* args)
+{
+    char deviceName[128] = "";
+    char data[128]       = "";
+    
+    if( sscanf(args , "%s %s" , deviceName , data) == 2)
+    {
+        IODevice* dev = kobjectResolve(deviceName, _root);
+        ALWAYS_ASSERT(dev);
+        if( kobjectIsKindOf(dev, IODeviceClass))
+        {
+            ssize_t r =  IODeviceWrite(dev, (const uint8_t*) &data, strlen(data));
+            if( r < 0)
+            {
+                return (int) r;
+            }
+            return 0;
+        }
+        return -ENODEV;
+    }
+    
+    return 0;
+}
 
 static int execCmd( const char* cmd)
 {
@@ -75,9 +106,37 @@ static int execCmd( const char* cmd)
     {
         const char* arg = cmd + strlen("ls ");
         
-        if (!arg)
+        if ( strlen(cmd) > 3 &&  arg)
+        {
+            struct kobject * obj = kobjectResolve(arg, _root);
+            if( obj)
+            {
+                kobject_printTree(obj);
+            }
+            else
+            {
+                printf("no such object '%s'\n" , arg);
+            }
+        }
+        else
         {
             kobject_printTree((struct kobject*) _root);
+        }
+    }
+    else if (startsWith("write", cmd))
+    {
+        const char* arg = cmd + strlen("write ");
+        if (arg)
+        {
+            return DoWrite(arg);
+        }
+    }
+    else if (startsWith("read", cmd))
+    {
+        const char* arg = cmd + strlen("read ");
+        if (arg)
+        {
+            return DoRead(arg);
         }
     }
     else

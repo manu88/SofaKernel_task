@@ -89,6 +89,11 @@ void kobject_initWithName(struct kobject* object, const char*name) NO_NULL_POINT
 struct kobject *kobject_get(struct kobject *ko) NO_NULL_POINTERS;
 void kobject_put(struct kobject *ko) NO_NULL_POINTERS;
 
+
+static inline NO_NULL_POINTERS int kobjectIsKindOf( const struct kobject* o , const KClass* class )
+{
+    return o->class == class;
+}
 static inline NO_NULL_POINTERS const char* kobject_name(const struct kobject* obj) 
 {
     return obj->k_name;
@@ -137,3 +142,4 @@ struct kobject* kset_getChildByName( const struct kset* set , const char* name )
 
 void kobject_printTree( const struct kobject* obj) NO_NULL_POINTERS;
 
+struct kobject* kobjectResolve( const char* path_ , struct kset* startNode ) NO_NULL_POINTERS;

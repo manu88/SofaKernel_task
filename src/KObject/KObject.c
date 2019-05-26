@@ -17,6 +17,7 @@
 
 #include "KObject.h"
 #include <string.h>
+#include <stdlib.h>
 
 static void KOBJgetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
 static void KSETgetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
@@ -198,4 +199,45 @@ static void _printOBJ( const struct kobject* obj , int indent)
 void kobject_printTree( const struct kobject* obj)
 {
     _printOBJ(obj, 0);
+}
+
+
+struct kobject* kobjectResolve( const char* path_ , struct kset* startNode )
+{
+    if (strlen(path_) == 0)
+        return NULL;
+    
+    
+    char* path = strdup(path_);
+    
+    static const char delim[] = "/";
+    
+    char* token = strtok(path, delim);
+    
+    struct kobject *ret = startNode;
+    
+    while ( token != NULL )
+    {
+        
+        
+        ret = kset_getChildByName(ret, token);// InodeGetChildByName(ret ,token);
+
+        if(!ret)
+        {
+            free(path);
+            return NULL;
+        }
+        token = strtok(NULL, delim);
+        
+    }
+    /*
+     char *last = strrchr(path, '/');
+     if (last)
+     {
+     printf("Got a last '%s' \n" , last);
+     }
+     */
+    
+    free(path);
+    return ret;
 }

@@ -42,7 +42,7 @@ static void IODevgetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZ
 
 
 static const KClass ioDeviceClass = KClassMake("IODevice", IODevgetInfos,NULL /*Release*/);
-
+const KClass *IODeviceClass = &ioDeviceClass;
 
 OSError IODeviceInit(IODevice* dev, IONode* fromNode, const char* name)
 {

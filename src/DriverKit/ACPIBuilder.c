@@ -166,13 +166,7 @@ static int _DeviceTree_onSmallItem(AMLDecompiler* decomp,const ParserContext* co
     
     IONodeAddAttr(current, treeCtx->expectedName, itemType, dataCpy);
     
-    if (itemType == SmallResourceItemsType_IOPortDescriptor)
-    {
-        ALWAYS_ASSERT(buffer);
-        const IOPortDescriptor*desc = (const IOPortDescriptor*) buffer;
-        
-        kprintf(" %s %s Memory32Fixed %x\n" ,treeCtx->expectedName, StackTop(&treeCtx->devStack)->base.obj.k_name,  desc->rangeMinBaseAddr);
-    }
+    
 
     
     return 0;
