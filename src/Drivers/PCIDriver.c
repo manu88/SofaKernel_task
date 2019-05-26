@@ -18,11 +18,13 @@
 #ifndef SOFA_TESTS_ONLY
 #include <platsupport/chardev.h>
 #endif
+
+
 #include "PCIDriver.h"
 #include "../DriverKit/IODevice.h"
 #include "../Bootstrap.h"
 #include "../DriverKit/DriverKit.h"
-
+#include <ACPIDesc.h>
 
 
 typedef struct
@@ -102,10 +104,32 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
             struct kobject*o = NULL;
             IONodeForEach(isaNode, o)
             {
+                
                 IONode* c = (IONode*) o;
                 
                 if( c->hid == 0x105D041 )//com
                 {
+                    
+                    uint16_t comID = 0;
+                    
+                    IOAttribute* a = NULL;
+                    IOAttribute* tmp = NULL;
+                    
+                    IOAttributeForEach( c,tmp, a)
+                    {
+                        ALWAYS_ASSERT(a);
+                        if( a->type == SmallResourceItemsType_IOPortDescriptor)
+                        {
+                            const IOPortDescriptor* add = (const IOPortDescriptor*) a->data.ptr;
+                            printf("%s: Got '%s' %i %hx\n" ,c->base.obj.k_name, a->id , a->type , add->rangeMinBaseAddr);
+                            comID = add->rangeMinBaseAddr;
+                        }
+                        
+                    }
+                    
+                    IOAttribute* idAttr = IONodeGetAttr(c, "_UID");
+                    uint64_t v = idAttr->data.v;
+                    
                     IOComDevice* dev = kmalloc( sizeof(IOComDevice));
                     ALWAYS_ASSERT(dev);
                     
@@ -116,17 +140,17 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
 #endif
                     dev->base.methods = &_ComMethods;
                     
-                    ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDevice(dev) );
+                    ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDevice( (IODevice*) dev) );
+                    kobject_put((struct kobject*) dev);
                 }
-                else if(  c->hid == 0x303d041 || c->hid == 0x130FD041) // PNP0501 COM port  PNP0303   keyboard PNP0F13  mouse
+                else if(  c->hid == 0x303d041 || c->hid == 0x130FD041) // PNP0303   keyboard PNP0F13  mouse
                 {
                     IODevice* dev = kmalloc( sizeof(IODevice));
                     ALWAYS_ASSERT(dev);
                     
                     ALWAYS_ASSERT_NO_ERR( IODeviceInit(dev, c, c->base.obj.k_name) );
-                    
-
                     ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDevice(dev) );
+                    kobject_put((struct kobject*)dev);
                 }
                 
             }

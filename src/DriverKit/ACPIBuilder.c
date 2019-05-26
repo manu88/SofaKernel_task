@@ -156,6 +156,23 @@ static int _DeviceTree_onSmallItem(AMLDecompiler* decomp,const ParserContext* co
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
+    IONode* current = StackTop(&treeCtx->devStack);
+    
+    ALWAYS_ASSERT(current);
+    
+    uint8_t* dataCpy = kmalloc(bufferSize);
+    ALWAYS_ASSERT(dataCpy);
+    memcpy(dataCpy, buffer, bufferSize);
+    
+    IONodeAddAttr(current, treeCtx->expectedName, itemType, dataCpy);
+    
+    if (itemType == SmallResourceItemsType_IOPortDescriptor)
+    {
+        ALWAYS_ASSERT(buffer);
+        const IOPortDescriptor*desc = (const IOPortDescriptor*) buffer;
+        
+        kprintf(" %s %s Memory32Fixed %x\n" ,treeCtx->expectedName, StackTop(&treeCtx->devStack)->base.obj.k_name,  desc->rangeMinBaseAddr);
+    }
 
     
     return 0;
@@ -301,9 +318,7 @@ static int _DeviceTree_onValue(AMLDecompiler* decomp,const ParserContext* contex
     }
     else
     {
-        char eisaid[8] = "";
-        getEisaidString(treeCtx->rootDevRef->hid, eisaid);
-        ALWAYS_ASSERT( strcmp(eisaid, "PNP0A06"));
+        IONodeAddAttr(currentNode, treeCtx->expectedName, 0, value);
     }
     
     treeCtx->expectedName[0] = 0;

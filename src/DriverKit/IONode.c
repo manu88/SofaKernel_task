@@ -17,7 +17,7 @@
 
 #include <string.h> // memset
 #include "IONode.h"
-
+#include "../Bootstrap.h"
 
 static void IONodegetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
 
@@ -33,6 +33,8 @@ OSError IONodeInit(IONode* device, const char* name)
     device->base.obj.k_name =  strdup(name);
     
     device->base.obj.class = &ioNodeClass;
+    device->attributes = NULL;
+    
     //strncpy(device->name, name, 32);
     
     return OSError_None;
@@ -42,7 +44,7 @@ static void IONodegetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SI
 {
     const IONode* self = (const IONode*) obj;
     
-    snprintf(outDesc, MAX_DESC_SIZE, "HID 0X%llX Attached Driver %p" , self->hid, (const void*) self->_attachedDriver );
+    snprintf(outDesc, MAX_DESC_SIZE, "HID 0X%llX Attached Driver %p (%zi attr)" , self->hid, (const void*) self->_attachedDriver , IONodeGetAttrCount(self) );
 }
 
 OSError IONodeAddChild( IONode* baseDev, IONode* child)
@@ -76,3 +78,28 @@ IONode* IONodeGetChildName( const IONode* node, const char* name)
     return NULL;
 }
 
+OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data )
+{
+    IOAttribute* attr = kmalloc(sizeof(IOAttribute));
+    ALWAYS_ASSERT(attr);
+    
+    strcpy(attr->id, name);
+    attr->type = type;
+    attr->data.ptr = data;
+    
+    HASH_ADD_STR(node->attributes, id, attr);
+    
+    return OSError_None;
+}
+
+size_t  IONodeGetAttrCount( const IONode* node )
+{
+    return HASH_COUNT(node->attributes);
+}
+
+IOAttribute* IONodeGetAttr( const IONode* node, const char*name)
+{
+    IOAttribute* attr = NULL;
+    HASH_FIND_STR(node->attributes, name, attr);
+    return attr;
+}

@@ -16,10 +16,11 @@
  */
 
 #pragma once
-
-
+#include "Sofa.h"
+#ifndef SOFA_TESTS_ONLY
 #include <sel4utils/thread.h>
 #include <sel4utils/thread_config.h>
+#endif
 #include "Bootstrap.h"
 
 struct _Thread;
@@ -33,13 +34,13 @@ typedef struct _Thread
     ThreadEntryPoint entryPoint;
 } Thread;
 
-int ThreadInit(Thread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig);
+OSError ThreadInit(Thread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig);
 
 
-static inline int ThreadSetPriority(Thread* thread , uint8_t priority)
+static inline OSError ThreadSetPriority(Thread* thread , uint8_t priority)
 {
 	return seL4_TCB_SetPriority(thread->thread.tcb.cptr, seL4_CapInitThreadTCB ,  priority);
 }
 
 
-int ThreadStart(Thread* thread , void* arg,  int resume);
+OSError ThreadStart(Thread* thread , void* arg,  int resume);

@@ -29,13 +29,13 @@ static void _ThreadStart(void *arg0, void *arg1, void *ipc_buf)
 	self->entryPoint(self , arg1 , ipc_buf);
 }
 
-int ThreadInit(Thread* thread, vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig)
+OSError ThreadInit(Thread* thread, vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig)
 {
-	return sel4utils_configure_thread_config(vka , parent , /*alloc*/parent , fromConfig , &thread->thread) == 0;
+	return sel4utils_configure_thread_config(vka , parent , /*alloc*/parent , fromConfig , &thread->thread);
 }
 
 
-int ThreadStart(Thread* thread , void* arg,   int resume)
+OSError ThreadStart(Thread* thread , void* arg,   int resume)
 {
 	return sel4utils_start_thread(&thread->thread , _ThreadStart , thread , arg , resume);
 }

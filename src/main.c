@@ -23,6 +23,7 @@
 #include "DriverKit/DriverKit.h"
 #include "Drivers/PCIDriver.h"
 #include "Timer.h"
+#include "Thread.h"
 
 #define IRQ_EP_BADGE       BIT(seL4_BadgeBits - 1)
 #define IRQ_BADGE_TIMER    (1 << 0)
@@ -98,6 +99,8 @@ static vka_object_t ep_object = {0};
 #endif
 /* ****** */
 // globals to remove at some point
+
+static Thread shellThread;
 
 PCIDriver _pciDriver;
 
@@ -214,14 +217,34 @@ static int OnTime(uintptr_t token)
     
     return 0;
 }
+
+static void ThreadTest(Thread *self, void *arg, void *ipc_buf)
+{
+    printf("Thread test Started\n");
+    assert(self == &shellThread);
+    
+    while(1)
+    {
+        
+    }
+}
+
 static void lateSystemInit(KernelTaskContext *ctx)
 {
     kprintf("Late System Init\n");
     kobject_printTree( (const struct kobject *) &root);
 
+    sel4utils_thread_config_t threadConf = thread_config_new(&ctx->simple);
+    ALWAYS_ASSERT_NO_ERR(ThreadInit(&shellThread , &ctx->vka, &ctx->vspace, threadConf));
+    ALWAYS_ASSERT_NO_ERR( ThreadSetPriority(&shellThread  , seL4_MaxPrio) );
+    shellThread.entryPoint = ThreadTest;
+    
+    ALWAYS_ASSERT(ThreadStart(&shellThread , NULL , 1) == 0);
+    
     IODevice* comDev =(IODevice*) kset_getChildByName(kset_getChildByName(&root, "Devices") , "COM1");
     ALWAYS_ASSERT(comDev);
     
+#ifndef SOFA_TESTS_ONLY
     while(1)
     {
         uint8_t b = 0;
@@ -231,7 +254,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
         
         
     }
-    
+#endif
     
     
 #ifndef SOFA_TESTS_ONLY
