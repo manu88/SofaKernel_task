@@ -139,6 +139,15 @@ static int execCmd( const char* cmd)
             return DoRead(arg);
         }
     }
+    else if( startsWith("vga", cmd))
+    {
+        const char* arg = cmd + strlen("vga ");
+        
+        for (int i=0;i<strlen(arg);i++)
+        {
+            terminal_putentryat(arg[i], 1/*VGA_COLOR_BLUE*/, i, 0);
+        }
+    }
     else
     {
         printf("unknown command '%s'\n" , cmd);
