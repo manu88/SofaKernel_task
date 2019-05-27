@@ -28,7 +28,7 @@
 #include "Shell.h"
 
 #include "Drivers/PCIDriver.h"
-#include "Drivers/EGADriver.h"
+
 
 #define IRQ_EP_BADGE       BIT(seL4_BadgeBits - 1)
 #define IRQ_BADGE_TIMER    (1 << 0)
@@ -206,7 +206,7 @@ static OSError baseSystemInit(KernelTaskContext *context)
     ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDriver( (IODriverBase*)&_pciDriver) );
     kobject_put((struct kobject *)&_pciDriver);
     
-    ALWAYS_ASSERT(InitEGADriver(context));
+    
     
     
     ALWAYS_ASSERT_NO_ERR( DriverKitDoMatching( context) );

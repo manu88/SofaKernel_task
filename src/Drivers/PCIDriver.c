@@ -25,7 +25,7 @@
 #include "../Bootstrap.h"
 #include "../DriverKit/DriverKit.h"
 #include <ACPIDesc.h>
-
+#include "EGADriver.h"
 
 typedef struct
 {
@@ -36,7 +36,9 @@ typedef struct
     
 } IOComDevice;
 
-
+static const char vgaName[] = "VGA";
+static IONode vgaNode = {0};
+static IODevice vgaDev = {0};
 
 static const char pciName[] = "PCIDriver";
 
@@ -44,6 +46,9 @@ static const char pciName[] = "PCIDriver";
 static OSError PCIInit(IODriverBase *driver  ) NO_NULL_POINTERS;
 static OSError PCIRelease(IODriverBase *driver  ) NO_NULL_POINTERS;
 static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx) NO_NULL_POINTERS;
+
+
+static OSError InitVGA(KernelTaskContext* ctx);
 
 static IODriverCallbacks PCIMethods =
 {
@@ -80,8 +85,9 @@ static OSError PCIRelease(IODriverBase *driver  )
     return OSError_Some;
 }
 
-static  ssize_t _ComRead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  );
+static ssize_t _ComRead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  );
 static ssize_t _ComWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  );
+
 
 static IODeviceCallbacks _ComMethods =
 {
@@ -155,11 +161,31 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
                 
             }
         }
-
+        
+        ALWAYS_ASSERT_NO_ERR(InitVGA(ctx));
+        
+        ALWAYS_ASSERT_NO_ERR(IONodeAddChild(node, &vgaNode));
+        kobject_put((struct kobject *)&vgaNode);
+        
+        ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDevice(&vgaDev));
+        kobject_put((struct kobject *)&vgaDev);
         return OSError_None;
     }
     return OSError_Some;
 }
+
+static OSError InitVGA(KernelTaskContext* ctx)
+{
+    ALWAYS_ASSERT_NO_ERR(InitEGADriver(ctx));
+    
+    ALWAYS_ASSERT_NO_ERR(IONodeInit(&vgaNode, vgaName));
+    
+    ALWAYS_ASSERT_NO_ERR( IODeviceInit(&vgaDev, &vgaNode, vgaName));
+    
+    
+    return OSError_None;
+}
+
 
 
 static  ssize_t _ComRead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  )

@@ -83,8 +83,8 @@ static int DoWrite( const char* args)
     if( sscanf(args , "%s %s" , deviceName , data) == 2)
     {
         IODevice* dev = kobjectResolve(deviceName, _root);
-        ALWAYS_ASSERT(dev);
-        if( kobjectIsKindOf(dev, IODeviceClass))
+        
+        if( dev && kobjectIsKindOf(dev, IODeviceClass))
         {
             ssize_t r =  IODeviceWrite(dev, (const uint8_t*) &data, strlen(data));
             if( r < 0)
@@ -143,9 +143,15 @@ static int execCmd( const char* cmd)
     {
         const char* arg = cmd + strlen("vga ");
         
-        for (int i=0;i<strlen(arg);i++)
+        char buf[128] = "";
+        
+        int x = -1;
+        int y = -1;
+        sscanf(arg, "%i %i %s" , &x , &y , buf);
+        
+        for (int i=0;i<strlen(buf);i++)
         {
-            terminal_putentryat(arg[i], 1/*VGA_COLOR_BLUE*/, i, 0);
+            terminal_putentryat(buf[i], 1/*VGA_COLOR_BLUE*/, x+i, y);
         }
     }
     else

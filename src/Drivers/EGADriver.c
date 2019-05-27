@@ -16,6 +16,7 @@
  */
 
 #include "EGADriver.h"
+
 #include <sel4platsupport/io.h>
 
 
@@ -25,6 +26,7 @@
 
 typedef struct
 {
+    
 	ps_io_ops_t io_ops;
 
 	uint16_t* videoPtr; 
@@ -99,9 +101,11 @@ static void writeVideoRam(uint16_t* vram, int row)
 int InitEGADriver(KernelTaskContext *context)
 {
 	memset(&_egaContext , 0 , sizeof(_EGAContext) );
+    
+
 
 	int error = sel4platsupport_new_io_ops( context->vspace, context->vka, &_egaContext.io_ops);
-    	assert(error == 0);
+    assert(error == 0);
 
 	_egaContext.videoPtr = mapVideoRam(context);
 	
@@ -116,7 +120,9 @@ int InitEGADriver(KernelTaskContext *context)
 	}
 	*/
 	terminalClear();
-	return _egaContext.videoPtr != NULL;
+	assert(_egaContext.videoPtr != NULL);
+    
+    return 0;
 }
 
 
