@@ -23,7 +23,7 @@ static void IONodegetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SI
 
 
 static const KClass ioNodeClass = KClassMake("IONode", IONodegetInfos,NULL /*Release*/);
-
+const KClass *IONodeClass = &ioNodeClass;
 
 OSError IONodeInit(IONode* device, const char* name)
 {
@@ -80,6 +80,11 @@ IONode* IONodeGetChildName( const IONode* node, const char* name)
 
 OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data )
 {
+    if (name == NULL || strlen(name) == 0)
+    {
+        return OSError_ArgError;
+    }
+    
     IOAttribute* attr = kmalloc(sizeof(IOAttribute));
     ALWAYS_ASSERT(attr);
     

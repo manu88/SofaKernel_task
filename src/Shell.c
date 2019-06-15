@@ -102,7 +102,7 @@ static int DoWrite( const char* args)
 static int execCmd( const char* cmd)
 {
     ALWAYS_ASSERT(_root);
-    if( startsWith("ls", cmd))
+    if( startsWith("ls ", cmd))
     {
         const char* arg = cmd + strlen("ls ");
         
@@ -123,7 +123,33 @@ static int execCmd( const char* cmd)
             kobject_printTree((struct kobject*) _root);
         }
     }
-    else if (startsWith("write", cmd))
+    else if (startsWith("attr ", cmd))
+    {
+        const char* arg = cmd + strlen("attr ");
+        
+        struct kobject * obj = kobjectResolve(arg, _root);
+        
+        if( obj && kobjectIsKindOf(obj, IONodeClass))
+        {
+            const IONode* node = (const IONode*)obj;
+            
+            IOAttribute* tmp = NULL;
+            IOAttribute* attr = NULL;
+            
+            printf("IONode '%s' has %zi attributes:\n", node->base.obj.k_name, IONodeGetAttrCount(node) );
+            IOAttributeForEach(node, tmp, attr)
+            {
+                
+                printf("Attribute '%s' Type %i value %llu\n" , attr->id , attr->type , attr->data.v);
+            }
+        }
+        else
+        {
+            return -EINVAL;
+        }
+        
+    }
+    else if (startsWith("write ", cmd))
     {
         const char* arg = cmd + strlen("write ");
         if (arg)
@@ -131,7 +157,7 @@ static int execCmd( const char* cmd)
             return DoWrite(arg);
         }
     }
-    else if (startsWith("read", cmd))
+    else if (startsWith("read ", cmd))
     {
         const char* arg = cmd + strlen("read ");
         if (arg)
@@ -139,7 +165,7 @@ static int execCmd( const char* cmd)
             return DoRead(arg);
         }
     }
-    else if( startsWith("vga", cmd))
+    else if( startsWith("vga ", cmd))
     {
         const char* arg = cmd + strlen("vga ");
         

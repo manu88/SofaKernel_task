@@ -40,6 +40,9 @@ typedef struct
     UT_hash_handle hh; /* makes this structure hashable */
     
 } IOAttribute;
+
+extern const KClass *IONodeClass;
+
 typedef struct
 {
     struct kset base;

@@ -312,7 +312,7 @@ static int _DeviceTree_onValue(AMLDecompiler* decomp,const ParserContext* contex
     }
     else
     {
-        IONodeAddAttr(currentNode, treeCtx->expectedName, 0, value);
+        IONodeAddAttr(currentNode, treeCtx->expectedName, 0,(void*) value);
     }
     
     treeCtx->expectedName[0] = 0;
