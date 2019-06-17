@@ -43,7 +43,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
-
+#include "SysCalls.h"
+#include "SysCallHandler.h"
 
 static uint8_t* readAndFillBuffer(const char* fromFile , size_t* bufSize)
 {
@@ -282,11 +283,12 @@ static void lateSystemInit(KernelTaskContext *ctx)
     
     
 /* create a IPC endpoint */
+    /*
     err = vka_alloc_endpoint(
                              &ctx->vka,
                              &shellThread.ipc_ep);
     ZF_LOGF_IF(err != 0, "Failed to create IPC endpoint");
-    
+    */
     
     /* allocate a cspace slot for the IPC endpoint */
     err = vka_cspace_alloc(
@@ -403,13 +405,15 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
         {
             printf("[kernTask] VM Fault \n");
         }
+        else if( label == seL4_CapFault)
+        {
+            printf("[kernTask] CAP Fault \n");
+        }
         
         else if (label == seL4_NoFault)
         {
-            const int msgLen = seL4_MessageInfo_get_length(message);
-            printf("[kernTask] Syscall from %li (%i args) \n" ,sender_badge, msgLen);
+            processSysCall(context , message);
             
-            printf("Arg0 %li Arg1 %li\n", seL4_GetMR(0),seL4_GetMR(1) );
             /*
             Process* senderProcess =  ProcessTableGetByPID( sender_badge);
             

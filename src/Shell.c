@@ -18,6 +18,7 @@
 #include "Shell.h"
 #include <errno.h>
 #include "Thread.h"
+#include "SysCalls.h"
 
 static struct kset * _root = NULL;
 static Thread* _thread = NULL;
@@ -196,14 +197,13 @@ static int execCmd( const char* cmd)
         
         
         seL4_MessageInfo_t msg = seL4_MessageInfo_new(0, 0, 0, 2);
-        seL4_SetMR(0,  1);
+        seL4_SetMR(0,  SysCallNum_Sleep);
         seL4_SetMR(1 , secs);
         
         printf("[Shell] asks to sleep for %i seconds\n" , secs);
         
         msg = seL4_Call(_thread->ipc_ep_cap, msg);
-        
-        
+
         printf("[Shell] got a response\n");
     }
     else if( startsWith("fault", cmd))
