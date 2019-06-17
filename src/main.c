@@ -412,7 +412,8 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
         
         else if (label == seL4_NoFault)
         {
-            processSysCall(context , message);
+            printf("[kernTask] Syscall from %li (%i args) \n" ,sender_badge, seL4_MessageInfo_get_length(message));
+            processSysCall(context , message , sender_badge);
             
             /*
             Process* senderProcess =  ProcessTableGetByPID( sender_badge);
