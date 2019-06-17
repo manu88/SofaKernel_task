@@ -193,8 +193,7 @@ static int execCmd( const char* cmd)
         
         int secs = atoi(arg);
         //seL4_DebugDumpScheduler();
-        float* lol = NULL;
-        *lol = 1.0f;
+        
         
         seL4_MessageInfo_t msg = seL4_MessageInfo_new(0, 0, 0, 2);
         seL4_SetMR(0,  1);
@@ -206,6 +205,12 @@ static int execCmd( const char* cmd)
         
         
         printf("[Shell] got a response\n");
+    }
+    else if( startsWith("fault", cmd))
+    {
+        float* lol = NULL;
+        *lol = 1.0f;
+        return 0;
     }
     else
     {

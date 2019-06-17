@@ -304,7 +304,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
                           shellThread.ipc_ep_cap,
                           seL4_WordBits,
                           seL4_CapInitThreadCNode,
-                          shellThread.ipc_ep.cptr,
+                          ep_object.cptr,
                           seL4_WordBits,
                           seL4_AllRights,
                           ipc_badge);
