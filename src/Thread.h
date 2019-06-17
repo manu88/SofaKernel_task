@@ -32,6 +32,10 @@ typedef struct _Thread
 {
     sel4utils_thread_t thread;
     ThreadEntryPoint entryPoint;
+    
+    vka_object_t ipc_ep;
+    seL4_CPtr ipc_ep_cap;
+    
 } Thread;
 
 OSError ThreadInit(Thread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig);

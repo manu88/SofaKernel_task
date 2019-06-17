@@ -31,6 +31,7 @@ static void _ThreadStart(void *arg0, void *arg1, void *ipc_buf)
 
 OSError ThreadInit(Thread* thread, vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig)
 {
+    memset(thread , 0 , sizeof(Thread));
 	return sel4utils_configure_thread_config(vka , parent , /*alloc*/parent , fromConfig , &thread->thread);
 }
 

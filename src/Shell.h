@@ -20,4 +20,6 @@
 #include "Sofa.h"
 #include "DriverKit/IODevice.h"
 
-OSError ShellRun( IODevice* comDev,struct kset *root ) NO_NULL_POINTERS;
+typedef struct _Thread Thread;
+
+OSError ShellRun(Thread* thread, IODevice* comDev,struct kset *root ) NO_NULL_POINTERS;

@@ -181,7 +181,6 @@ static OSError earlySystemInit(KernelTaskContext *context)
     ZF_LOGF_IFERR(error, "Unable to BindNotification.\n");
     
     cspacepath_t notification_path;
-    
     vka_cspace_make_path( &context->vka, context->ntfn_object.cptr, &notification_path);
     
     /* System Timer */
@@ -231,23 +230,8 @@ static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
     IODevice* comDev =(IODevice*) kset_getChildByName(kset_getChildByName(&root, "Devices") , "COM1");
     ALWAYS_ASSERT(comDev);
     
-    ShellRun(comDev ,&root);
-    /*
-    ALWAYS_ASSERT(self == &shellThread);
-    
-    
-    
-    
-    while(1)
-    {
-        uint8_t b = 0;
-        ssize_t ret =  IODeviceRead(comDev, &b, 1);
-        
-        kprintf("%c\n" , b);
-        
-        
-    }
-     */
+    ShellRun( self,comDev ,&root);
+
 }
 
 static void lateSystemInit(KernelTaskContext *ctx)
@@ -257,24 +241,79 @@ static void lateSystemInit(KernelTaskContext *ctx)
 
     sel4utils_thread_config_t threadConf = thread_config_new(&ctx->simple);
     
+    /*
     vka_object_t thread_ep_obj;
     
     int error = vka_alloc_endpoint(&ctx->vka, &thread_ep_obj);
     ALWAYS_ASSERT(error == 0);
     
-    thread_config_fault_endpoint(threadConf , thread_ep_obj.cptr);
+    */
     
+    int err = 0;
+    
+/* create a FAULT endpoint */
+    /* allocate a cspace slot for the fault endpoint */
+    seL4_CPtr fault_ep = 0;
+    err = vka_cspace_alloc(
+                           &ctx->vka,
+                           &fault_ep);
+    ZF_LOGF_IF(err != 0, "Failed to allocate thread fault endpoint");
+    
+/* create a badged fault endpoint for the thread */
+    err = seL4_CNode_Mint(
+                          simple_get_cnode(&ctx->simple),
+                          fault_ep,
+                          seL4_WordBits,
+                          seL4_CapInitThreadCNode,
+                          ep_object.cptr,
+                          seL4_WordBits,
+                          seL4_AllRights,
+                          12
+                          //IPC_FAULT_ENDPOINT_BADGE(ipc_badge)
+                          );
+    ZF_LOGF_IF(err != 0, "Failed to mint badged fault endpoint for thread");
+/**/
+    
+    threadConf = thread_config_fault_endpoint(threadConf , fault_ep);
     
     ALWAYS_ASSERT_NO_ERR(ThreadInit(&shellThread , &ctx->vka, &ctx->vspace, threadConf));
-    
+    //shellThread.sysCallEP = notification_path.capPtr;
     shellThread.entryPoint = ThreadShell;
+    
+    
+/* create a IPC endpoint */
+    err = vka_alloc_endpoint(
+                             &ctx->vka,
+                             &shellThread.ipc_ep);
+    ZF_LOGF_IF(err != 0, "Failed to create IPC endpoint");
+    
+    
+    /* allocate a cspace slot for the IPC endpoint */
+    err = vka_cspace_alloc(
+                           &ctx->vka,
+                           &shellThread.ipc_ep_cap);
+    ZF_LOGF_IF(err != 0, "Failed to allocate thread IPC endpoint");
+    
+    
+    
+    seL4_Word ipc_badge = 10;
+    
+    /* create a badged IPC endpoint for the thread */
+    err = seL4_CNode_Mint(
+                          simple_get_cnode(&ctx->simple),
+                          shellThread.ipc_ep_cap,
+                          seL4_WordBits,
+                          seL4_CapInitThreadCNode,
+                          shellThread.ipc_ep.cptr,
+                          seL4_WordBits,
+                          seL4_AllRights,
+                          ipc_badge);
+    ZF_LOGF_IF(err != 0, "Failed to mint badged IPC endpoint for thread");
+/**/
     
     ALWAYS_ASSERT(ThreadStart(&shellThread , NULL , 1) == 0);
     
-    
 
-    
-    
 #ifndef SOFA_TESTS_ONLY
     //int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, 0);
     //ALWAYS_ASSERT_NO_ERR(err);
@@ -311,8 +350,9 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
         seL4_MessageInfo_t message;
         seL4_Word label;
         
+        kprintf("[kernTask] Listening...\n");
         message = seL4_Recv(epPtr, &sender_badge);
-        
+        kprintf("[kernTask] Got a message\n");
         /*
          uint64_t endTimeNS;
          ltimer_get_time(&context->timer.ltimer, &endTimeNS);
@@ -361,11 +401,16 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
         }
         else if (label == seL4_VMFault)
         {
-            printf("kernel_task : VM Fault \n");
+            printf("[kernTask] VM Fault \n");
         }
-        /*
+        
         else if (label == seL4_NoFault)
         {
+            const int msgLen = seL4_MessageInfo_get_length(message);
+            printf("[kernTask] Syscall from %li (%i args) \n" ,sender_badge, msgLen);
+            
+            printf("Arg0 %li Arg1 %li\n", seL4_GetMR(0),seL4_GetMR(1) );
+            /*
             Process* senderProcess =  ProcessTableGetByPID( sender_badge);
             
             if(!senderProcess)
@@ -376,8 +421,9 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
             }
             
             processSyscall(context,senderProcess , message , sender_badge );
+             */
         }
-         */
+         
         else
         {
             printf("kernel_task.ProcessLoop : other msg \n");

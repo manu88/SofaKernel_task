@@ -17,9 +17,11 @@
 
 #include "Shell.h"
 #include <errno.h>
-
+#include "Thread.h"
 
 static struct kset * _root = NULL;
+static Thread* _thread = NULL;
+
 static int startsWith(const char *pre, const char *str)
 {
     size_t lenpre = strlen(pre),
@@ -30,9 +32,10 @@ static int startsWith(const char *pre, const char *str)
 
 static int execCmd( const char* cmd);
 
-OSError ShellRun( IODevice* comDev ,struct kset *root)
+OSError ShellRun(Thread* thread, IODevice* comDev ,struct kset *root)
 {
     _root = root;
+    _thread = thread;
     char cmd[128] = "";
     int cmdPos = 0;
     while(1)
@@ -179,6 +182,30 @@ static int execCmd( const char* cmd)
         {
             terminal_putentryat(buf[i], 1/*VGA_COLOR_BLUE*/, x+i, y);
         }
+    }
+    else if( startsWith("sleep ", cmd))
+    {
+        const char* arg = cmd + strlen("sleep ");
+        if( !arg || strlen(arg ) == 0)
+        {
+            return -EINVAL;
+        }
+        
+        int secs = atoi(arg);
+        //seL4_DebugDumpScheduler();
+        float* lol = NULL;
+        *lol = 1.0f;
+        
+        seL4_MessageInfo_t msg = seL4_MessageInfo_new(0, 0, 0, 2);
+        seL4_SetMR(0,  1);
+        seL4_SetMR(1 , secs);
+        
+        printf("[Shell] asks to sleep for %i seconds\n" , secs);
+        
+        msg = seL4_Call(_thread->ipc_ep_cap, msg);
+        
+        
+        printf("[Shell] got a response\n");
     }
     else
     {

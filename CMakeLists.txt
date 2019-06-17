@@ -22,7 +22,7 @@ list(SORT deps)
 
 add_executable(kernel_task ${deps} )
 
-target_link_libraries(kernel_task sel4muslcsys  muslc libACPI sel4platsupport platsupport sel4allocman pci  )
+target_link_libraries(kernel_task sel4muslcsys  muslc libACPI sel4platsupport platsupport sel4allocman pci sel4 )
 DeclareRootserver(kernel_task)
 #add_subdirectory(apps/sel4test-tests)
 #add_subdirectory(apps/sel4test-driver)
