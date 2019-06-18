@@ -35,6 +35,44 @@ OSError ThreadInit(Thread* thread, vka_t *vka, vspace_t *parent, sel4utils_threa
 	return sel4utils_configure_thread_config(vka , parent , /*alloc*/parent , fromConfig , &thread->thread);
 }
 
+OSError ThreadInitWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
+                                    vka_t *vka,
+                                    vspace_t *parent,
+                                    vka_object_t rootEndpoint,
+                                    seL4_Word ipc_badge)
+{
+    sel4utils_thread_config_t threadConf = thread_config_new(&ctx->simple);
+    
+    int err = 0;
+    
+    /* create a FAULT endpoint */
+    /* allocate a cspace slot for the fault endpoint */
+    seL4_CPtr fault_ep = 0;
+    err = vka_cspace_alloc(
+                           &ctx->vka,
+                           &fault_ep);
+    ZF_LOGF_IF(err != 0, "Failed to allocate thread fault endpoint");
+    
+    /* create a badged fault endpoint for the thread */
+    err = seL4_CNode_Mint(
+                          simple_get_cnode(&ctx->simple),
+                          fault_ep,
+                          seL4_WordBits,
+                          seL4_CapInitThreadCNode,
+                          rootEndpoint.cptr,
+                          seL4_WordBits,
+                          seL4_AllRights,
+                          ipc_badge
+                          //IPC_FAULT_ENDPOINT_BADGE(ipc_badge)
+                          );
+    ZF_LOGF_IF(err != 0, "Failed to mint badged fault endpoint for thread");
+    /**/
+    
+    threadConf = thread_config_fault_endpoint(threadConf , fault_ep);
+    
+    return ThreadInit(thread , &ctx->vka, &ctx->vspace, threadConf);
+}
+
 
 OSError ThreadStart(Thread* thread , void* arg,   int resume)
 {

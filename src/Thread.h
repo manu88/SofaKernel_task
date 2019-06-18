@@ -33,13 +33,19 @@ typedef struct _Thread
     sel4utils_thread_t thread;
     ThreadEntryPoint entryPoint;
     
-    //vka_object_t ipc_ep;
+    uint32_t threadID;
     seL4_CPtr ipc_ep_cap;
     
 } Thread;
 
 OSError ThreadInit(Thread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig);
 
+// init a thread with an endpoint. This endpoint will be minted with the provided badge.
+OSError ThreadInitWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
+                                    vka_t *vka,
+                                    vspace_t *parent,
+                                    vka_object_t rootEndpoint,
+                                    seL4_Word ipc_badge);
 
 static inline OSError ThreadSetPriority(Thread* thread , uint8_t priority)
 {

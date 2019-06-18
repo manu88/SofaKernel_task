@@ -235,60 +235,21 @@ static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
 
 }
 
+
 static void lateSystemInit(KernelTaskContext *ctx)
 {
     kprintf("Late System Init\n");
     //kobject_printTree( (const struct kobject *) &root);
-
-    sel4utils_thread_config_t threadConf = thread_config_new(&ctx->simple);
-    
-    /*
-    vka_object_t thread_ep_obj;
-    
-    int error = vka_alloc_endpoint(&ctx->vka, &thread_ep_obj);
-    ALWAYS_ASSERT(error == 0);
-    
-    */
     
     int err = 0;
-    
-/* create a FAULT endpoint */
-    /* allocate a cspace slot for the fault endpoint */
-    seL4_CPtr fault_ep = 0;
-    err = vka_cspace_alloc(
-                           &ctx->vka,
-                           &fault_ep);
-    ZF_LOGF_IF(err != 0, "Failed to allocate thread fault endpoint");
-    
-/* create a badged fault endpoint for the thread */
-    err = seL4_CNode_Mint(
-                          simple_get_cnode(&ctx->simple),
-                          fault_ep,
-                          seL4_WordBits,
-                          seL4_CapInitThreadCNode,
-                          ep_object.cptr,
-                          seL4_WordBits,
-                          seL4_AllRights,
-                          12
-                          //IPC_FAULT_ENDPOINT_BADGE(ipc_badge)
-                          );
-    ZF_LOGF_IF(err != 0, "Failed to mint badged fault endpoint for thread");
-/**/
-    
-    threadConf = thread_config_fault_endpoint(threadConf , fault_ep);
-    
-    ALWAYS_ASSERT_NO_ERR(ThreadInit(&shellThread , &ctx->vka, &ctx->vspace, threadConf));
-    //shellThread.sysCallEP = notification_path.capPtr;
+
+    seL4_Word faultBadge = 12;
+    ALWAYS_ASSERT_NO_ERR( ThreadInitWithFaultEndPoint(ctx, &shellThread, &ctx->vka, &ctx->vspace, ep_object, faultBadge));
+
     shellThread.entryPoint = ThreadShell;
     
     
 /* create a IPC endpoint */
-    /*
-    err = vka_alloc_endpoint(
-                             &ctx->vka,
-                             &shellThread.ipc_ep);
-    ZF_LOGF_IF(err != 0, "Failed to create IPC endpoint");
-    */
     
     /* allocate a cspace slot for the IPC endpoint */
     err = vka_cspace_alloc(
@@ -311,7 +272,8 @@ static void lateSystemInit(KernelTaskContext *ctx)
                           seL4_AllRights,
                           ipc_badge);
     ZF_LOGF_IF(err != 0, "Failed to mint badged IPC endpoint for thread");
-/**/
+
+    /**/
     
     ALWAYS_ASSERT(ThreadStart(&shellThread , NULL , 1) == 0);
     
@@ -344,10 +306,7 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
     int error = 0;
     while(1)
     {
-        /*
-         uint64_t startTimeNS;
-         ltimer_get_time(&context->timer.ltimer, &startTimeNS);
-         */
+        
         seL4_Word sender_badge = 0;
         seL4_MessageInfo_t message;
         seL4_Word label;
@@ -355,22 +314,7 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
         kprintf("[kernTask] Listening...\n");
         message = seL4_Recv(epPtr, &sender_badge);
         kprintf("[kernTask] Got a message\n");
-        /*
-         uint64_t endTimeNS;
-         ltimer_get_time(&context->timer.ltimer, &endTimeNS);
-         
-         const uint64_t timeSpentNS = endTimeNS - startTimeNS;
-         */
-        /*
-         TimerWheelStep(&context->timersWheel, timeSpentNS/1000000);
-         
-         TimerTick remain = TimerWheelGetTimeout(&context->timersWheel);
-         if(remain <UINT64_MAX && remain != 0)
-         {
-         int error = UpdateTimeout(context, NS_IN_MS*remain);
-         assert(error == 0);
-         }
-         */
+
         label = seL4_MessageInfo_get_label(message);
         
         if(sender_badge & IRQ_EP_BADGE)
