@@ -193,6 +193,12 @@ static int execCmd( const char* cmd)
         }
         
         int secs = atoi(arg);
+        
+        if( secs <= 0)
+        {
+            return -EINVAL;
+        }
+        
         //seL4_DebugDumpScheduler();
         
         

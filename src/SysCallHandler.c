@@ -8,18 +8,78 @@
 
 #include "SysCallHandler.h"
 #include "SysCalls.h"
+#include "Timer.h"
+#include "Utils.h"
 
-static void handleSleep( int numSecs,seL4_MessageInfo_t message)
+// THis is gross. But only temporary
+static uint32_t counter = 0;
+static KernelTaskContext* _context = NULL;
+
+
+static int OnTime(uintptr_t token)
+{
+    ALWAYS_ASSERT(_context);
+    seL4_CPtr reply = (seL4_CPtr) token;
+    ALWAYS_ASSERT(reply);
+    
+    int err = tm_deregister_cb(&_context->tm  , counter-1);
+    ALWAYS_ASSERT(err == 0);
+    
+    err = tm_free_id(&_context->tm , counter-1);
+    ALWAYS_ASSERT(err == 0);
+    
+    printf("ON TIME \n");
+    
+    seL4_MessageInfo_t tag = seL4_MessageInfo_new(0, 0, 0, 2);
+    seL4_SetMR(0, SysCallNum_Sleep);
+    seL4_SetMR(1, 0); // sucess
+    
+    seL4_Send(reply , tag);
+    
+    cnode_delete(_context,reply);
+}
+
+static void handleSleep(KernelTaskContext* context, int numSecs,seL4_MessageInfo_t message)
 {
     kprintf("Sleep %i seconds\n" , numSecs);
+    int error = -ENOSYS;
     
+    seL4_CPtr reply = get_free_slot(context);
+    if( reply == 0)
+    {
+        seL4_SetMR(0,SysCallNum_Sleep);
+        seL4_SetMR(1, -EINVAL );
+        seL4_Reply( message );
+        return;
+    }
+    
+    error = cnode_savecaller( context, reply );
+    if( error != 0)
+    {
+        cnode_delete(context , reply);
+        seL4_SetMR(0,SysCallNum_Sleep);
+        seL4_SetMR(1, -EINVAL );
+        seL4_Reply( message );
+        return;
+    }
+    
+    int err = TimerAllocAndRegisterOneShot(&context->tm , numSecs*1000*NS_IN_MS,  counter++, OnTime, (uintptr_t) reply );
+    ALWAYS_ASSERT_NO_ERR(err);
+    
+    
+    /*
     seL4_SetMR(0,SysCallNum_Sleep);
     seL4_SetMR(1, 0 );
     seL4_Reply( message );
+     */
 }
 
 void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL4_Word sender_badge)
 {
+    if( _context == NULL)
+    {
+        _context = context;
+    }
     const int msgLen = seL4_MessageInfo_get_length(message);
     ALWAYS_ASSERT(msgLen > 0); // at least the syscall #
     
@@ -27,7 +87,7 @@ void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL
     switch (sysCallID)
     {
         case SysCallNum_Sleep:
-            handleSleep(seL4_GetMR(1),message);
+            handleSleep(context, seL4_GetMR(1),message);
             break;
             
         default:
