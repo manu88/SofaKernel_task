@@ -11,6 +11,7 @@
 #include "Timer.h"
 #include "Utils.h"
 
+
 // THis is gross. But only temporary
 static uint32_t counter = 0;
 static KernelTaskContext* _context = NULL;
@@ -31,7 +32,7 @@ static int OnTime(uintptr_t token)
     printf("ON TIME \n");
     
     seL4_MessageInfo_t tag = seL4_MessageInfo_new(0, 0, 0, 2);
-    seL4_SetMR(0, SysCallNum_Sleep);
+    seL4_SetMR(0, SysCallNum_nanosleep);
     seL4_SetMR(1, 0); // sucess
     
     seL4_Send(reply , tag);
@@ -39,15 +40,15 @@ static int OnTime(uintptr_t token)
     cnode_delete(_context,reply);
 }
 
-static void handleSleep(KernelTaskContext* context, int numSecs,seL4_MessageInfo_t message)
+static void handleSleep(KernelTaskContext* context, int seconds,seL4_MessageInfo_t message)
 {
-    kprintf("Sleep %i seconds\n" , numSecs);
+    kprintf("Sleep %i seconds\n" , seconds);
     int error = -ENOSYS;
     
     seL4_CPtr reply = get_free_slot(context);
     if( reply == 0)
     {
-        seL4_SetMR(0,SysCallNum_Sleep);
+        seL4_SetMR(0,SysCallNum_nanosleep);
         seL4_SetMR(1, -EINVAL );
         seL4_Reply( message );
         return;
@@ -57,13 +58,17 @@ static void handleSleep(KernelTaskContext* context, int numSecs,seL4_MessageInfo
     if( error != 0)
     {
         cnode_delete(context , reply);
-        seL4_SetMR(0,SysCallNum_Sleep);
+        seL4_SetMR(0,SysCallNum_nanosleep);
         seL4_SetMR(1, -EINVAL );
         seL4_Reply( message );
         return;
     }
     
-    int err = TimerAllocAndRegisterOneShot(&context->tm , numSecs*1000*NS_IN_MS,  counter++, OnTime, (uintptr_t) reply );
+    int err = TimerAllocAndRegisterOneShot(&context->tm , seconds*NS_IN_MS /* To nano seconds*/,  counter++, OnTime, (uintptr_t) reply );
+    if( err != 0)
+    {
+        kprintf("TimerAllocAndRegisterOneShot err %i\n" , err);
+    }
     ALWAYS_ASSERT_NO_ERR(err);
     
     
@@ -86,7 +91,7 @@ void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL
     const SysCallNum sysCallID = (SysCallNum) seL4_GetMR(0);
     switch (sysCallID)
     {
-        case SysCallNum_Sleep:
+        case SysCallNum_nanosleep:
             handleSleep(context, seL4_GetMR(1),message);
             break;
             

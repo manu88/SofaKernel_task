@@ -20,6 +20,8 @@
 #include <stdio.h>
 
 
+static  uint32_t _idCounter = 1; // 0 is kernel_task's root thread
+
 static void _ThreadStart(void *arg0, void *arg1, void *ipc_buf)
 {
 	Thread* self = (Thread*) arg0;
@@ -32,6 +34,11 @@ static void _ThreadStart(void *arg0, void *arg1, void *ipc_buf)
 OSError ThreadInit(Thread* thread, vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig)
 {
     memset(thread , 0 , sizeof(Thread));
+    
+    kobject_init(&thread->obj);
+
+    thread->threadID = _idCounter++;
+    
 	return sel4utils_configure_thread_config(vka , parent , /*alloc*/parent , fromConfig , &thread->thread);
 }
 
@@ -71,6 +78,11 @@ OSError ThreadInitWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
     threadConf = thread_config_fault_endpoint(threadConf , fault_ep);
     
     return ThreadInit(thread , &ctx->vka, &ctx->vspace, threadConf);
+}
+
+void ThreadRelease(Thread* thread)
+{
+    
 }
 
 

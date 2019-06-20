@@ -8,10 +8,16 @@
 
 #pragma once
 
+#include "Sofa.h"
+#include <seL4/types.h> // seL4_CPtr
 
 typedef enum
 {
     SysCallNum_Unknown = 0,
     
-    SysCallNum_Sleep = 1,
+    SysCallNum_nanosleep = 1,
 } SysCallNum;
+
+
+// Syscalls from inside kerneltask ONLY
+int SC_usleep(seL4_CPtr cap, int microsecs);

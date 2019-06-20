@@ -24,7 +24,7 @@
 
 #include "Timer.h"
 #include "Thread.h"
-
+#include "ThreadManager.h"
 #include "Shell.h"
 
 #include "Drivers/PCIDriver.h"
@@ -241,6 +241,10 @@ static void lateSystemInit(KernelTaskContext *ctx)
     kprintf("Late System Init\n");
     //kobject_printTree( (const struct kobject *) &root);
     
+    OSError ret = ThreadManagerInit();
+    
+    ALWAYS_ASSERT_NO_ERR(ret);
+    
     int err = 0;
 
     seL4_Word faultBadge = 12;
@@ -275,6 +279,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
 
     /**/
     
+    ThreadManagerAddThread(&shellThread);
     ALWAYS_ASSERT(ThreadStart(&shellThread , NULL , 1) == 0);
     
 
