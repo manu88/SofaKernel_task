@@ -242,8 +242,9 @@ static void lateSystemInit(KernelTaskContext *ctx)
     //kobject_printTree( (const struct kobject *) &root);
     
     OSError ret = ThreadManagerInit();
-    
     ALWAYS_ASSERT_NO_ERR(ret);
+    
+    kset_append(&root, ThreadManagerGetHandle() );
     
     int err = 0;
 
@@ -279,7 +280,9 @@ static void lateSystemInit(KernelTaskContext *ctx)
 
     /**/
     
-    ThreadManagerAddThread(&shellThread);
+    ret = ThreadManagerAddThread(&shellThread);
+    ALWAYS_ASSERT_NO_ERR(ret);
+    
     ALWAYS_ASSERT(ThreadStart(&shellThread , NULL , 1) == 0);
     
 

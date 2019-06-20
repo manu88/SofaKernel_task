@@ -10,6 +10,8 @@
 #include "KObject/KObject.h"
 #include "ThreadManager.h"
 
+
+static const char _threadManagerName[] = "ThreadManager";
 static struct _ThreadManagerContext
 {
     struct kset set;
@@ -21,9 +23,19 @@ static struct _ThreadManagerContext
 OSError ThreadManagerInit()
 {
     memset(&_threadManagerCtx, 0, sizeof(struct _ThreadManagerContext));
+    
+    kset_init(&_threadManagerCtx.set);
+    _threadManagerCtx.set.obj.k_name = _threadManagerName;
+    return OSError_None;
 }
 
 OSError ThreadManagerAddThread( Thread* thread)
 {
-    return OSError_None;
+    return kset_append(&_threadManagerCtx.set, (struct kobject *)thread);
+}
+
+
+struct kset* ThreadManagerGetHandle()
+{
+    return &_threadManagerCtx.set;
 }
