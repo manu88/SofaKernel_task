@@ -248,9 +248,13 @@ static void lateSystemInit(KernelTaskContext *ctx)
     
     int err = 0;
 
-    seL4_Word faultBadge = 12;
-    ALWAYS_ASSERT_NO_ERR( ThreadInitWithFaultEndPoint(ctx, &shellThread, &ctx->vka, &ctx->vspace, ep_object, faultBadge));
-
+    
+    ALWAYS_ASSERT_NO_ERR( ThreadInit(&shellThread));
+    ALWAYS_ASSERT( shellThread.threadID >= 1);
+    seL4_Word faultBadge = shellThread.threadID;
+    seL4_Word ipc_badge = shellThread.threadID;
+    ALWAYS_ASSERT_NO_ERR( ThreadConfigureWithFaultEndPoint(ctx, &shellThread, &ctx->vka, &ctx->vspace, ep_object, faultBadge));
+    
     shellThread.entryPoint = ThreadShell;
     
     
@@ -264,7 +268,8 @@ static void lateSystemInit(KernelTaskContext *ctx)
     
     
     
-    seL4_Word ipc_badge = 10;
+    
+    
     
     /* create a badged IPC endpoint for the thread */
     err = seL4_CNode_Mint(
@@ -282,6 +287,8 @@ static void lateSystemInit(KernelTaskContext *ctx)
     
     ret = ThreadManagerAddThread(&shellThread);
     ALWAYS_ASSERT_NO_ERR(ret);
+    
+    kobject_put((struct kobject *)&shellThread);
     
     ALWAYS_ASSERT(ThreadStart(&shellThread , NULL , 1) == 0);
     
@@ -355,7 +362,19 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
         }
         else if (label == seL4_VMFault)
         {
-            printf("[kernTask] VM Fault \n");
+            printf("[kernTask] VM Fault from %li \n",sender_badge);
+            
+            Thread* callingThread = ThreadManagerGetThreadWithID( sender_badge);
+            
+            ALWAYS_ASSERT( callingThread);
+            
+            OSError err = ThreadManagerRemoveThread(callingThread);
+            ALWAYS_ASSERT_NO_ERR(err);
+            
+            ThreadRelease(&shellThread , &context->vka, &context->vspace);
+            
+            kobject_printTree(&root);
+            
         }
         else if( label == seL4_CapFault)
         {

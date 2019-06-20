@@ -9,7 +9,7 @@
 #include <string.h>
 #include "KObject/KObject.h"
 #include "ThreadManager.h"
-
+#include "Thread.h"
 
 static const char _threadManagerName[] = "ThreadManager";
 static struct _ThreadManagerContext
@@ -34,8 +34,30 @@ OSError ThreadManagerAddThread( Thread* thread)
     return kset_append(&_threadManagerCtx.set, (struct kobject *)thread);
 }
 
-
-struct kset* ThreadManagerGetHandle()
+OSError ThreadManagerRemoveThread( Thread* thread)
 {
-    return &_threadManagerCtx.set;
+    return kset_remove(&_threadManagerCtx.set, (struct kobject *)thread);
+}
+
+
+Thread* ThreadManagerGetThreadWithID( uint32_t id )
+{
+    struct kobject* obj = NULL;
+    kset_foreach( &_threadManagerCtx.set, obj)
+    {
+        Thread* thread = (Thread*) obj;
+        ALWAYS_ASSERT(thread);
+        
+        if( thread->threadID == id)
+        {
+            return thread;
+        }
+    }
+    
+    return NULL;
+}
+
+struct kobject* ThreadManagerGetHandle()
+{
+    return &_threadManagerCtx.set.obj;
 }

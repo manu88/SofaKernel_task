@@ -41,11 +41,14 @@ typedef struct _Thread
     
 } Thread;
 
-OSError ThreadInit(Thread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig) NO_NULL_ARGS(1 ,3);
+/* Will init everything except the Sel4 Thread */
+OSError ThreadInit(Thread* thread) NO_NULL_POINTERS;
+void ThreadRelease(Thread* thread ,vka_t *vka, vspace_t *alloc) NO_NULL_POINTERS;
 
-void ThreadRelease(Thread* thread) NO_NULL_POINTERS;
+OSError ThreadConfigure(Thread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig) NO_NULL_ARGS(1 ,3);
+
 // init a thread with an endpoint. This endpoint will be minted with the provided badge.
-OSError ThreadInitWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
+OSError ThreadConfigureWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
                                     vka_t *vka,
                                     vspace_t *parent,
                                     vka_object_t rootEndpoint,

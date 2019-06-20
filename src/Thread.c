@@ -31,18 +31,30 @@ static void _ThreadStart(void *arg0, void *arg1, void *ipc_buf)
 	self->entryPoint(self , arg1 , ipc_buf);
 }
 
-OSError ThreadInit(Thread* thread, vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig)
+OSError ThreadInit(Thread* thread)
 {
     memset(thread , 0 , sizeof(Thread));
     
     kobject_init(&thread->obj);
-
+    
     thread->threadID = _idCounter++;
     
+    return OSError_None;
+}
+
+void ThreadRelease(Thread* thread,vka_t *vka, vspace_t *alloc)
+{
+    sel4utils_clean_up_thread(vka,alloc, &thread->thread);
+    
+    kobject_put(&thread->obj);
+}
+
+OSError ThreadConfigure(Thread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig)
+{
 	return sel4utils_configure_thread_config(vka , parent , /*alloc*/parent , fromConfig , &thread->thread);
 }
 
-OSError ThreadInitWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
+OSError ThreadConfigureWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
                                     vka_t *vka,
                                     vspace_t *parent,
                                     vka_object_t rootEndpoint,
@@ -77,13 +89,10 @@ OSError ThreadInitWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
     
     threadConf = thread_config_fault_endpoint(threadConf , fault_ep);
     
-    return ThreadInit(thread , &ctx->vka, &ctx->vspace, threadConf);
+    return ThreadConfigure(thread , &ctx->vka, &ctx->vspace, threadConf);
 }
 
-void ThreadRelease(Thread* thread)
-{
-    
-}
+
 
 
 OSError ThreadStart(Thread* thread , void* arg,   int resume)
