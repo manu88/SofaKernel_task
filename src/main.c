@@ -235,6 +235,49 @@ static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
 
 }
 
+static Thread* Spawn(KernelTaskContext *ctx, Thread* thread , ThreadEntryPoint entryPoint)
+{
+    OSError err = ThreadInit(thread);
+    if( err != OSError_None)
+        return NULL;
+    
+    ALWAYS_ASSERT( thread->threadID >= 1);
+    
+    seL4_Word threadBadge = thread->threadID;
+    
+    err = ThreadConfigureWithFaultEndPoint(ctx, thread, &ctx->vka, &ctx->vspace, ep_object, threadBadge);
+    
+    
+    if( err != OSError_None)
+        return NULL;
+    
+    thread->entryPoint = entryPoint;
+    
+    /* create a IPC endpoint */
+    
+    /* allocate a cspace slot for the IPC endpoint */
+    err = vka_cspace_alloc(
+                           &ctx->vka,
+                           &thread->ipc_ep_cap);
+    ZF_LOGF_IF(err != 0, "Failed to allocate thread IPC endpoint");
+    
+    
+    /* create a badged IPC endpoint for the thread */
+    err = seL4_CNode_Mint(
+                          simple_get_cnode(&ctx->simple),
+                          thread->ipc_ep_cap,
+                          seL4_WordBits,
+                          seL4_CapInitThreadCNode,
+                          ep_object.cptr,
+                          seL4_WordBits,
+                          seL4_AllRights,
+                          threadBadge);
+    ZF_LOGF_IF(err != 0, "Failed to mint badged IPC endpoint for thread");
+    
+    /**/
+    
+    return thread;
+}
 
 static void lateSystemInit(KernelTaskContext *ctx)
 {
@@ -247,43 +290,9 @@ static void lateSystemInit(KernelTaskContext *ctx)
     kset_append(&root, ThreadManagerGetHandle() );
     
     int err = 0;
-
     
-    ALWAYS_ASSERT_NO_ERR( ThreadInit(&shellThread));
-    ALWAYS_ASSERT( shellThread.threadID >= 1);
-    seL4_Word faultBadge = shellThread.threadID;
-    seL4_Word ipc_badge = shellThread.threadID;
-    ALWAYS_ASSERT_NO_ERR( ThreadConfigureWithFaultEndPoint(ctx, &shellThread, &ctx->vka, &ctx->vspace, ep_object, faultBadge));
-    
-    shellThread.entryPoint = ThreadShell;
-    
-    
-/* create a IPC endpoint */
-    
-    /* allocate a cspace slot for the IPC endpoint */
-    err = vka_cspace_alloc(
-                           &ctx->vka,
-                           &shellThread.ipc_ep_cap);
-    ZF_LOGF_IF(err != 0, "Failed to allocate thread IPC endpoint");
-    
-    
-    
-    
-    
-    
-    /* create a badged IPC endpoint for the thread */
-    err = seL4_CNode_Mint(
-                          simple_get_cnode(&ctx->simple),
-                          shellThread.ipc_ep_cap,
-                          seL4_WordBits,
-                          seL4_CapInitThreadCNode,
-                          ep_object.cptr,
-                          seL4_WordBits,
-                          seL4_AllRights,
-                          ipc_badge);
-    ZF_LOGF_IF(err != 0, "Failed to mint badged IPC endpoint for thread");
-
-    /**/
+    Thread* t = Spawn(ctx , &shellThread , ThreadShell);
+    ALWAYS_ASSERT(t);
     
     ret = ThreadManagerAddThread(&shellThread);
     ALWAYS_ASSERT_NO_ERR(ret);

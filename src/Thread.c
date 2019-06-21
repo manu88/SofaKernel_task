@@ -19,7 +19,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-
+static const char threadDefaultName[] = "Thread";
 static  uint32_t _idCounter = 1; // 0 is kernel_task's root thread
 
 static void _ThreadStart(void *arg0, void *arg1, void *ipc_buf)
@@ -36,6 +36,7 @@ OSError ThreadInit(Thread* thread)
     memset(thread , 0 , sizeof(Thread));
     
     kobject_init(&thread->obj);
+    thread->obj.k_name = threadDefaultName;
     
     thread->threadID = _idCounter++;
     
