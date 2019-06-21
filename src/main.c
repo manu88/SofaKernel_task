@@ -224,6 +224,15 @@ static int OnTime(uintptr_t token)
     return 0;
 }
 
+static void ThreadTest(Thread *self, void *arg, void *ipc_buf)
+{
+    kprintf("START TEST THREAD\n");
+    
+    while (1)
+    {
+
+    }
+}
 static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
 {
     printf("Thread test Started\n");
@@ -299,8 +308,18 @@ static void lateSystemInit(KernelTaskContext *ctx)
     
     kobject_put((struct kobject *)&shellThread);
     
-    ALWAYS_ASSERT(ThreadStart(&shellThread , NULL , 1) == 0);
+    ALWAYS_ASSERT_NO_ERR(ThreadStart(&shellThread , NULL , 1) );
+
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- */
     
+    Thread* testThread = malloc(sizeof(Thread));
+    ALWAYS_ASSERT( Spawn(ctx, testThread, ThreadTest) == testThread);
+    
+    ret = ThreadManagerAddThread(testThread);
+    ALWAYS_ASSERT_NO_ERR(ret);
+    
+    ALWAYS_ASSERT_NO_ERR(ThreadStart(testThread , NULL , 1) );
+/* ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
 #ifndef SOFA_TESTS_ONLY
     //int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, 0);

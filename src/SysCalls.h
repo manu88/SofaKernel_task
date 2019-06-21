@@ -16,6 +16,7 @@ typedef enum
     SysCallNum_Unknown = 0,
     
     SysCallNum_nanosleep = 1,
+    SysCallNum_spawn     = 2,
 } SysCallNum;
 
 
