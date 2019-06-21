@@ -100,9 +100,9 @@ static void lateSystemInit(KernelTaskContext *ctx);
 static struct kset root = {0};
 static const char rootNodeName[] = "root";
 
-#ifndef SOFA_TESTS_ONLY
-static vka_object_t ep_object = {0};
-#endif
+
+
+
 /* ****** */
 // globals to remove at some point
 
@@ -170,10 +170,10 @@ static OSError earlySystemInit(KernelTaskContext *context)
     
 #ifndef SOFA_TESTS_ONLY
 /* create an endpoint. */
-    error = vka_alloc_endpoint(&context->vka, &ep_object);
+    error = vka_alloc_endpoint(&context->vka, &context->rootTaskEP);
     ZF_LOGF_IFERR(error, "Failed to allocate new endpoint object.\n");
     
-    vka_cspace_make_path(&context->vka, ep_object.cptr, &context->ep_cap_path);
+    vka_cspace_make_path(&context->vka, context->rootTaskEP.cptr, &context->ep_cap_path);
     
     error = vka_alloc_notification(&context->vka, &context->ntfn_object);
     ALWAYS_ASSERT(error == 0);
@@ -254,7 +254,7 @@ static Thread* Spawn(KernelTaskContext *ctx, Thread* thread , ThreadEntryPoint e
     
     seL4_Word threadBadge = thread->threadID;
     
-    err = ThreadConfigureWithFaultEndPoint(ctx, thread, &ctx->vka, &ctx->vspace, ep_object, threadBadge);
+    err = ThreadConfigureWithFaultEndPoint(ctx, thread, &ctx->vka, &ctx->vspace, ctx->rootTaskEP, threadBadge);
     
     
     if( err != OSError_None)
@@ -277,7 +277,7 @@ static Thread* Spawn(KernelTaskContext *ctx, Thread* thread , ThreadEntryPoint e
                           thread->ipc_ep_cap,
                           seL4_WordBits,
                           seL4_CapInitThreadCNode,
-                          ep_object.cptr,
+                          ctx->rootTaskEP.cptr,
                           seL4_WordBits,
                           seL4_AllRights,
                           threadBadge);
@@ -326,7 +326,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
     //ALWAYS_ASSERT_NO_ERR(err);
     
     kprintf("Start Looping\n");
-    processLoop(ctx, ep_object.cptr);
+    processLoop(ctx, ctx->rootTaskEP.cptr);
 #endif
     //kobject_printTree(&root);
     //DriverKitDump();

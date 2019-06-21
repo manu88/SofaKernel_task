@@ -49,6 +49,9 @@ typedef struct _KernelTaskContext
     ps_io_ops_t ops;
 
     struct ps_io_ops    opsIO;
+    
+    
+    vka_object_t rootTaskEP;
 #else
     void* unused;
 #endif
