@@ -17,8 +17,10 @@ typedef enum
     
     SysCallNum_nanosleep = 1,
     SysCallNum_spawn     = 2,
+    SysCallNum_kill     = 3,
 } SysCallNum;
 
 
 // Syscalls from inside kerneltask ONLY
 int SC_usleep(seL4_CPtr cap, int microsecs);
+int SC_kill  (seL4_CPtr cap, int id);

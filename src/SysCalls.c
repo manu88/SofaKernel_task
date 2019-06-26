@@ -21,3 +21,14 @@ int SC_usleep(seL4_CPtr cap, int microsecs)
     return -seL4_GetMR(1);
 }
 
+int SC_kill  (seL4_CPtr cap, int id)
+{
+    seL4_MessageInfo_t msg = seL4_MessageInfo_new(0, 0, 0, 2);
+    seL4_SetMR(0,  SysCallNum_kill);
+    seL4_SetMR(1 , id);
+    msg = seL4_Call(cap , msg);
+    
+    ALWAYS_ASSERT( seL4_GetMR(0) == SysCallNum_kill);
+    
+    return -seL4_GetMR(1);
+}

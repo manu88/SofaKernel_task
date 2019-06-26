@@ -230,7 +230,7 @@ static void ThreadTest(Thread *self, void *arg, void *ipc_buf)
     
     while (1)
     {
-
+        SC_usleep(self->ipc_ep_cap, 10000);
     }
 }
 static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
@@ -244,7 +244,7 @@ static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
 
 }
 
-static Thread* Spawn(KernelTaskContext *ctx, Thread* thread , ThreadEntryPoint entryPoint)
+static Thread* ThreadPrepare(KernelTaskContext *ctx, Thread* thread , ThreadEntryPoint entryPoint)
 {
     OSError err = ThreadInit(thread);
     if( err != OSError_None)
@@ -300,7 +300,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
     
     int err = 0;
     
-    Thread* t = Spawn(ctx , &shellThread , ThreadShell);
+    Thread* t = ThreadPrepare(ctx , &shellThread , ThreadShell);
     ALWAYS_ASSERT(t);
     
     ret = ThreadManagerAddThread(&shellThread);
@@ -313,7 +313,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- */
     
     Thread* testThread = malloc(sizeof(Thread));
-    ALWAYS_ASSERT( Spawn(ctx, testThread, ThreadTest) == testThread);
+    ALWAYS_ASSERT( ThreadPrepare(ctx, testThread, ThreadTest) == testThread);
     
     ret = ThreadManagerAddThread(testThread);
     ALWAYS_ASSERT_NO_ERR(ret);
@@ -411,7 +411,7 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
         
         else if (label == seL4_NoFault)
         {
-            printf("[kernTask] Syscall from %li (%i args) \n" ,sender_badge, seL4_MessageInfo_get_length(message));
+            //printf("[kernTask] Syscall from %li (%i args) \n" ,sender_badge, seL4_MessageInfo_get_length(message));
             processSysCall(context , message , sender_badge);
             
             /*

@@ -127,6 +127,25 @@ static int execCmd( const char* cmd)
             kobject_printTree((struct kobject*) _root);
         }
     }
+    else if( startsWith("ps", cmd))
+    {
+        struct kobject * threadManager = kobjectResolve("/ThreadManager", _root);
+        
+        kobject_printTree(threadManager);
+        
+    }
+    else if( startsWith("kill ", cmd))
+    {
+        const char* arg = cmd + strlen("kill ");
+        int which = atoi(arg);
+        
+        if( which > 0)
+        {
+            
+            return SC_kill(_thread->ipc_ep_cap, which);
+        }
+        return -EINVAL;
+    }
     else if (startsWith("attr ", cmd))
     {
         const char* arg = cmd + strlen("attr ");

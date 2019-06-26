@@ -29,7 +29,7 @@ static int OnTime(uintptr_t token)
     err = tm_free_id(&_context->tm , counter-1);
     ALWAYS_ASSERT(err == 0);
     
-    printf("ON TIME \n");
+    //printf("ON TIME \n");
     
     seL4_MessageInfo_t tag = seL4_MessageInfo_new(0, 0, 0, 2);
     seL4_SetMR(0, SysCallNum_nanosleep);
@@ -40,9 +40,10 @@ static int OnTime(uintptr_t token)
     cnode_delete(_context,reply);
 }
 
-static void handleSleep(KernelTaskContext* context, int seconds,seL4_MessageInfo_t message)
+static void handleSleep(KernelTaskContext* context,seL4_MessageInfo_t message)
 {
-    kprintf("Sleep %i seconds\n" , seconds);
+    int seconds = seL4_GetMR(1);
+    //kprintf("Sleep %i seconds\n" , seconds);
     int error = -ENOSYS;
     
     seL4_CPtr reply = get_free_slot(context);
@@ -79,6 +80,14 @@ static void handleSleep(KernelTaskContext* context, int seconds,seL4_MessageInfo
      */
 }
 
+
+static void handleKill(KernelTaskContext* context, seL4_MessageInfo_t message)
+{
+    long idToKill = seL4_GetMR(1);
+    
+    printf("Should kill ID %i \n" , idToKill);
+}
+
 void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL4_Word sender_badge)
 {
     if( _context == NULL)
@@ -92,8 +101,11 @@ void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL
     switch (sysCallID)
     {
         case SysCallNum_nanosleep:
-            handleSleep(context, seL4_GetMR(1),message);
+            handleSleep(context,message);
             break;
+            
+        case SysCallNum_kill:
+            handleKill(context , message);
             
         default:
             break;
