@@ -303,6 +303,8 @@ static void lateSystemInit(KernelTaskContext *ctx)
     Thread* t = ThreadPrepare(ctx , &shellThread , ThreadShell);
     ALWAYS_ASSERT(t);
     
+    ThreadSetName(&shellThread ,"Shell");
+    
     ret = ThreadManagerAddThread(&shellThread);
     ALWAYS_ASSERT_NO_ERR(ret);
     
@@ -315,6 +317,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
     Thread* testThread = malloc(sizeof(Thread));
     ALWAYS_ASSERT( ThreadPrepare(ctx, testThread, ThreadTest) == testThread);
     
+
     ret = ThreadManagerAddThread(testThread);
     ALWAYS_ASSERT_NO_ERR(ret);
     

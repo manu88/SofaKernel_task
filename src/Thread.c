@@ -22,6 +22,12 @@
 static const char threadDefaultName[] = "Thread";
 static  uint32_t _idCounter = 1; // 0 is kernel_task's root thread
 
+static void ThreadGetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
+
+
+static const KClass threadClass = KClassMake("Thread", ThreadGetInfos,NULL /*Release*/);
+//const KClass *ThreadClass = &threadClass;
+
 static void _ThreadStart(void *arg0, void *arg1, void *ipc_buf)
 {
 	Thread* self = (Thread*) arg0;
@@ -37,9 +43,16 @@ OSError ThreadInit(Thread* thread)
     
     kobject_init(&thread->obj);
     thread->obj.k_name = threadDefaultName;
-    
+    thread->obj.class = &threadClass;
     thread->threadID = _idCounter++;
     
+    return OSError_None;
+}
+
+
+OSError ThreadSetName(Thread* thread , const char* name)
+{
+    thread->obj.k_name = name;
     return OSError_None;
 }
 
@@ -99,4 +112,12 @@ OSError ThreadConfigureWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
 OSError ThreadStart(Thread* thread , void* arg,   int resume)
 {
 	return sel4utils_start_thread(&thread->thread , _ThreadStart , thread , arg , resume);
+}
+
+
+static void ThreadGetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] )
+{
+    const Thread* self = (Thread*) obj;
+    
+    snprintf(outDesc, MAX_DESC_SIZE, "Thread ID %i " , self->threadID);
 }

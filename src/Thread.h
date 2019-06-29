@@ -39,6 +39,8 @@ typedef struct _Thread
     uint32_t threadID;
     seL4_CPtr ipc_ep_cap;
     
+    
+    
 } Thread;
 
 /* Will init everything except the Sel4 Thread */
@@ -61,3 +63,5 @@ static inline OSError ThreadSetPriority(Thread* thread , uint8_t priority)
 
 
 OSError ThreadStart(Thread* thread , void* arg,  int resume) ;
+
+OSError ThreadSetName(Thread* thread , const char* name) NO_NULL_POINTERS;

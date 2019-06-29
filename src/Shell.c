@@ -141,7 +141,6 @@ static int execCmd( const char* cmd)
         
         if( which > 0)
         {
-            
             return SC_kill(_thread->ipc_ep_cap, which);
         }
         return -EINVAL;

@@ -53,6 +53,8 @@ void kref_put(struct kref* k,void (*release)(struct kref *k)) NO_NULL_ARGS(1,1);
 struct kobject;
 
 
+typedef void (*KobjectRelease)(struct kobject *);
+
 #define MAX_DESC_SIZE 64
 
 typedef struct _KClass
@@ -60,12 +62,18 @@ typedef struct _KClass
     const char* name;
     
     void (*getInfos)(const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
-    void (*release)(struct kobject *);
+    KobjectRelease release;
 } KClass;
 
 
 #define KClassMake( name , getInfos,release) { name  , getInfos,release}
 /* kobject def */
+
+typedef struct
+{
+    KobjectRelease release;
+    
+}KObjectMethods;
 
 struct kobject
 {
@@ -75,7 +83,9 @@ struct kobject
     struct kobject          *_parent;
 //    struct kset             *kset;
 
-
+    KObjectMethods methods;
+    
+    
     uint8_t isSet:1;
     const KClass * class;
     

@@ -5,10 +5,11 @@
 //  Created by Manuel Deneu on 17/06/2019.
 //  Copyright © 2019 Manuel Deneu. All rights reserved.
 //
-
+#include <errno.h>
 #include "SysCallHandler.h"
 #include "SysCalls.h"
 #include "Timer.h"
+#include "Thread.h"
 #include "Utils.h"
 
 
@@ -86,6 +87,20 @@ static void handleKill(KernelTaskContext* context, seL4_MessageInfo_t message)
     long idToKill = seL4_GetMR(1);
     
     printf("Should kill ID %i \n" , idToKill);
+    
+    
+    Thread* theThread =  ThreadManagerGetThreadWithID( (uint32_t) idToKill );
+    
+    int err = -EACCES;
+    if( theThread)
+    {
+        ThreadManagerRemoveThread(theThread);
+        ThreadRelease(theThread , &context->vka , &context->vspace);
+        err = 0;
+    }
+    seL4_SetMR(0,SysCallNum_kill);
+    seL4_SetMR(1, err );
+    seL4_Reply( message );
 }
 
 void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL4_Word sender_badge)

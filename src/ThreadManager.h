@@ -18,3 +18,6 @@ OSError ThreadManagerRemoveThread( Thread* thread) NO_NULL_POINTERS;
 
 Thread* ThreadManagerGetThreadWithID( uint32_t id );
 struct kobject* ThreadManagerGetHandle(void);
+
+
+
