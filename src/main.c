@@ -233,6 +233,15 @@ static void ThreadTest(Thread *self, void *arg, void *ipc_buf)
         SC_usleep(self->ipc_ep_cap, 10000);
     }
 }
+
+static void TestThreadIsReleased( struct kobject *obj)
+{
+    printf("TEST THREAD IS RELEASED \n");
+    
+    free(obj);
+    
+    
+}
 static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
 {
     printf("Thread test Started\n");
@@ -304,6 +313,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
     ALWAYS_ASSERT(t);
     
     ThreadSetName(&shellThread ,"Shell");
+    ThreadSetParent(&shellThread, NULL);
     
     ret = ThreadManagerAddThread(&shellThread);
     ALWAYS_ASSERT_NO_ERR(ret);
@@ -317,11 +327,16 @@ static void lateSystemInit(KernelTaskContext *ctx)
     Thread* testThread = malloc(sizeof(Thread));
     ALWAYS_ASSERT( ThreadPrepare(ctx, testThread, ThreadTest) == testThread);
     
-
+    testThread->obj.methods.release = TestThreadIsReleased;
     ret = ThreadManagerAddThread(testThread);
+    
     ALWAYS_ASSERT_NO_ERR(ret);
     
+    kobject_put((struct kobject *)testThread);
+    ThreadSetParent(testThread, NULL);
     ALWAYS_ASSERT_NO_ERR(ThreadStart(testThread , NULL , 1) );
+    
+    
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- */
 
 #ifndef SOFA_TESTS_ONLY

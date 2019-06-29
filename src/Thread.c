@@ -56,6 +56,11 @@ OSError ThreadSetName(Thread* thread , const char* name)
     return OSError_None;
 }
 
+void ThreadSetParent( Thread* thread , Thread* parent)
+{
+    thread->parent = parent;
+}
+
 void ThreadRelease(Thread* thread,vka_t *vka, vspace_t *alloc)
 {
     sel4utils_clean_up_thread(vka,alloc, &thread->thread);
@@ -119,5 +124,5 @@ static void ThreadGetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SI
 {
     const Thread* self = (Thread*) obj;
     
-    snprintf(outDesc, MAX_DESC_SIZE, "Thread ID %i " , self->threadID);
+    snprintf(outDesc, MAX_DESC_SIZE, "Thread ID %i Parent %p" , self->threadID , self->parent);
 }

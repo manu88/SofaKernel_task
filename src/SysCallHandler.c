@@ -94,9 +94,17 @@ static void handleKill(KernelTaskContext* context, seL4_MessageInfo_t message)
     int err = -EACCES;
     if( theThread)
     {
-        ThreadManagerRemoveThread(theThread);
-        ThreadRelease(theThread , &context->vka , &context->vspace);
-        err = 0;
+        OSError ret =  ThreadManagerRemoveThread(theThread);
+        if( ret != OSError_None)
+        {
+            printf("ThreadManagerRemoveThread error %i\n" , ret);
+            err = ESRCH;
+        }
+        else
+        {
+            ThreadRelease(theThread , &context->vka , &context->vspace);
+            err = 0;
+        }
     }
     seL4_SetMR(0,SysCallNum_kill);
     seL4_SetMR(1, err );

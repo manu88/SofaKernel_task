@@ -19,6 +19,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+static void KobjectDefaultRelease(struct kobject *);
+
+static KObjectMethods _defaultOBJMethods =
+{
+    KobjectDefaultRelease,
+};
+
 static void KOBJgetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
 static void KSETgetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
 
@@ -64,6 +71,7 @@ void kobject_init(struct kobject* object)
     memset(object, 0, sizeof(struct kobject) );
     kref_init(&object->kref);
     object->class = &objClass;
+    object->methods = _defaultOBJMethods;
 }
 
 void kobject_initWithName(struct kobject* object, const char*name)
@@ -82,9 +90,16 @@ void kobject_put(struct kobject *ko)
 {
     kref_put(&ko->kref, NULL);
     
-    if (ko->kref.refcount == 0 && ko->class && ko->class->release)
+    if (ko->kref.refcount == 0)
     {
-        ko->class->release(ko);
+        ko->methods.release(ko);
+        
+        /*
+        if( ko->class && ko->class->release)
+        {
+            ko->class->release(ko);
+        }
+        */
     }
 }
 
@@ -117,7 +132,8 @@ void kset_initWithName(struct kset* set , const char* name)
 OSError kset_append(struct kset*set , struct kobject* obj)
 {
 
-    DL_APPEND(set->_listHead, kobject_get(obj));
+    DL_APPEND(set->_listHead, obj);
+    kobject_get(obj); // inc ref count
     obj->_parent = &set->obj;
 
     return OSError_None;
@@ -240,4 +256,10 @@ struct kobject* kobjectResolve( const char* path_ , struct kset* startNode )
     
     free(path);
     return ret;
+}
+
+
+static void KobjectDefaultRelease(struct kobject *obj)
+{
+    UNUSED_PARAMETER(obj);
 }

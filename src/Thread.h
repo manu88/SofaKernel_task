@@ -29,6 +29,13 @@ struct _Thread;
 typedef void (*ThreadEntryPoint)(struct _Thread *self, void *arg, void *ipc_buf);
 
 
+
+typedef enum
+{
+        ThreadState_Running,
+        ThreadState_Suspended,
+} ThreadState;
+
 typedef struct _Thread
 {
     struct kobject obj;
@@ -36,6 +43,8 @@ typedef struct _Thread
     sel4utils_thread_t thread;
     ThreadEntryPoint entryPoint;
     
+    struct _Thread* parent;
+    ThreadState state;
     uint32_t threadID;
     seL4_CPtr ipc_ep_cap;
     
@@ -61,7 +70,7 @@ static inline OSError ThreadSetPriority(Thread* thread , uint8_t priority)
 	return seL4_TCB_SetPriority(thread->thread.tcb.cptr, seL4_CapInitThreadTCB ,  priority);
 }
 
-
+void ThreadSetParent( Thread* thread , Thread* parent) NO_NULL_POINTERS;
 OSError ThreadStart(Thread* thread , void* arg,  int resume) ;
 
 OSError ThreadSetName(Thread* thread , const char* name) NO_NULL_POINTERS;
