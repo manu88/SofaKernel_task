@@ -44,7 +44,7 @@ static void IONodegetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SI
 {
     const IONode* self = (const IONode*) obj;
     
-    snprintf(outDesc, MAX_DESC_SIZE, "HID 0X%llX Attached Driver %p (%zi attr)" , self->hid, (const void*) self->_attachedDriver , IONodeGetAttrCount(self) );
+    snprintf(outDesc, MAX_DESC_SIZE, "HID 0X%llX Attached Driver %p" , self->hid, (const void*) self->_attachedDriver );
 }
 
 OSError IONodeAddChild( IONode* baseDev, IONode* child)
@@ -97,11 +97,12 @@ OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data )
     return OSError_None;
 }
 
+/*
 size_t  IONodeGetAttrCount( const IONode* node )
 {
     return HASH_COUNT(node->attributes);
 }
-
+*/
 IOAttribute* IONodeGetAttr( const IONode* node, const char*name)
 {
     IOAttribute* attr = NULL;
@@ -109,6 +110,13 @@ IOAttribute* IONodeGetAttr( const IONode* node, const char*name)
     return attr;
 }
 
+OSError IONodeGetAttribute(const IONode* node, const char*name , IOData *data)
+{
+    if( !node->GetAttr)
+        return OSError_Unimplemented;
+    
+    return node->GetAttr(node , name , data);
+}
 
 const char* IONodeGetName( const IONode*node)
 {

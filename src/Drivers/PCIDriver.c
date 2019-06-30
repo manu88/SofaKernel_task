@@ -39,12 +39,32 @@ typedef struct
 
 
 
+typedef struct
+{
+    IONode base;
+    
+} IOPCINode;
+
+
+static OSError IOPCINodeInit(IOPCINode* node , const char* name)
+{
+    memset(node, 0, sizeof(IOPCINode));
+    OSError ret = IONodeInit(&node->base, name);
+    
+    if( ret == OSError_None)
+    {
+        
+    }
+    return ret;
+}
+
 static const char vgaName[] = "VGA";
-static IONode vgaNode = {0};
+static IOPCINode vgaNode = {0};
 static IODevice vgaDev = {0};
 
 static const char pciName[] = "PCIDriver";
-
+static const char ATAControllerName[] = "ATAController";
+static const char NetControllerName[] = "NetController";
 
 static ATADriver _ataDriver = {0};
 
@@ -53,7 +73,7 @@ static OSError PCIRelease(IODriverBase *driver  ) NO_NULL_POINTERS;
 static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx) NO_NULL_POINTERS;
 
 
-static OSError InitVGA(KernelTaskContext* ctx);
+
 
 static IODriverCallbacks PCIMethods =
 {
@@ -77,6 +97,7 @@ OSError PCIDriverInit( PCIDriver* driver)
         
         ALWAYS_ASSERT_NO_ERR(ATADriverInit(&_ataDriver));
         ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDriver((IODriverBase *)&_ataDriver));
+        kobject_put((struct kobject *) &_ataDriver);
     }
     
     
@@ -119,13 +140,56 @@ static int _ScanPCIDevices(KernelTaskContext* context)
 #endif
 }
 
+OSError IONodeGetAttrPCI(const IONode* node, const char*attrName , IOData *data)
+{
+
+    const libpci_device_t* implDev = (const libpci_device_t*) node->impl;
+    ALWAYS_ASSERT(implDev);
+    
+    if( strcmp(attrName, IONodeAttributePCIClass) == 0)
+    {
+        data->type = IODataType_Numeric;
+        data->data.val = implDev->dev;
+        return OSError_None;
+    }
+    else if( strcmp(attrName, IONodeAttributePCISubClass) == 0)
+    {
+        data->type = IODataType_Numeric;
+        data->data.val = implDev->fun;
+        return OSError_None;
+    }
+    
+    else if( strcmp(attrName, IONodeAttributeVendorID) == 0)
+    {
+        data->type = IODataType_Numeric;
+        data->data.val = implDev->vendor_id;
+        return OSError_None;
+    }
+    else if( strcmp(attrName, IONodeAttributeDeviceID) == 0)
+    {
+        data->type = IODataType_Numeric;
+        data->data.val = implDev->device_id;
+        return OSError_None;
+    }
+    else if( strcmp(attrName, IONodeAttributeDeviceName) == 0)
+    {
+        data->type = IODataType_String;
+        data->data.str = implDev->device_name;
+        return OSError_None;
+    }
+    else if( strcmp(attrName, IONodeAttributeVendorName) == 0)
+    {
+        data->type = IODataType_String;
+        data->data.str = implDev->vendor_name;
+        return OSError_None;
+    }
+
+    return OSError_ArgError;
+}
 static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx)
 {
     
     PCIDriver* self = (PCIDriver*) driver;
-    
-    
-    
     
     if( node->hid == 0x30ad041) // PNP0A03
     {
@@ -203,14 +267,46 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
                    ideDev->vendor_name ,
                    ideDev->device_name);
             
+            IOPCINode* ataNode = kmalloc(sizeof(IONode));
             
-            
-            IONode* ataNode = kmalloc(sizeof(IONode));
-            ALWAYS_ASSERT_NO_ERR(IONodeInit(ataNode, "ATAController"));
-            
+            ALWAYS_ASSERT_NO_ERR(IOPCINodeInit(ataNode, ATAControllerName));
+            ataNode->base.GetAttr = IONodeGetAttrPCI;
+            ataNode->base.impl = ideDev;
             ALWAYS_ASSERT_NO_ERR(IONodeAddChild(node, ataNode));
 
-            ALWAYS_ASSERT_NO_ERR(IONodeAddAttr(ataNode, IONodeAttributePCI, /*itemType*/ 0, ideDev));
+            //ALWAYS_ASSERT_NO_ERR(IONodeAddAttr(ataNode, IONodeAttributePCI, /*itemType*/ 0, ideDev));
+        }
+        
+        // vga
+        libpci_device_t* vgaDevice = libpci_find_device_bdf(0 , 0x03,0x00);
+        
+        if (vgaDevice)
+        {
+            ALWAYS_ASSERT_NO_ERR(InitEGADriver(ctx));
+            
+            ALWAYS_ASSERT_NO_ERR(IOPCINodeInit(&vgaNode, vgaName));
+            
+            ALWAYS_ASSERT_NO_ERR( IODeviceInit(&vgaDev, &vgaNode, vgaName));
+            
+            vgaNode.base.impl = vgaDevice;
+            
+            ALWAYS_ASSERT_NO_ERR(IONodeAddChild(node, &vgaNode));
+            kobject_put((struct kobject *)&vgaNode);
+            
+            ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDevice(&vgaDev));
+            kobject_put((struct kobject *)&vgaDev);
+        }
+        
+        // net
+        libpci_device_t* netDev = libpci_find_device_bdf(0 , 0x02,0x00);
+        if( netDev)
+        {
+            IOPCINode* netNode = kmalloc(sizeof(IONode));
+            
+            ALWAYS_ASSERT_NO_ERR(IOPCINodeInit(netNode, NetControllerName));
+            netNode->base.GetAttr = IONodeGetAttrPCI;
+            netNode->base.impl = netDev;
+            ALWAYS_ASSERT_NO_ERR(IONodeAddChild(node, netNode));
         }
         // do we have an IDE storage device?
         /*
@@ -223,15 +319,7 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
             
         }
          */
-        
-        
-        ALWAYS_ASSERT_NO_ERR(InitVGA(ctx));
-        
-        ALWAYS_ASSERT_NO_ERR(IONodeAddChild(node, &vgaNode));
-        kobject_put((struct kobject *)&vgaNode);
-        
-        ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDevice(&vgaDev));
-        kobject_put((struct kobject *)&vgaDev);
+
         return OSError_None;
     }
     return OSError_Some;
@@ -239,17 +327,7 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
 
 
 
-static OSError InitVGA(KernelTaskContext* ctx)
-{
-    ALWAYS_ASSERT_NO_ERR(InitEGADriver(ctx));
-    
-    ALWAYS_ASSERT_NO_ERR(IONodeInit(&vgaNode, vgaName));
-    
-    ALWAYS_ASSERT_NO_ERR( IODeviceInit(&vgaDev, &vgaNode, vgaName));
-    
-    
-    return OSError_None;
-}
+
 
 
 

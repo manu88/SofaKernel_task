@@ -1,5 +1,5 @@
 //
-//  AtaDriver.c
+//  ATADriver.c
 //  kernel_taskSofaV2
 //
 //  Created by Manuel Deneu on 30/06/2019.
@@ -15,12 +15,9 @@ static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
 
 static IODriverCallbacks ATAMethods =
 {
-    NULL,
-    NULL,
+    NULL, // init
+    NULL, // release
     ATAProbeDevice
-    
-    //OSError (*start)(IODriverBase *driver  );
-    //OSError (*stop)(IODriverBase *driver  );
     
 };
 
@@ -41,6 +38,23 @@ OSError ATADriverInit( ATADriver* driver)
 
 static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx)
 {
-    kprintf("Ata : try to probe node '%s'\n" , IONodeGetName(node));
-    return OSError_Some;
+    IOData class;
+    IOData subclass;
+    OSError ret = IONodeGetAttribute(node, IONodeAttributePCIClass , &class);
+    
+    if (ret != OSError_None)
+        return ret;
+    ret = IONodeGetAttribute(node,  IONodeAttributePCISubClass  ,&subclass);
+    
+    if (ret != OSError_None)
+    {
+        return ret;
+    }
+
+    if( class.data.val == 0x01 && subclass.data.val == 0x01)
+    {
+        kprintf("Ata : try to probe node '%s' class %x subclass %x\n" , IONodeGetName(node) , class.data.val , subclass.data.val);
+        return OSError_None;
+    }
+    return OSError_NotSupportedDevice;
 }

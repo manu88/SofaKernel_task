@@ -367,10 +367,12 @@ static void lateSystemInit(KernelTaskContext *ctx)
     ThreadSetParent(testThread, NULL);
     ALWAYS_ASSERT_NO_ERR(ThreadStart(testThread , NULL , 1) );
     
+    /*
     for (int i=0;i<4;i++)
     {
         spawnTest(ctx);
     }
+     */
     
     
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- */

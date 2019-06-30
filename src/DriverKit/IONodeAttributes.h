@@ -7,6 +7,53 @@
 //
 
 #pragma once
+#include "../KObject/uthash.h"
+
+extern const char IONodeAttributePCI[];
+extern const char IONodeAttributePCIClass[];
+extern const char IONodeAttributePCISubClass[];
+extern const char IONodeAttributeHID[];
+
+extern const char IONodeAttributeVendorID[];
+extern const char IONodeAttributeDeviceID[];
+
+extern const char IONodeAttributeVendorName[];
+extern const char IONodeAttributeDeviceName[];
 
 
-extern const char* IONodeAttributePCI;
+typedef struct
+{
+    char id[10];
+    int type;
+    
+    union
+    {
+        void* ptr;
+        uint64_t v;
+    } data;
+    
+    UT_hash_handle hh; /* makes this structure hashable */
+    
+} IOAttribute;
+
+typedef enum
+{
+    IODataType_Invalid,
+    IODataType_Numeric,
+    IODataType_String,
+    IODataType_Pointer,
+} IODataType;
+
+typedef struct
+{
+    
+    IODataType type;
+    
+    union
+    {
+        void* ptr;
+        uint64_t val;
+        const char* str;
+    } data;
+    
+} IOData;

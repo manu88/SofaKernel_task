@@ -20,28 +20,16 @@
 #include <stdint.h>
 #include "../Sofa.h"
 #include "../KObject/KObject.h"
-#include "../KObject/uthash.h"
+
 #include "IONodeAttributes.h"
 typedef struct _IODriverBase IODriverBase;
 
-typedef struct
-{
-    char id[10];
-    int type;
-    
-    union
-    {
-        void* ptr;
-        uint64_t v;
-    } data;
-    
-    UT_hash_handle hh; /* makes this structure hashable */
-    
-} IOAttribute;
+
 
 extern const KClass *IONodeClass;
 
-typedef struct
+struct _IONode;
+typedef struct _IONode
 {
     struct kset base;
     
@@ -50,6 +38,9 @@ typedef struct
     
     IOAttribute* attributes;
     
+    OSError (*GetAttr)(const struct _IONode* , const char*name , IOData *data) NO_NULL_POINTERS;
+    
+    void* impl;
 }IONode;
 
 OSError IONodeInit(IONode* node, const char* name) NO_NULL_POINTERS;
@@ -61,9 +52,13 @@ IONode* IONodeGetChildByName( const IONode* node, const char* name) NO_NULL_POIN
 
 #define IONodeForEach( node, el) kset_foreach( (&node->base) , el)
 
-OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data );
-size_t  IONodeGetAttrCount( const IONode* node ) NO_NULL_POINTERS;
-IOAttribute* IONodeGetAttr( const IONode* node, const char*name) NO_NULL_POINTERS;
+SOFA_DEPRECATED("") OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data );
+//SOFA_DEPRECATED("") size_t  IONodeGetAttrCount( const IONode* node ) NO_NULL_POINTERS;
+SOFA_DEPRECATED("") IOAttribute* IONodeGetAttr( const IONode* node, const char*name) NO_NULL_POINTERS;
+
+
+OSError IONodeGetAttribute(const IONode* node, const char*name , IOData *data) NO_NULL_POINTERS;
+
 
 #define IOAttributeForEach(node ,tmp ,el) HASH_ITER(hh ,node->attributes ,el ,tmp)
 

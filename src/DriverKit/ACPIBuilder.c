@@ -165,10 +165,7 @@ static int _DeviceTree_onSmallItem(AMLDecompiler* decomp,const ParserContext* co
     memcpy(dataCpy, buffer, bufferSize);
     
     IONodeAddAttr(current, treeCtx->expectedName, itemType, dataCpy);
-    
-    
 
-    
     return 0;
 }
 

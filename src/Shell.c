@@ -100,7 +100,57 @@ static int DoWrite( const char* args)
         return -ENODEV;
     }
     
-    return 0;
+    return -EINVAL;
+}
+
+static int DoAttr( const char* args)
+{
+    
+    char deviceName[128] = "";
+    char attrName[128]       = "";
+    
+    if( sscanf(args , "%s %s" , deviceName , attrName) == 2)
+    {
+        struct kobject * obj = kobjectResolve(deviceName, _root);
+        
+        if( obj && kobjectIsKindOf(obj, IONodeClass))
+        {
+            const IONode* node = (const IONode*)obj;
+            
+            IOData data = {0};
+            OSError ret = IONodeGetAttribute(node, attrName, &data);
+            if( ret == OSError_None)
+            {
+                switch (data.type)
+                {
+                    case IODataType_Invalid:
+                        printf("Invalid attribute '%s'\n" , attrName);
+                        break;
+                    case IODataType_Numeric:
+                        printf("attribute '%s' val : %llx\n" , attrName , data.data.val);
+                        break;
+                    case IODataType_String:
+                        printf("attribute '%s' str : '%s'\n" , attrName , data.data.str);
+                        break;
+                    case IODataType_Pointer:
+                        printf("attribute '%s'  ptr : %p\n" , attrName , data.data.ptr);
+                        break;
+                        
+                        
+                }
+                return 0;
+            }
+            printf("IONodeGetAttribute returned %i\n" , ret);
+            return -EINVAL;
+            
+        }
+        
+        return -ENODEV;
+        
+    }
+    
+    return -EINVAL;
+
 }
 
 static int execCmd( const char* cmd)
@@ -162,25 +212,11 @@ static int execCmd( const char* cmd)
     {
         const char* arg = cmd + strlen("attr ");
         
-        struct kobject * obj = kobjectResolve(arg, _root);
+        if( arg)
+        {
+            return DoAttr(arg);
+        }
         
-        if( obj && kobjectIsKindOf(obj, IONodeClass))
-        {
-            const IONode* node = (const IONode*)obj;
-            
-            IOAttribute* tmp = NULL;
-            IOAttribute* attr = NULL;
-            
-            printf("IONode '%s' has %zi attribute(s):\n", node->base.obj.k_name, IONodeGetAttrCount(node) );
-            IOAttributeForEach(node, tmp, attr)
-            {
-                printf("Attribute '%s' Type %i value %llu\n" , attr->id , attr->type , attr->data.v);
-            }
-        }
-        else
-        {
-            return -EINVAL;
-        }
         
     }
     else if( startsWith("spawn", cmd))

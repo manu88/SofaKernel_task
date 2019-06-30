@@ -8,5 +8,14 @@
 
 #include "IONodeAttributes.h"
 
-static const char kPCINodeAttr[] = "pci";
-const char IONodeAttributePCI[] = "pci";
+
+const char IONodeAttributePCI[]         = "pci";
+const char IONodeAttributePCIClass[]    = "class";
+const char IONodeAttributePCISubClass[] = "subclass";
+const char IONodeAttributeHID[]         = "hid";
+
+const char IONodeAttributeVendorID[]    = "vid";
+const char IONodeAttributeDeviceID[]    = "pid";
+
+const char IONodeAttributeVendorName[]  = "vendorName";
+const char IONodeAttributeDeviceName[]  = "deviceName";
