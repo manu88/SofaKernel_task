@@ -24,8 +24,6 @@
 #include "IONodeAttributes.h"
 typedef struct _IODriverBase IODriverBase;
 
-
-
 extern const KClass *IONodeClass;
 
 struct _IONode;

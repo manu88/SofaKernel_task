@@ -6,9 +6,13 @@
 //  Copyright © 2019 Manuel Deneu. All rights reserved.
 //
 
+#include <pci/pci.h>
+#include "ata.h"
 #include "ATADriver.h"
 
 static const char ataName[] = "ATADriver";
+
+static ATADrive drives[4];
 
 static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx) NO_NULL_POINTERS;
 
@@ -36,6 +40,11 @@ OSError ATADriverInit( ATADriver* driver)
 }
 
 
+static void DriveInit(KernelTaskContext* ctx, ATADrive* drive)
+{
+    printf("DriveInit\n");
+}
+
 static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx)
 {
     IOData class;
@@ -54,7 +63,105 @@ static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
     if( class.data.val == 0x01 && subclass.data.val == 0x01)
     {
         kprintf("Ata : try to probe node '%s' class %x subclass %x\n" , IONodeGetName(node) , class.data.val , subclass.data.val);
+        
+        
+        const libpci_device_t* dev = (const libpci_device_t*) node->impl;
+        uint32_t base, control;
+        uint8_t id;
+/* Primary Channel */
+        id = 0;
+        base = libpci_read_reg32(dev->bus, dev->dev, dev->fun, 0x10 + 4 * id);
+        
+        id = 1;
+        control = libpci_read_reg32(dev->bus, dev->dev, dev->fun, 0x10 + 4 * id);
+
+        if (base == 0 || base == 1)
+            base = ATA_PIO_PRI_PORT_BASE;
+        
+        if (control == 0 || control == 1)
+            control = ATA_PIO_PRI_PORT_CONTROL;
+        
+        printf("ata: IDE controller primary channel: (Base: 0x%x, Control: 0x%x)\n", base, control);
+        
+        
+        drives[0].base = base;
+        drives[0].control = control;
+        drives[0].id = 0;
+        drives[0].isSlave = 0;
+        
+        drives[1].base = base;
+        drives[1].control = control;
+        drives[1].id = 1;
+        drives[1].isSlave = 1;
+        
+/* Secondary Channel */
+        id = 0;
+        base    = libpci_read_reg32(dev->bus, dev->dev, dev->fun, 0x10 + 4 * id);
+        id = 1;
+        control = libpci_read_reg32(dev->bus, dev->dev, dev->fun, 0x10 + 4 * id);
+        
+
+        if (base == 0 || base == 1)
+            base = ATA_PIO_SEC_PORT_BASE;
+        
+        if (control == 0 || control == 1)
+            control = ATA_PIO_SEC_PORT_CONTROL;
+        
+        printf("ata: IDE controller secondary channel: (Base: 0x%x, Control: 0x%x)\n", base, control);
+
+        drives[2].base = base;
+        drives[2].control = control;
+        drives[2].id = 2;
+        drives[2].isSlave = 0;
+
+        
+        drives[3].base = base;
+        drives[3].control = control;
+        drives[3].id = 3;
+        drives[3].isSlave = 1;
+
+        ata_soft_reset(ctx, &drives[0]);
+        ata_soft_reset(ctx, &drives[1]);
+        ata_soft_reset(ctx, &drives[2]);
+        ata_soft_reset(ctx, &drives[3]);
+        
+        for (int i = 0; i < 4 ; ++i)
+        {
+            /* disable interrupts */
+            ata_disable_IRQ(ctx, &drives[i]);
+            
+            
+            uint8_t type = ata_detect_drive(ctx , &drives[i]);
+            switch (type)
+            {
+                case ATADEV_PATA:
+                    printf("ata%d: Initializing ATA device (PIO)\n", i);
+                    DriveInit(ctx, &drives[i]);
+                    break;
+                case ATADEV_SATA:
+                    printf("ata%d: SATA is not supported\n", i);
+                    break;
+                case ATADEV_PATAPI:
+                    printf("ata%d: PATAPI is not supported\n", i);
+                    break;
+                case ATADEV_SATAPI:
+                    printf("ata%d: SATAPI is not supported\n", i);
+                    break;
+                case ATADEV_NOTFOUND:
+                    printf("ata%d: No device found\n", i);
+                    break;
+                default:
+                    printf("ata%d: Unkown ATA type %d\n", i, drives[i].type);
+                    break;
+            }
+        }
+
+        
         return OSError_None;
     }
     return OSError_NotSupportedDevice;
 }
+
+
+
+
