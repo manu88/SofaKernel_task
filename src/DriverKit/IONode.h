@@ -21,7 +21,7 @@
 #include "../Sofa.h"
 #include "../KObject/KObject.h"
 #include "../KObject/uthash.h"
-
+#include "IONodeAttributes.h"
 typedef struct _IODriverBase IODriverBase;
 
 typedef struct

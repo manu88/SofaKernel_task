@@ -38,7 +38,7 @@ typedef struct
 } IOComDevice;
 
 
-static const char pciNodeAttr[] = "pci";
+
 static const char vgaName[] = "VGA";
 static IONode vgaNode = {0};
 static IODevice vgaDev = {0};
@@ -210,7 +210,7 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
             
             ALWAYS_ASSERT_NO_ERR(IONodeAddChild(node, ataNode));
 
-            ALWAYS_ASSERT_NO_ERR(IONodeAddAttr(ataNode, pciNodeAttr, /*itemType*/ 0, ideDev));
+            ALWAYS_ASSERT_NO_ERR(IONodeAddAttr(ataNode, IONodeAttributePCI, /*itemType*/ 0, ideDev));
         }
         // do we have an IDE storage device?
         /*
