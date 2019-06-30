@@ -57,7 +57,7 @@ OSError IONodeInit(IONode* node, const char* name) NO_NULL_POINTERS;
 OSError IONodeAddChild( IONode* node, IONode* child) NO_NULL_POINTERS;
 OSError IONodeRemoveChild( IONode* node, IONode* child) NO_NULL_POINTERS;
 
-IONode* IONodeGetChildName( const IONode* node, const char* name) NO_NULL_POINTERS;
+IONode* IONodeGetChildByName( const IONode* node, const char* name) NO_NULL_POINTERS;
 
 #define IONodeForEach( node, el) kset_foreach( (&node->base) , el)
 
@@ -66,3 +66,6 @@ size_t  IONodeGetAttrCount( const IONode* node ) NO_NULL_POINTERS;
 IOAttribute* IONodeGetAttr( const IONode* node, const char*name) NO_NULL_POINTERS;
 
 #define IOAttributeForEach(node ,tmp ,el) HASH_ITER(hh ,node->attributes ,el ,tmp)
+
+
+const char* IONodeGetName( const IONode*node) NO_NULL_POINTERS;

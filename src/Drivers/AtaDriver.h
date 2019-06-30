@@ -7,3 +7,16 @@
 //
 
 #pragma once
+
+#include "../DriverKit/IODriverBase.h"
+
+
+
+typedef struct
+{
+    IODriverBase base;
+
+    
+} ATADriver;
+
+OSError ATADriverInit( ATADriver* driver) NO_NULL_POINTERS;

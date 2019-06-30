@@ -78,6 +78,7 @@ typedef enum
     OSError_ArgError     = -2,
     OSError_InitError    = -10,
     OSError_ParsingError = -20,
+    OSError_Unimplemented = -100,
     
 } OSError;
 

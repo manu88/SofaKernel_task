@@ -57,5 +57,5 @@ static OSError _Default_release(IODriverBase *driver  )
 
 static OSError _Default_probeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx)
 {
-    return OSError_None;
+    return OSError_Unimplemented;
 }

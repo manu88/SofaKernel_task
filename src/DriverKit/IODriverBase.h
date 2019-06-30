@@ -26,9 +26,13 @@ typedef struct _KernelTaskContext KernelTaskContext;
 
 typedef struct
 {
+    // can be NULL : default returns OSError_None
+    //
     OSError (*init)(IODriverBase *driver  ) NO_NULL_POINTERS;
+    // can be NULL : default returns OSError_None
     OSError (*release)(IODriverBase *driver  ) NO_NULL_POINTERS;
     
+    // default returns OSError_Unimplemented
     OSError (*probeDevice)(IODriverBase* driver , IONode* node , KernelTaskContext* context) NO_NULL_POINTERS;
     
     OSError (*onInterupt)(IODriverBase* driver , uint32_t intNum) NO_NULL_POINTERS;

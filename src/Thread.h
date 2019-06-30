@@ -73,6 +73,6 @@ static inline OSError ThreadSetPriority(Thread* thread , uint8_t priority)
 
 OSError ThreadStart(Thread* thread , void* arg,  int resume) ;
 
-void ThreadSetParent( Thread* thread , Thread* parent) NO_NULL_POINTERS;
+void ThreadSetParent( Thread* thread , Thread* parent) NO_NULL_ARGS(1, 1);
 OSError ThreadSetName(Thread* thread , const char* name) NO_NULL_POINTERS;
 const char* ThreadGetName( const Thread* thread) NO_NULL_POINTERS;

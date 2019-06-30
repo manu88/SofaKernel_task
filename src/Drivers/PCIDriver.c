@@ -26,6 +26,7 @@
 #include "../DriverKit/DriverKit.h"
 #include <ACPIDesc.h>
 #include "EGADriver.h"
+#include "AtaDriver.h"
 
 typedef struct
 {
@@ -36,12 +37,16 @@ typedef struct
     
 } IOComDevice;
 
+
+static const char pciNodeAttr[] = "pci";
 static const char vgaName[] = "VGA";
 static IONode vgaNode = {0};
 static IODevice vgaDev = {0};
 
 static const char pciName[] = "PCIDriver";
 
+
+static ATADriver _ataDriver = {0};
 
 static OSError PCIInit(IODriverBase *driver  ) NO_NULL_POINTERS;
 static OSError PCIRelease(IODriverBase *driver  ) NO_NULL_POINTERS;
@@ -69,7 +74,12 @@ OSError PCIDriverInit( PCIDriver* driver)
     {
         driver->base.driverMethods = &PCIMethods;
         driver->isaNode = NULL;
+        
+        ALWAYS_ASSERT_NO_ERR(ATADriverInit(&_ataDriver));
+        ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDriver((IODriverBase *)&_ataDriver));
     }
+    
+    
     
     return ret;
 }
@@ -119,7 +129,7 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
     
     if( node->hid == 0x30ad041) // PNP0A03
     {
-        IONode* isaNode = IONodeGetChildName(node, "ISA");
+        IONode* isaNode = IONodeGetChildByName(node, "ISA");
         if( isaNode)
         {
             self->isaNode = isaNode;
@@ -159,6 +169,8 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
                     
                     ALWAYS_ASSERT_NO_ERR( IODeviceInit(&dev->base, c, c->base.obj.k_name) );
                     
+                    
+                    
 #ifndef SOFA_TESTS_ONLY
                     ALWAYS_ASSERT(ps_cdev_init(PC99_SERIAL_COM1 , &ctx->opsIO ,&dev->_dev) );
 #endif
@@ -185,7 +197,20 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
         
         if( ideDev)
         {
-            printf("Got an IDE device vendor id %x device id %x  '%s' '%s'\n" , ideDev->vendor_id , ideDev->device_id , ideDev->vendor_name , ideDev->device_name);
+            printf("Got an IDE device vendor id %x device id %x  '%s' '%s'\n" ,
+                   ideDev->vendor_id ,
+                   ideDev->device_id ,
+                   ideDev->vendor_name ,
+                   ideDev->device_name);
+            
+            
+            
+            IONode* ataNode = kmalloc(sizeof(IONode));
+            ALWAYS_ASSERT_NO_ERR(IONodeInit(ataNode, "ATAController"));
+            
+            ALWAYS_ASSERT_NO_ERR(IONodeAddChild(node, ataNode));
+
+            ALWAYS_ASSERT_NO_ERR(IONodeAddAttr(ataNode, pciNodeAttr, /*itemType*/ 0, ideDev));
         }
         // do we have an IDE storage device?
         /*

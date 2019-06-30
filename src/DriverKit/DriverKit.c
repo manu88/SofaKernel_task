@@ -123,6 +123,26 @@ void DriverKitDump()
 }
 
 
+static OSError _CallDriverInit(IODriverBase* driver)
+{
+    if( driver->driverMethods->init)
+    {
+        return  driver->driverMethods->init(driver);
+    }
+    
+    return OSError_None;
+}
+
+static OSError _CallDriverRelease(IODriverBase* driver)
+{
+    if( driver->driverMethods->release)
+    {
+        return  driver->driverMethods->release(driver);
+    }
+    
+    return OSError_None;
+}
+
 OSError DriverKitRegisterDriver( IODriverBase* driver)
 {
     OSError ret = kset_append(&_dkContext.driversNode, (struct kobject *)driver);
@@ -133,7 +153,7 @@ OSError DriverKitRegisterDriver( IODriverBase* driver)
         kprintf("DriverKit : register Driver '%s'\n" , driver->base.k_name);
         if(driver->isInit == 0)
         {
-            ret = driver->driverMethods->init(driver);
+            ret = _CallDriverInit(driver);
         }
     }
     return ret;
@@ -148,7 +168,7 @@ OSError DriverKitRemoveDriver( IODriverBase* driver)
     if (ret == OSError_None)
     {
         kprintf("DriverKit : remove Driver '%s'\n" , driver->base.k_name);
-        ret = driver->driverMethods->release(driver);
+        ret = _CallDriverRelease(driver);
         driver->isInit = 0;
     }
     return ret;

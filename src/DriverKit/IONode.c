@@ -63,7 +63,7 @@ OSError IONodeRemoveChild( IONode* node, IONode* child)
 }
 
 
-IONode* IONodeGetChildName( const IONode* node, const char* name)
+IONode* IONodeGetChildByName( const IONode* node, const char* name)
 {
     struct kobject* obj = NULL;
     
@@ -107,4 +107,10 @@ IOAttribute* IONodeGetAttr( const IONode* node, const char*name)
     IOAttribute* attr = NULL;
     HASH_FIND_STR(node->attributes, name, attr);
     return attr;
+}
+
+
+const char* IONodeGetName( const IONode*node)
+{
+    return node->base.obj.k_name;
 }
