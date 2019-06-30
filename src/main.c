@@ -354,7 +354,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
     
     
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- */
-    
+/*
     Thread* testThread = kmalloc(sizeof(Thread));
     ALWAYS_ASSERT( ThreadPrepare(ctx, testThread, ThreadTest) == testThread);
     
@@ -366,7 +366,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
     kobject_put((struct kobject *)testThread);
     ThreadSetParent(testThread, NULL);
     ALWAYS_ASSERT_NO_ERR(ThreadStart(testThread , NULL , 1) );
-    
+*/
     /*
     for (int i=0;i<4;i++)
     {

@@ -108,6 +108,13 @@ typedef struct
     uint16_t type;
     uint8_t  isSlave;
     uint8_t  id;
+    
+    uint8_t  mode;
+    uint16_t signature;
+    uint16_t capabilities;
+    uint32_t command_sets;
+    uint64_t max_lba;
+    char     model[41];
 } ATADrive;
 
 void ata_disable_IRQ(KernelTaskContext* ctx, ATADrive *drive) NO_NULL_POINTERS;

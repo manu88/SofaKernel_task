@@ -27,6 +27,8 @@ static IODriverCallbacks ATAMethods =
 
 OSError ATADriverInit( ATADriver* driver)
 {
+    memset(drives, 0, sizeof(ATADrive) * 4);
+    
     OSError ret = IODriverBaseInit(&driver->base, ataName);
     
     if(ret == OSError_None)
@@ -95,9 +97,10 @@ static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
         drives[1].isSlave = 1;
         
 /* Secondary Channel */
-        id = 0;
+        id = 2;
+        
         base    = libpci_read_reg32(dev->bus, dev->dev, dev->fun, 0x10 + 4 * id);
-        id = 1;
+        id = 3;
         control = libpci_read_reg32(dev->bus, dev->dev, dev->fun, 0x10 + 4 * id);
         
 
@@ -120,11 +123,13 @@ static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
         drives[3].id = 3;
         drives[3].isSlave = 1;
 
+        /*
         ata_soft_reset(ctx, &drives[0]);
         ata_soft_reset(ctx, &drives[1]);
         ata_soft_reset(ctx, &drives[2]);
         ata_soft_reset(ctx, &drives[3]);
         
+         */
         for (int i = 0; i < 4 ; ++i)
         {
             /* disable interrupts */
