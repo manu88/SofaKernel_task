@@ -156,7 +156,7 @@ OSError kset_remove(struct kset*set , struct kobject* obj)
 {
     DL_DELETE(set->_listHead, obj);
     obj->_parent = NULL;
-    kobject_put(obj);
+    kobject_put(obj); // dec ref count
     return OSError_None;
 }
 

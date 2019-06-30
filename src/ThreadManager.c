@@ -39,7 +39,6 @@ OSError ThreadManagerRemoveThread( Thread* thread)
     return kset_remove(&_threadManagerCtx.set, (struct kobject *)thread);
 }
 
-
 Thread* ThreadManagerGetThreadWithID( uint32_t id )
 {
     struct kobject* obj = NULL;

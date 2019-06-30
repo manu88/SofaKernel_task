@@ -20,8 +20,10 @@
 #include "Bootstrap.h"
 
 
-#ifndef __APPLE__
+#ifndef SOFA_TESTS_ONLY
+
 seL4_Word get_free_slot( KernelTaskContext* context);
 int cnode_savecaller( KernelTaskContext* context,seL4_CPtr cap);
 int cnode_delete( KernelTaskContext* context,seL4_CPtr slot);
+
 #endif

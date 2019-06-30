@@ -111,6 +111,18 @@ static void handleKill(KernelTaskContext* context, seL4_MessageInfo_t message)
     seL4_Reply( message );
 }
 
+static void handleSpawn(KernelTaskContext* context, seL4_MessageInfo_t message)
+{
+    printf("Spawn\n");
+    int err = -EACCES;
+    
+    seL4_SetMR(0,SysCallNum_spawn);
+    seL4_SetMR(1, err );
+    
+    spawnTest(context);
+    seL4_Reply( message );
+}
+
 void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL4_Word sender_badge)
 {
     if( _context == NULL)
@@ -129,6 +141,11 @@ void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL
             
         case SysCallNum_kill:
             handleKill(context , message);
+            break;
+            
+        case SysCallNum_spawn:
+            handleSpawn(context , message);
+            break;
             
         default:
             break;

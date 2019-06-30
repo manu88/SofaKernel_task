@@ -24,3 +24,4 @@ typedef enum
 // Syscalls from inside kerneltask ONLY
 int SC_usleep(seL4_CPtr cap, int microsecs);
 int SC_kill  (seL4_CPtr cap, int id);
+int SC_spawn (seL4_CPtr cap);

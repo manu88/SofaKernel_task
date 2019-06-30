@@ -56,6 +56,11 @@ OSError ThreadSetName(Thread* thread , const char* name)
     return OSError_None;
 }
 
+const char* ThreadGetName( const Thread* thread)
+{
+    return thread->obj.k_name;
+}
+
 void ThreadSetParent( Thread* thread , Thread* parent)
 {
     thread->parent = parent;

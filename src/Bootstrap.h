@@ -42,7 +42,6 @@ typedef struct _KernelTaskContext
     allocman_t *   allocman;
     vspace_t       vspace;
 
-
     time_manager_t tm;
     seL4_timer_t   timer;
     vka_object_t   ntfn_object;
@@ -50,8 +49,8 @@ typedef struct _KernelTaskContext
 
     struct ps_io_ops    opsIO;
     
-    
     vka_object_t rootTaskEP;
+    
 #else
     void* unused;
 #endif
@@ -62,3 +61,6 @@ int bootstrapSystem(KernelTaskContext* context) NO_NULL_POINTERS;
 
 
 void* kmalloc(size_t size) NO_NULL_POINTERS WARN_UNUSED_RESULT;
+void kfree(void *);
+
+void spawnTest(KernelTaskContext *ctx);

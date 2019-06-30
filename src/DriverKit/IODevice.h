@@ -21,10 +21,12 @@
 
 extern const KClass *IODeviceClass;
 typedef struct _IODevice IODevice;
+
 typedef struct
 {
     ssize_t (*read)(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  ) NO_NULL_POINTERS;
     ssize_t (*write)(IODevice* dev, const uint8_t* buf , size_t bufSize  ) NO_NULL_POINTERS;
+    
 } IODeviceCallbacks;
 
 typedef struct _IODevice

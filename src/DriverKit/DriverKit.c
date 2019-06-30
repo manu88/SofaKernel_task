@@ -144,6 +144,7 @@ OSError DriverKitRemoveDriver( IODriverBase* driver)
 {
     OSError ret = kset_remove(&_dkContext.driversNode, (struct kobject *)driver);
     //OSError ret = IONodeRemoveChild(&_dkContext.driversNode,(IONode*) driver);
+    
     if (ret == OSError_None)
     {
         kprintf("DriverKit : remove Driver '%s'\n" , driver->base.k_name);

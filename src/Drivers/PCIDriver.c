@@ -19,7 +19,7 @@
 #include <platsupport/chardev.h>
 #endif
 
-
+#include <pci/pci.h>
 #include "PCIDriver.h"
 #include "../DriverKit/IODevice.h"
 #include "../Bootstrap.h"
@@ -30,9 +30,9 @@
 typedef struct
 {
     IODevice base;
-    #ifndef SOFA_TESTS_ONLY
+#ifndef SOFA_TESTS_ONLY
     ps_chardevice_t _dev;
-    #endif
+#endif
     
 } IOComDevice;
 
@@ -95,10 +95,28 @@ static IODeviceCallbacks _ComMethods =
     _ComWrite,
 };
 
+static int _ScanPCIDevices(KernelTaskContext* context)
+{
+#ifndef SOFA_TESTS_ONLY
+    if(libpci_num_devices == 0)
+    {
+        libpci_scan( context->ops.io_port_ops);
+    }
+    
+    return libpci_num_devices;
+#else
+    return 0;
+#endif
+}
 
 static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx)
 {
+    
     PCIDriver* self = (PCIDriver*) driver;
+    
+    
+    
+    
     if( node->hid == 0x30ad041) // PNP0A03
     {
         IONode* isaNode = IONodeGetChildName(node, "ISA");
@@ -160,7 +178,27 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
                 }
                 
             }
+        } // end isaNode
+        
+        int numPciDevices = _ScanPCIDevices(ctx);
+        libpci_device_t* ideDev = libpci_find_device_bdf(0 , 0x01,0x01);
+        
+        if( ideDev)
+        {
+            printf("Got an IDE device vendor id %x device id %x  '%s' '%s'\n" , ideDev->vendor_id , ideDev->device_id , ideDev->vendor_name , ideDev->device_name);
         }
+        // do we have an IDE storage device?
+        /*
+        
+        
+        for(int i=0;i<numPciDevices;i++)
+        {
+            const libpci_device_t* device = &libpci_device_list[i];
+            printf("Got a PCI Device vid %x did %x bus %x dev %x fun %x \n" , device->vendor_id , device->device_id , device->bus , device->dev , device->fun);
+            
+        }
+         */
+        
         
         ALWAYS_ASSERT_NO_ERR(InitVGA(ctx));
         
@@ -173,6 +211,8 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
     }
     return OSError_Some;
 }
+
+
 
 static OSError InitVGA(KernelTaskContext* ctx)
 {

@@ -226,7 +226,7 @@ static int OnTime(uintptr_t token)
 
 static void ThreadTest(Thread *self, void *arg, void *ipc_buf)
 {
-    kprintf("START TEST THREAD\n");
+    printf("Thread %i test Started\n" , self->threadID);
     
     while (1)
     {
@@ -234,18 +234,28 @@ static void ThreadTest(Thread *self, void *arg, void *ipc_buf)
     }
 }
 
+static void ThreadTest2(Thread *self, void *arg, void *ipc_buf)
+{
+    printf("Thread %i test Started\n" , self->threadID);
+    
+    while (1)
+    {
+        SC_usleep(self->ipc_ep_cap, 200000);
+    }
+}
+
 static void TestThreadIsReleased( struct kobject *obj)
 {
-    printf("TEST THREAD IS RELEASED \n");
+    Thread* thread = (Thread*) obj;
     
-    free(obj);
+    printf("TEST THREAD %i IS RELEASED \n" , thread->threadID);
+    
+    kfree(obj);
     
     
 }
 static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
 {
-    printf("Thread test Started\n");
-    
     IODevice* comDev =(IODevice*) kset_getChildByName(kset_getChildByName(&root, "Devices") , "COM1");
     ALWAYS_ASSERT(comDev);
     
@@ -297,6 +307,38 @@ static Thread* ThreadPrepare(KernelTaskContext *ctx, Thread* thread , ThreadEntr
     return thread;
 }
 
+void spawnTest(KernelTaskContext *ctx)
+{
+    Thread* testThread = kmalloc(sizeof(Thread));
+    
+    ALWAYS_ASSERT( ThreadPrepare(ctx, testThread, ThreadTest2) == testThread);
+    
+    testThread->obj.methods.release = TestThreadIsReleased;
+    OSError ret = ThreadManagerAddThread(testThread);
+    
+    ALWAYS_ASSERT_NO_ERR(ret);
+    
+    kobject_put((struct kobject *)testThread);
+    ThreadSetParent(testThread, NULL);
+    ALWAYS_ASSERT_NO_ERR(ThreadStart(testThread , NULL , 1) );
+}
+
+static void startShell(KernelTaskContext* ctx)
+{
+    Thread* t = ThreadPrepare(ctx , &shellThread , ThreadShell);
+    ALWAYS_ASSERT(t);
+    
+    ThreadSetName(&shellThread ,"Shell");
+    ThreadSetParent(&shellThread, NULL);
+    
+    OSError ret = ThreadManagerAddThread(&shellThread);
+    ALWAYS_ASSERT_NO_ERR(ret);
+    
+    kobject_put((struct kobject *)&shellThread);
+    
+    ALWAYS_ASSERT_NO_ERR(ThreadStart(&shellThread , NULL , 1) );
+
+}
 static void lateSystemInit(KernelTaskContext *ctx)
 {
     kprintf("Late System Init\n");
@@ -307,24 +349,13 @@ static void lateSystemInit(KernelTaskContext *ctx)
     
     kset_append(&root, ThreadManagerGetHandle() );
     
+    startShell(ctx);
     int err = 0;
     
-    Thread* t = ThreadPrepare(ctx , &shellThread , ThreadShell);
-    ALWAYS_ASSERT(t);
     
-    ThreadSetName(&shellThread ,"Shell");
-    ThreadSetParent(&shellThread, NULL);
-    
-    ret = ThreadManagerAddThread(&shellThread);
-    ALWAYS_ASSERT_NO_ERR(ret);
-    
-    kobject_put((struct kobject *)&shellThread);
-    
-    ALWAYS_ASSERT_NO_ERR(ThreadStart(&shellThread , NULL , 1) );
-
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- */
     
-    Thread* testThread = malloc(sizeof(Thread));
+    Thread* testThread = kmalloc(sizeof(Thread));
     ALWAYS_ASSERT( ThreadPrepare(ctx, testThread, ThreadTest) == testThread);
     
     testThread->obj.methods.release = TestThreadIsReleased;
@@ -335,6 +366,11 @@ static void lateSystemInit(KernelTaskContext *ctx)
     kobject_put((struct kobject *)testThread);
     ThreadSetParent(testThread, NULL);
     ALWAYS_ASSERT_NO_ERR(ThreadStart(testThread , NULL , 1) );
+    
+    for (int i=0;i<4;i++)
+    {
+        spawnTest(ctx);
+    }
     
     
 /* ---- ---- ---- ---- ---- ---- ---- ---- ---- */
@@ -353,7 +389,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
 #ifndef SOFA_TESTS_ONLY
 static void processTimer(KernelTaskContext* context,seL4_Word sender_badge)
 {
-    kprintf("Process Timer \n");
+    //kprintf("Process Timer \n");
     sel4platsupport_handle_timer_irq(&context->timer, sender_badge);
     int err = tm_update(&context->tm);
 }
@@ -372,9 +408,9 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
         seL4_MessageInfo_t message;
         seL4_Word label;
         
-        kprintf("[kernTask] Listening...\n");
+        //kprintf("[kernTask] Listening...\n");
         message = seL4_Recv(epPtr, &sender_badge);
-        kprintf("[kernTask] Got a message\n");
+        //kprintf("[kernTask] Got a message\n");
 
         label = seL4_MessageInfo_get_label(message);
         
@@ -408,18 +444,32 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
         }
         else if (label == seL4_VMFault)
         {
-            printf("[kernTask] VM Fault from %li \n",sender_badge);
+            
             
             Thread* callingThread = ThreadManagerGetThreadWithID( sender_badge);
             
             ALWAYS_ASSERT( callingThread);
+            
+            printf("[kernTask] VM Fault from %li Thread '%s' %i \n",sender_badge ,ThreadGetName(callingThread ) , callingThread->threadID );
+            
             
             OSError err = ThreadManagerRemoveThread(callingThread);
             ALWAYS_ASSERT_NO_ERR(err);
             
             ThreadRelease(&shellThread , &context->vka, &context->vspace);
             
-            kobject_printTree(&root);
+            /*
+            if( callingThread == &shellThread)
+            {
+                startShell(context);
+            }
+             */
+            printf("Remaining ref count from thread : %i\n" , callingThread->threadID);
+            
+            struct kobject * threadManager = kobjectResolve("/ThreadManager", &root);
+            
+            kobject_printTree(threadManager);
+            
             
         }
         else if( label == seL4_CapFault)

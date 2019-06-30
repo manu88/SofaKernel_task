@@ -23,6 +23,7 @@
 
 typedef struct _IODriverBase IODriverBase;
 typedef struct _KernelTaskContext KernelTaskContext;
+
 typedef struct
 {
     OSError (*init)(IODriverBase *driver  ) NO_NULL_POINTERS;
@@ -33,7 +34,6 @@ typedef struct
     OSError (*onInterupt)(IODriverBase* driver , uint32_t intNum) NO_NULL_POINTERS;
     
 } IODriverCallbacks;
-
 
 typedef struct _IODriverBase
 {

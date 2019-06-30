@@ -22,8 +22,6 @@
 #include "../KObject/KObject.h"
 #include "../KObject/uthash.h"
 
-
-
 typedef struct _IODriverBase IODriverBase;
 
 typedef struct
@@ -56,16 +54,12 @@ typedef struct
 
 OSError IONodeInit(IONode* node, const char* name) NO_NULL_POINTERS;
 
-
-
 OSError IONodeAddChild( IONode* node, IONode* child) NO_NULL_POINTERS;
 OSError IONodeRemoveChild( IONode* node, IONode* child) NO_NULL_POINTERS;
 
 IONode* IONodeGetChildName( const IONode* node, const char* name) NO_NULL_POINTERS;
 
 #define IONodeForEach( node, el) kset_foreach( (&node->base) , el)
-
-
 
 OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data );
 size_t  IONodeGetAttrCount( const IONode* node ) NO_NULL_POINTERS;

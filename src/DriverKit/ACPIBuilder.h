@@ -21,6 +21,7 @@
 #include "IONode.h"
 
 #define MAX_STACK 32
+
 typedef struct
 {
     IONode* sta[MAX_STACK];
@@ -40,7 +41,6 @@ typedef struct
     Stack devStack;
     
     char expectedName[5];
-    
     
 } DeviceTreeContext;
 

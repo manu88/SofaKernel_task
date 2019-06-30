@@ -70,7 +70,9 @@ static inline OSError ThreadSetPriority(Thread* thread , uint8_t priority)
 	return seL4_TCB_SetPriority(thread->thread.tcb.cptr, seL4_CapInitThreadTCB ,  priority);
 }
 
-void ThreadSetParent( Thread* thread , Thread* parent) NO_NULL_POINTERS;
+
 OSError ThreadStart(Thread* thread , void* arg,  int resume) ;
 
+void ThreadSetParent( Thread* thread , Thread* parent) NO_NULL_POINTERS;
 OSError ThreadSetName(Thread* thread , const char* name) NO_NULL_POINTERS;
+const char* ThreadGetName( const Thread* thread) NO_NULL_POINTERS;

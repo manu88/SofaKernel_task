@@ -86,3 +86,8 @@ void* kmalloc(size_t size)
     
     return p;
 }
+
+void kfree(void *ptr)
+{ 
+    free(ptr);
+}

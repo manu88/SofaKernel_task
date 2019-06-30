@@ -106,7 +106,20 @@ static int DoWrite( const char* args)
 static int execCmd( const char* cmd)
 {
     ALWAYS_ASSERT(_root);
-    if( startsWith("ls ", cmd))
+    if( startsWith("help", cmd))
+    {
+        printf("Sofa shell help\n");
+        printf("Available commands : \n");
+        printf("\tps\n");
+        printf("\tkill\n");
+        printf("\tattr\n");
+        printf("\twrite\n");
+        printf("\tread\n");
+        printf("\tsleep\n");
+        printf("\n");
+        
+    }
+    else if( startsWith("ls ", cmd))
     {
         const char* arg = cmd + strlen("ls ");
         
@@ -158,10 +171,9 @@ static int execCmd( const char* cmd)
             IOAttribute* tmp = NULL;
             IOAttribute* attr = NULL;
             
-            printf("IONode '%s' has %zi attributes:\n", node->base.obj.k_name, IONodeGetAttrCount(node) );
+            printf("IONode '%s' has %zi attribute(s):\n", node->base.obj.k_name, IONodeGetAttrCount(node) );
             IOAttributeForEach(node, tmp, attr)
             {
-                
                 printf("Attribute '%s' Type %i value %llu\n" , attr->id , attr->type , attr->data.v);
             }
         }
@@ -170,6 +182,10 @@ static int execCmd( const char* cmd)
             return -EINVAL;
         }
         
+    }
+    else if( startsWith("spawn", cmd))
+    {
+        return SC_spawn(_thread->ipc_ep_cap);
     }
     else if (startsWith("write ", cmd))
     {
