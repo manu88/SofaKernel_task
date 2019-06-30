@@ -6,6 +6,9 @@
 //  Copyright © 2019 Manuel Deneu. All rights reserved.
 //
 
+
+// implementation borrowed from the great Mohamed Anwar :  https://github.com/mohamed-anwar/Aquila
+
 #pragma once
 #include <stdint.h>
 #include "../Sofa.h"

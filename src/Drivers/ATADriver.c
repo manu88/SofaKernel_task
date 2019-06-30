@@ -7,8 +7,11 @@
 //
 
 #include <pci/pci.h>
+#include "../Bootstrap.h"
 #include "ata.h"
 #include "ATADriver.h"
+#include "../DriverKit/IODevice.h"
+#include "../DriverKit/DriverKit.h"
 
 static const char ataName[] = "ATADriver";
 
@@ -23,6 +26,15 @@ static IODriverCallbacks ATAMethods =
     NULL, // release
     ATAProbeDevice
     
+};
+
+
+static ssize_t ATARead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  ) NO_NULL_POINTERS;
+static ssize_t ATAWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  ) NO_NULL_POINTERS;
+static IODeviceCallbacks ataMethods =
+{
+    ATARead,
+    ATAWrite
 };
 
 OSError ATADriverInit( ATADriver* driver)
@@ -141,7 +153,39 @@ static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
             {
                 case ATADEV_PATA:
                     printf("ata%d: Initializing ATA device (PIO)\n", i);
-                    DriveInit(ctx, &drives[i]);
+                    
+                    if( drives[i].capabilities && strlen(drives[i].model))
+                    {
+                        IONode* hdNode = (IONode*) kmalloc(sizeof(IONode));
+                        ALWAYS_ASSERT(hdNode);
+                        
+                        const char* hdName = (i == 0? "hda" : (i == 1? "hdb" :(i == 2? "hdc" :  "hdd" )));
+                        IONodeInit(hdNode, hdName);
+                        hdNode->impl = &drives[i];
+                        
+                        IONodeAddChild(node, hdNode);
+                        kobject_put((struct kobject *)hdNode);
+                        
+                        IODevice* hdDev = (IODevice*) kmalloc(sizeof(IODevice));
+                        if( hdDev)
+                        {
+                            if(IODeviceInit(hdDev, node, hdName) == OSError_None)
+                            {
+                                hdDev->methods = &ataMethods;
+                                DriveInit(ctx, &drives[i]);
+                                hdDev->nodeRef = hdNode;
+                                //hdNode->hid = &drives[i];
+                                DriverKitRegisterDevice(hdDev);
+                                kobject_put((struct kobject *)hdDev);
+                                
+                                
+                            }
+                            else
+                            {
+                                kfree(hdDev);
+                            }
+                        }
+                    }
                     break;
                 case ATADEV_SATA:
                     printf("ata%d: SATA is not supported\n", i);
@@ -168,5 +212,22 @@ static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
 }
 
 
+static ssize_t ATARead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  )
+{
+    IONode* hdNode = dev->nodeRef;
+    ALWAYS_ASSERT(hdNode);
+    ATADrive* drive = (ATADrive*) hdNode->impl;
+    ALWAYS_ASSERT(drive);
+    return 0;
+}
 
+static ssize_t ATAWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  )
+{
+    IONode* hdNode = dev->nodeRef;
+    ALWAYS_ASSERT(hdNode);
+    ATADrive* drive = (ATADrive*) hdNode->impl;
+    ALWAYS_ASSERT(drive);
+    
+    return 0;
+}
 

@@ -26,6 +26,14 @@ typedef struct _IODriverBase IODriverBase;
 
 extern const KClass *IONodeClass;
 
+typedef enum
+{
+    IONode_Unknown,
+    IONode_Storage,
+    IONode_USB,
+    IONode_Display,
+} IONodeType;
+
 struct _IONode;
 typedef struct _IONode
 {
@@ -37,7 +45,7 @@ typedef struct _IONode
     IOAttribute* attributes;
     
     OSError (*GetAttr)(const struct _IONode* , const char*name , IOData *data) NO_NULL_POINTERS;
-    
+    IONodeType type;
     void* impl;
 }IONode;
 

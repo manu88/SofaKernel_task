@@ -5,6 +5,9 @@
 //  Created by Manuel Deneu on 30/06/2019.
 //  Copyright © 2019 Manuel Deneu. All rights reserved.
 //
+
+// implementation borrowed from the great Mohamed Anwar :  https://github.com/mohamed-anwar/Aquila
+
 #include <string.h>
 #include "ata.h"
 #include "../Bootstrap.h"
@@ -145,9 +148,16 @@ uint8_t ata_detect_drive(KernelTaskContext* ctx, ATADrive *drive)
     
     printf("ata_detect_drive : Drive %i is %x\n" , drive->id , type);
     
+    drive->type = type;
+    if (type == ATADEV_UNKOWN)
+    {
+        return ATADEV_UNKOWN;
+    }
+    
     if (type == ATADEV_PATAPI || type == ATADEV_SATAPI)
     {
         /* TODO */
+        assert(0 && "ATADEV_PATAPI ATADEV_SATAPI to implement :)");
     }
     else
     {
@@ -188,11 +198,13 @@ uint8_t ata_detect_drive(KernelTaskContext* ctx, ATADrive *drive)
         }
         drive->model[40] = 0;
         
+        printf("-----------\n");
         printf("ata%d: Signature: 0x%x\n", drive->id, drive->signature);
         printf("ata%d: Capabilities: 0x%x\n", drive->id, drive->capabilities);
         printf("ata%d: Command Sets: 0x%x\n", drive->id, drive->command_sets);
         printf("ata%d: Max LBA: 0x%x\n", drive->id, drive->max_lba);
         printf("ata%d: Model: %s\n", drive->id, drive->model);
+        printf("-----------\n");
     }
     
     return drive->type;

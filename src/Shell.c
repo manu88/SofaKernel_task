@@ -161,6 +161,7 @@ static int execCmd( const char* cmd)
         printf("Sofa shell help\n");
         printf("Available commands : \n");
         printf("\tps\n");
+        printf("\tsys\n");
         printf("\tkill\n");
         printf("\tattr\n");
         printf("\twrite\n");
@@ -169,9 +170,9 @@ static int execCmd( const char* cmd)
         printf("\n");
         
     }
-    else if( startsWith("ls ", cmd))
+    else if( startsWith("sys ", cmd))
     {
-        const char* arg = cmd + strlen("ls ");
+        const char* arg = cmd + strlen("sys ");
         
         if ( strlen(cmd) > 3 &&  arg)
         {
