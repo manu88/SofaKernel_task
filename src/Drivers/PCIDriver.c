@@ -26,7 +26,7 @@
 #include "../DriverKit/DriverKit.h"
 #include <ACPIDesc.h>
 #include "EGADriver.h"
-#include "AtaDriver.h"
+#include "ATADriver.h"
 
 typedef struct
 {

@@ -6,7 +6,7 @@
 //  Copyright © 2019 Manuel Deneu. All rights reserved.
 //
 
-#include "AtaDriver.h"
+#include "ATADriver.h"
 
 static const char ataName[] = "ATADriver";
 
