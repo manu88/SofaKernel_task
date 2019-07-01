@@ -113,7 +113,8 @@ static inline NO_NULL_POINTERS int kobjectIsKindOf( const struct kobject* o , co
 {
     return o->_class == _class;
 }
-static inline NO_NULL_POINTERS const char* kobject_name(const struct kobject* obj) 
+
+static inline NO_NULL_POINTERS const char* kobject_getName(const struct kobject* obj) 
 {
     return obj->k_name;
 }
