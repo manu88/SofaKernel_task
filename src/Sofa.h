@@ -26,6 +26,15 @@
 #include <assert.h>
 #include <stdio.h>
 
+
+#ifdef __cplusplus
+    #define SOFA_BEGIN_DCL extern "C" {
+    #define SOFA_END_DCL }
+#else
+    #define SOFA_BEGIN_DCL
+    #define SOFA_END_DCL
+#endif
+
 #define SOFA_VERSION_MAJ   0
 #define SOFA_VERSION_MIN   7
 #define SOFA_VERSION_PATCH 0
