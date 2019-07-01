@@ -22,6 +22,9 @@
 #include "../Sofa.h"
 #include "utlist.h"
 
+
+SOFA_BEGIN_DCL
+
 #ifdef __APPLE__
     #include <stdatomic.h>
     typedef atomic_int atomic_t;
@@ -67,6 +70,10 @@ typedef struct _KClass
 
 
 #define KClassMake( name , getInfos,release) { name  , getInfos,release}
+
+extern const KClass* KObjectClass;
+extern const KClass* KSetClass;
+
 /* kobject def */
 
 typedef struct
@@ -74,6 +81,8 @@ typedef struct
     KobjectRelease release;
     
 }KObjectMethods;
+
+
 
 struct kobject
 {
@@ -87,7 +96,7 @@ struct kobject
     
     
     uint8_t isSet:1;
-    const KClass * class;
+    const KClass * _class;
     
     // when in a set
     struct kobject *prev, *next;
@@ -100,9 +109,9 @@ struct kobject *kobject_get(struct kobject *ko) NO_NULL_POINTERS;
 void kobject_put(struct kobject *ko) NO_NULL_POINTERS;
 
 
-static inline NO_NULL_POINTERS int kobjectIsKindOf( const struct kobject* o , const KClass* class )
+static inline NO_NULL_POINTERS int kobjectIsKindOf( const struct kobject* o , const KClass* _class )
 {
-    return o->class == class;
+    return o->_class == _class;
 }
 static inline NO_NULL_POINTERS const char* kobject_name(const struct kobject* obj) 
 {
@@ -153,3 +162,6 @@ struct kobject* kset_getChildByName( const struct kset* set , const char* name )
 void kobject_printTree( const struct kobject* obj) NO_NULL_POINTERS;
 
 struct kobject* kobjectResolve( const char* path_ , struct kset* startNode ) NO_NULL_POINTERS;
+
+
+SOFA_END_DCL

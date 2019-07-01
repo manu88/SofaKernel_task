@@ -35,12 +35,18 @@ KClassMake(
            KOBJgetInfos,
            NULL // release
            );
+
+const KClass* KObjectClass = &objClass;
+
+
 static const KClass setClass =
 KClassMake(
            "KSet",
            KSETgetInfos,
            NULL // release
            );
+
+const KClass* KSetClass = &setClass;
 
 void kref_init(struct kref* k)
 {
@@ -70,7 +76,7 @@ void kobject_init(struct kobject* object)
 {
     memset(object, 0, sizeof(struct kobject) );
     kref_init(&object->kref);
-    object->class = &objClass;
+    object->_class = &objClass;
     object->methods = _defaultOBJMethods;
 }
 
@@ -118,7 +124,7 @@ static void KSETgetInfos(const struct kobject *obj , char outDesc[MAX_DESC_SIZE]
 void kset_init(struct kset* set)
 {
     kobject_init(&set->obj);
-    set->obj.class = &setClass;
+    set->obj._class = &setClass;
     set->obj.isSet = 1;
     set->_listHead = NULL;
 }
@@ -195,9 +201,9 @@ static void _printOBJ( const struct kobject* obj , int indent)
     
     char desc[MAX_DESC_SIZE] = "";
     
-    obj->class->getInfos(obj , desc);
+    obj->_class->getInfos(obj , desc);
     
-    kprintf("'%s' %s %p refc %i %s\n" , obj->k_name, obj->class->name, (const void*)obj, obj->kref.refcount, desc);
+    kprintf("'%s' %s %p refc %i %s\n" , obj->k_name, obj->_class->name, (const void*)obj, obj->kref.refcount, desc);
     
     if (kobject_isSet(obj))
     {
@@ -230,13 +236,11 @@ struct kobject* kobjectResolve( const char* path_ , struct kset* startNode )
     
     char* token = strtok(path, delim);
     
-    struct kobject *ret = startNode;
+    struct kset *ret = startNode;
     
     while ( token != NULL )
     {
-        
-        
-        ret = kset_getChildByName(ret, token);// InodeGetChildByName(ret ,token);
+        ret = (struct kset *) kset_getChildByName(ret, token);// InodeGetChildByName(ret ,token);
 
         if(!ret)
         {
@@ -255,7 +259,7 @@ struct kobject* kobjectResolve( const char* path_ , struct kset* startNode )
      */
     
     free(path);
-    return ret;
+    return  (struct kobject*)ret;
 }
 
 
