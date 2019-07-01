@@ -120,20 +120,20 @@
 		AADE6A6922CA3EAB00A58C7F /* DriverKit */ = {
 			isa = PBXGroup;
 			children = (
+				AADE6A7122CA3EAB00A58C7F /* IONode.h */,
 				AADE6A6A22CA3EAB00A58C7F /* IONode.c */,
-				AADE6A6B22CA3EAB00A58C7F /* ACPIBuilder.c */,
 				AADE6A7422CA3EAB00A58C7F /* IONodeAttributes.h */,
 				AADE6A6C22CA3EAB00A58C7F /* IONodeAttributes.c */,
+				AADE6A7322CA3EAB00A58C7F /* DriverKit.h */,
 				AADE6A6D22CA3EAB00A58C7F /* DriverKit.c */,
+				AADE6A7622CA3EAB00A58C7F /* deviceTree.h */,
 				AADE6A6E22CA3EAB00A58C7F /* deviceTree.c */,
 				AADE6A6F22CA3EAB00A58C7F /* IODriverBase.c */,
 				AADE6A7022CA3EAB00A58C7F /* IODevice.h */,
 				AADE6A7722CA3EAB00A58C7F /* IODevice.c */,
-				AADE6A7122CA3EAB00A58C7F /* IONode.h */,
 				AADE6A7222CA3EAB00A58C7F /* ACPIBuilder.h */,
-				AADE6A7322CA3EAB00A58C7F /* DriverKit.h */,
+				AADE6A6B22CA3EAB00A58C7F /* ACPIBuilder.c */,
 				AADE6A7522CA3EAB00A58C7F /* IODriverBase.h */,
-				AADE6A7622CA3EAB00A58C7F /* deviceTree.h */,
 			);
 			path = DriverKit;
 			sourceTree = "<group>";

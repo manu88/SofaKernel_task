@@ -22,7 +22,7 @@
 static void IONodegetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
 
 
-static const KClass ioNodeClass = KClassMake("IONode", IONodegetInfos,NULL /*Release*/);
+static const KClass ioNodeClass = KClassMake( "IONode", IONodegetInfos,NULL /*Release*/);
 const KClass *IONodeClass = &ioNodeClass;
 
 OSError IONodeInit(IONode* device, const char* name)

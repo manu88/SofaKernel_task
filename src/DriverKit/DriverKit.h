@@ -20,6 +20,8 @@
 #include "IONode.h"
 #include "IODevice.h"
 
+SOFA_BEGIN_DCL
+
 typedef struct _KernelTaskContext KernelTaskContext;
 typedef struct _IODriverBase IODriverBase;
 
@@ -40,3 +42,5 @@ OSError DriverKitRegisterInterupt(IODriverBase* base, uint32_t intNum) NO_NULL_A
 
 // add a device to '/dev'
 OSError DriverKitRegisterDevice(IODevice* device ) NO_NULL_POINTERS;
+
+SOFA_END_DCL

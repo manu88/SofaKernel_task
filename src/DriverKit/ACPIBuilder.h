@@ -20,6 +20,8 @@
 
 #include "IONode.h"
 
+SOFA_BEGIN_DCL
+
 #define MAX_STACK 32
 
 typedef struct
@@ -45,3 +47,5 @@ typedef struct
 } DeviceTreeContext;
 
 AMLDecompilerCallbacks* getCallbacks(void);
+
+SOFA_END_DCL

@@ -41,7 +41,6 @@ static const char exportedDevicesTreeName[]   = "Devices";
 
 OSError DriverKitInit(struct kset* root, const uint8_t* fromDatas, size_t bufferSize)
 {
-
     kset_initWithName(&_dkContext.exportedDevicesTree , exportedDevicesTreeName);
     ALWAYS_ASSERT(kset_append(root, (struct kobject*) &_dkContext.exportedDevicesTree) == OSError_None);
     
@@ -60,12 +59,8 @@ OSError DriverKitInit(struct kset* root, const uint8_t* fromDatas, size_t buffer
     ALWAYS_ASSERT_NO_ERR(kset_append(&_dkContext.driverKitNode, (struct kobject *)&_dkContext.driversNode) );
     kobject_put((struct kobject *)&_dkContext.driversNode);
     
-    
-    
-    
     OSError ret = DeviceTreeContructDeviceTree(&_dkContext.deviceTree, fromDatas, bufferSize);
-    
-    
+   
     return ret;
 }
 

@@ -41,25 +41,46 @@ SOFA_BEGIN_DCL
 const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
 (type *)( (char *)__mptr - offsetof(type,member) );})
 
-
+//!  kref
+/*!
+ A ref counted object
+ */
 struct kref
 {
     atomic_t refcount;
 };
 
-
+/**
+ Initialize an instance of kref
+ @param k an instance of kref that can't be NULL
+ */
 void kref_init(struct kref* k) NO_NULL_POINTERS;
+
+/**
+ Increases the ref count of an instance of kref.
+ @param k an instance of kref that can't be NULL
+ */
 void kref_get(struct kref* k) NO_NULL_POINTERS;
-void kref_put(struct kref* k,void (*release)(struct kref *k)) NO_NULL_ARGS(1,1);
+
+/**
+ decreases the ref count of an instance of kref.
+ @param k an instance of kref that can't be NULL
+ */
+void kref_put(struct kref* k) NO_NULL_POINTERS;
 
 /* ktype def */
 struct kobject;
-
 
 typedef void (*KobjectRelease)(struct kobject *);
 
 #define MAX_DESC_SIZE 64
 
+//!  KClass
+/*!
+ Represents an object `class`. Each kobject has a direct reference to a KClass instance. See kobjectIsKindOf.
+ Note that there is no notion of inheritance chain in this system. If an object C 'inherits' from B that 'inherits' from A, C will have no way to know about A.
+ 
+ */
 typedef struct _KClass
 {
     const char* name;
@@ -68,10 +89,23 @@ typedef struct _KClass
     KobjectRelease release;
 } KClass;
 
-
+/**
+ Creates a new KClass instance.
+ @param name the class name
+ @param getInfos a function to get informations about a certain instance
+ @param release a release function thas is deprecated
+ */
 #define KClassMake( name , getInfos,release) { name  , getInfos,release}
 
+
+/*!
+ the base class of every kobject.
+ */
 extern const KClass* KObjectClass;
+
+/*!
+ the kset class
+ */
 extern const KClass* KSetClass;
 
 /* kobject def */
@@ -83,7 +117,10 @@ typedef struct
 }KObjectMethods;
 
 
-
+//!  KObject
+/*!
+ The base class of every managed objects.
+ */
 struct kobject
 {
     const char                    *k_name;
@@ -130,8 +167,10 @@ static inline NO_NULL_POINTERS uint8_t kobject_isSet( const struct kobject* obj)
     return obj->isSet;
 }
 
-/* kset def */
-
+//!  KSet
+/*!
+ The base class of every object that own an other object.
+ */
 struct kset
 {
     struct kobject obj;

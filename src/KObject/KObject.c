@@ -58,15 +58,10 @@ void kref_get(struct kref* k)
     atomic_fetch_add(&k->refcount, 1);
 }
 
-void kref_put(struct kref* k,void (*release)(struct kref *k))
+void kref_put(struct kref* k)
 {
-    if (atomic_fetch_sub(&k->refcount, 1) == 1)
-    {
-        if (release)
-        {
-            release(k);
-        }
-    }
+    atomic_fetch_sub(&k->refcount, 1);
+
 }
 
 
@@ -94,7 +89,7 @@ struct kobject *kobject_get(struct kobject *ko)
 }
 void kobject_put(struct kobject *ko)
 {
-    kref_put(&ko->kref, NULL);
+    kref_put(&ko->kref);
     
     if (ko->kref.refcount == 0)
     {
