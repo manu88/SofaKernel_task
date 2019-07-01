@@ -9,6 +9,7 @@
 // implementation borrowed from the great Mohamed Anwar :  https://github.com/mohamed-anwar/Aquila
 
 #include <string.h>
+#include <errno.h>
 #include "ata.h"
 #include "../Bootstrap.h"
 
@@ -243,4 +244,117 @@ void ata_select_drive(KernelTaskContext* ctx, ATADrive *drive, uint32_t mode)
         last_selected_drive = drive;
         last_selected_mode  = mode;
     }
+}
+
+#define PIO_MAX_RETRIES 5
+
+ssize_t ata_read(KernelTaskContext* ctx, ATADrive *drive, uint64_t lba, size_t count, void *buf)
+{
+    //printk("pio_read(drive=%p, lba=%ld, count=%d, buf=%p)\n", drive, lba, count, buf);
+    
+    int retry_count = 0;
+    
+retry:
+    if (++retry_count == PIO_MAX_RETRIES)
+        return -EIO;
+    
+    if (drive->capabilities & ATA_CAP_LBA)
+    {
+        printf("ata_read ata_select_drive\n");
+        /* Use LBA mode */
+        ata_select_drive(ctx,drive, drive->mode);
+        
+        /* Send NULL byte to error register */
+        io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_ERROR, 0);
+        
+        /* Send sectors count and LBA */
+        if (drive->mode == ATA_MODE_LBA48)
+        {
+            io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_SECCOUNT0, (count >> 8) & 0xFF);
+            io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA0, (uint8_t) (lba >> (8 * 3)));
+            io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA1, (uint8_t) (lba >> (8 * 4)));
+            io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA2, (uint8_t) (lba >> (8 * 5)));
+        }
+        
+        io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_SECCOUNT0, count & 0xFF);
+        io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA0, (uint8_t) (lba >> (8 * 0)));
+        io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA1, (uint8_t) (lba >> (8 * 1)));
+        io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA2, (uint8_t) (lba >> (8 * 2)));
+        
+        
+        printf("ata_read ata_wait 1\n");
+        /* Send read command */
+        ata_wait(ctx,drive);
+        
+        if (drive->mode == ATA_MODE_LBA48)
+        {
+            io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_CMD, ATA_CMD_READ_SECTORS_EXT);
+        }
+        else
+        {
+            io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_CMD, ATA_CMD_READ_SECTORS);
+        }
+        
+        printf("ata_read ata_wait 2\n");
+        ata_wait(ctx,drive);
+        
+        size_t _count = count;
+        
+        while (_count--)
+        {
+            int err;
+            printf("ata_read ata_poll 2\n");
+            if ((err = ata_poll(ctx,drive, 1)))
+            {
+                
+                /* retry */
+                if (err == -ATA_ERROR_ABRT)
+                {
+                    printf("ata: retrying...\n");
+                    
+                    for (int i = 0; i < 5; ++i)
+                        ata_wait(ctx,drive);
+                    goto retry;
+                }
+                
+                return -EIO;
+            }
+            
+            /* FIXME */
+            //__insw(drive->base.addr + ATA_REG_DATA, 256, buf);
+            char *_buf = buf;
+            
+            printf("ata_read start getting datas\n");
+            for (int i = 0; i < 256; ++i)
+            {
+                
+                uint16_t x;
+                
+                int err = io_in16(&ctx->opsIO.io_port_ops, drive->base+ ATA_REG_DATA , &x);
+                assert(!err);
+                
+                _buf[2*i+0] = x & 0xFFFF;
+                _buf[2*i+1] = (x >> 8) & 0xFFFF;
+                
+                printf("0X%x 0X%x \n" , _buf[2*i+0],_buf[2*i+1]);
+            }
+            
+            buf += 512;
+        }
+        
+        if (ata_poll(ctx,drive, 0))
+        {
+            return -EINVAL;
+        }
+    }
+    else {
+        /* TODO CHS */
+    }
+    
+    return 0;
+    
+}
+ssize_t ata_write(KernelTaskContext* ctx, ATADrive *drive, uint64_t lba, size_t count, void *buf)
+{
+    return -1;
 }

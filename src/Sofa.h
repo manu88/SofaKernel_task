@@ -85,3 +85,6 @@ typedef enum
 
 
 #define ALWAYS_ASSERT_NO_ERR(x) assert(x == OSError_None)
+
+
+#define __packed     __attribute__((packed))

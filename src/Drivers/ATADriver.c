@@ -13,6 +13,8 @@
 #include "../DriverKit/IODevice.h"
 #include "../DriverKit/DriverKit.h"
 
+#include "ext2.h"
+
 static const char ataName[] = "ATADriver";
 
 static ATADrive drives[4];
@@ -37,6 +39,8 @@ static IODeviceCallbacks ataMethods =
     ATAWrite
 };
 
+
+
 OSError ATADriverInit( ATADriver* driver)
 {
     memset(drives, 0, sizeof(ATADrive) * 4);
@@ -53,14 +57,18 @@ OSError ATADriverInit( ATADriver* driver)
     return ret;
 }
 
+static void testRead(KernelTaskContext* ctx, ATADrive* drive);
 
 static void DriveInit(KernelTaskContext* ctx, ATADrive* drive)
 {
     printf("DriveInit\n");
+    testRead(ctx, drive);
 }
 
 static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx)
 {
+
+    
     IOData class;
     IOData subclass;
     OSError ret = IONodeGetAttribute(node, IONodeAttributePCIClass , &class);
@@ -231,3 +239,27 @@ static ssize_t ATAWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  )
     return 0;
 }
 
+
+static void testRead(KernelTaskContext* ctx, ATADrive* drive)
+{
+    printf("Test read \n");
+    
+    
+    struct ext2_superblock sb = {0};
+    
+    printf("size of buf is %zi\n" ,sizeof(struct ext2_superblock) );
+    
+    ssize_t ret = ata_read(ctx, drive, 1024, sizeof(struct ext2_superblock), &sb);
+    
+    printf("ata_read returns %i\n" , ret);
+    
+    /* Valid Ext2? */
+    if (sb.ext2_signature != EXT2_SIGNATURE)
+    {
+        printf("Invalid signature !\n");
+    }
+    else
+    {
+        printf("VALID signature !\n");
+    }
+}
