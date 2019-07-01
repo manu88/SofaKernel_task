@@ -22,16 +22,19 @@
 #include "../KObject/KObject.h"
 
 #include "IONodeAttributes.h"
+
+SOFA_BEGIN_DCL
+
 typedef struct _IODriverBase IODriverBase;
 
 extern const KClass *IONodeClass;
 
 typedef enum
 {
-    IONode_Unknown,
-    IONode_Storage,
-    IONode_USB,
-    IONode_Display,
+    IONodeType_Unknown,
+    IONodeType_Storage,
+    IONodeType_USB,
+    IONodeType_Display,
 } IONodeType;
 
 struct _IONode;
@@ -56,7 +59,7 @@ OSError IONodeRemoveChild( IONode* node, IONode* child) NO_NULL_POINTERS;
 
 IONode* IONodeGetChildByName( const IONode* node, const char* name) NO_NULL_POINTERS;
 
-#define IONodeForEach( node, el) kset_foreach( (&node->base) , el)
+#define IONodeForEach( node, el) kset_foreach( (&(node)->base) , el)
 
 SOFA_DEPRECATED("") OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data );
 //SOFA_DEPRECATED("") size_t  IONodeGetAttrCount( const IONode* node ) NO_NULL_POINTERS;
@@ -70,3 +73,11 @@ OSError IONodeGetAttribute(const IONode* node, const char*name , IOData *data) N
 
 
 const char* IONodeGetName( const IONode*node) NO_NULL_POINTERS;
+
+
+static inline NO_NULL_POINTERS IONodeType IONodeGetType( const IONode* node)
+{
+    return node->type;
+}
+
+SOFA_END_DCL

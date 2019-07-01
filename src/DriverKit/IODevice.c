@@ -47,7 +47,7 @@ const KClass *IODeviceClass = &ioDeviceClass;
 OSError IODeviceInit(IODevice* dev, IONode* fromNode, const char* name)
 {
     kobject_initWithName(&dev->base, name);
-    dev->base.class = &ioDeviceClass;
+    dev->base._class = &ioDeviceClass;
     dev->nodeRef = fromNode;
     dev->methods = &_defaultDevMethods;
     return OSError_None;

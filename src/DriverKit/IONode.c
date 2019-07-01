@@ -32,7 +32,7 @@ OSError IONodeInit(IONode* device, const char* name)
     device->_attachedDriver = NULL;
     device->base.obj.k_name =  strdup(name);
     
-    device->base.obj.class = &ioNodeClass;
+    device->base.obj._class = &ioNodeClass;
     device->attributes = NULL;
     
     //strncpy(device->name, name, 32);

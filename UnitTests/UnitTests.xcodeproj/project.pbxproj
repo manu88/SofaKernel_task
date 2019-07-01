@@ -9,6 +9,11 @@
 /* Begin PBXBuildFile section */
 		AADE6A1C22CA109100A58C7F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AADE6A1B22CA109100A58C7F /* main.cpp */; };
 		AADE6A6622CA10C800A58C7F /* KObject.c in Sources */ = {isa = PBXBuildFile; fileRef = AADE6A4F22CA10C800A58C7F /* KObject.c */; };
+		AADE6A6822CA3E6F00A58C7F /* IONodeTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AADE6A6722CA3E6F00A58C7F /* IONodeTests.cpp */; };
+		AADE6A7822CA3EAB00A58C7F /* IONode.c in Sources */ = {isa = PBXBuildFile; fileRef = AADE6A6A22CA3EAB00A58C7F /* IONode.c */; };
+		AADE6A7A22CA3EAB00A58C7F /* IONodeAttributes.c in Sources */ = {isa = PBXBuildFile; fileRef = AADE6A6C22CA3EAB00A58C7F /* IONodeAttributes.c */; };
+		AADE6A7D22CA3EAB00A58C7F /* IODriverBase.c in Sources */ = {isa = PBXBuildFile; fileRef = AADE6A6F22CA3EAB00A58C7F /* IODriverBase.c */; };
+		AADE6A7E22CA3EAB00A58C7F /* IODevice.c in Sources */ = {isa = PBXBuildFile; fileRef = AADE6A7722CA3EAB00A58C7F /* IODevice.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,6 +37,21 @@
 		AADE6A4D22CA10C800A58C7F /* KObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KObject.h; sourceTree = "<group>"; };
 		AADE6A4E22CA10C800A58C7F /* uthash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uthash.h; sourceTree = "<group>"; };
 		AADE6A4F22CA10C800A58C7F /* KObject.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = KObject.c; sourceTree = "<group>"; };
+		AADE6A6722CA3E6F00A58C7F /* IONodeTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IONodeTests.cpp; sourceTree = "<group>"; };
+		AADE6A6A22CA3EAB00A58C7F /* IONode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IONode.c; sourceTree = "<group>"; };
+		AADE6A6B22CA3EAB00A58C7F /* ACPIBuilder.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ACPIBuilder.c; sourceTree = "<group>"; };
+		AADE6A6C22CA3EAB00A58C7F /* IONodeAttributes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IONodeAttributes.c; sourceTree = "<group>"; };
+		AADE6A6D22CA3EAB00A58C7F /* DriverKit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = DriverKit.c; sourceTree = "<group>"; };
+		AADE6A6E22CA3EAB00A58C7F /* deviceTree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = deviceTree.c; sourceTree = "<group>"; };
+		AADE6A6F22CA3EAB00A58C7F /* IODriverBase.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IODriverBase.c; sourceTree = "<group>"; };
+		AADE6A7022CA3EAB00A58C7F /* IODevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IODevice.h; sourceTree = "<group>"; };
+		AADE6A7122CA3EAB00A58C7F /* IONode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IONode.h; sourceTree = "<group>"; };
+		AADE6A7222CA3EAB00A58C7F /* ACPIBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACPIBuilder.h; sourceTree = "<group>"; };
+		AADE6A7322CA3EAB00A58C7F /* DriverKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DriverKit.h; sourceTree = "<group>"; };
+		AADE6A7422CA3EAB00A58C7F /* IONodeAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IONodeAttributes.h; sourceTree = "<group>"; };
+		AADE6A7522CA3EAB00A58C7F /* IODriverBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IODriverBase.h; sourceTree = "<group>"; };
+		AADE6A7622CA3EAB00A58C7F /* deviceTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = deviceTree.h; sourceTree = "<group>"; };
+		AADE6A7722CA3EAB00A58C7F /* IODevice.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IODevice.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +87,7 @@
 			children = (
 				AADE6A1A22CA109100A58C7F /* catch.hpp */,
 				AADE6A1B22CA109100A58C7F /* main.cpp */,
+				AADE6A6722CA3E6F00A58C7F /* IONodeTests.cpp */,
 			);
 			path = tests;
 			sourceTree = "<group>";
@@ -75,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				AADE6A2D22CA10C800A58C7F /* Sofa.h */,
+				AADE6A6922CA3EAB00A58C7F /* DriverKit */,
 				AADE6A4B22CA10C800A58C7F /* KObject */,
 			);
 			name = src;
@@ -90,6 +112,27 @@
 				AADE6A4F22CA10C800A58C7F /* KObject.c */,
 			);
 			path = KObject;
+			sourceTree = "<group>";
+		};
+		AADE6A6922CA3EAB00A58C7F /* DriverKit */ = {
+			isa = PBXGroup;
+			children = (
+				AADE6A6A22CA3EAB00A58C7F /* IONode.c */,
+				AADE6A6B22CA3EAB00A58C7F /* ACPIBuilder.c */,
+				AADE6A7422CA3EAB00A58C7F /* IONodeAttributes.h */,
+				AADE6A6C22CA3EAB00A58C7F /* IONodeAttributes.c */,
+				AADE6A6D22CA3EAB00A58C7F /* DriverKit.c */,
+				AADE6A6E22CA3EAB00A58C7F /* deviceTree.c */,
+				AADE6A6F22CA3EAB00A58C7F /* IODriverBase.c */,
+				AADE6A7022CA3EAB00A58C7F /* IODevice.h */,
+				AADE6A7122CA3EAB00A58C7F /* IONode.h */,
+				AADE6A7222CA3EAB00A58C7F /* ACPIBuilder.h */,
+				AADE6A7322CA3EAB00A58C7F /* DriverKit.h */,
+				AADE6A7522CA3EAB00A58C7F /* IODriverBase.h */,
+				AADE6A7622CA3EAB00A58C7F /* deviceTree.h */,
+				AADE6A7722CA3EAB00A58C7F /* IODevice.c */,
+			);
+			path = DriverKit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -150,6 +193,11 @@
 			files = (
 				AADE6A6622CA10C800A58C7F /* KObject.c in Sources */,
 				AADE6A1C22CA109100A58C7F /* main.cpp in Sources */,
+				AADE6A7E22CA3EAB00A58C7F /* IODevice.c in Sources */,
+				AADE6A7D22CA3EAB00A58C7F /* IODriverBase.c in Sources */,
+				AADE6A6822CA3E6F00A58C7F /* IONodeTests.cpp in Sources */,
+				AADE6A7A22CA3EAB00A58C7F /* IONodeAttributes.c in Sources */,
+				AADE6A7822CA3EAB00A58C7F /* IONode.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

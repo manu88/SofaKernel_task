@@ -35,9 +35,7 @@ typedef struct _IODevice
     IONode* nodeRef;
     
     IODeviceCallbacks* methods;
-    
-    
-    
+
 } IODevice;
 
 

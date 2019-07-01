@@ -8,6 +8,9 @@
 
 #pragma once
 #include "../KObject/uthash.h"
+#include "../Sofa.h"
+
+SOFA_BEGIN_DCL
 
 extern const char IONodeAttributePCI[];
 extern const char IONodeAttributePCIClass[];
@@ -46,7 +49,6 @@ typedef enum
 
 typedef struct
 {
-    
     IODataType type;
     
     union
@@ -57,3 +59,5 @@ typedef struct
     } data;
     
 } IOData;
+
+SOFA_END_DCL

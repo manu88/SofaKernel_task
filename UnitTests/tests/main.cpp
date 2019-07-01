@@ -129,3 +129,12 @@ TEST_CASE("KSet obj in multiple sets")
     kset_remove(&set2, &child1);
     REQUIRE( child1.kref.refcount == 0);
 }
+
+
+extern "C"
+{
+    void* kmalloc( size_t size)
+    {
+        return NULL;
+    }
+}
