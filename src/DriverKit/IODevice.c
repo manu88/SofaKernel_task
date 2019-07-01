@@ -21,14 +21,18 @@
 
 static  ssize_t _DefaultRead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  )
 {
-    kprintf("_DefaultRead on device '%s'\n" , dev->base.k_name);
-    return OSError_Some;
+    UNUSED_PARAMETER(dev);
+    UNUSED_PARAMETER(toBuf);
+    UNUSED_PARAMETER(maxBufSize);
+    return OSError_Unimplemented;
 }
 
 static ssize_t _DefaultWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  )
 {
-    kprintf("_DefaultWrite on device '%s'\n" , dev->base.k_name);
-    return OSError_Some;
+    UNUSED_PARAMETER(dev);
+    UNUSED_PARAMETER(buf);
+    UNUSED_PARAMETER(bufSize);
+    return OSError_Unimplemented;
 }
 
 static IODeviceCallbacks _defaultDevMethods =

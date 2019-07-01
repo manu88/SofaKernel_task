@@ -18,6 +18,7 @@
 #pragma once
 #include "IONode.h"
 
+SOFA_BEGIN_DCL
 
 extern const KClass *IODeviceClass;
 typedef struct _IODevice IODevice;
@@ -51,3 +52,5 @@ static inline NO_NULL_POINTERS ssize_t IODeviceWrite( IODevice* dev, const uint8
 {
     return dev->methods->write(dev, buf , bufSize);
 }
+
+SOFA_END_DCL

@@ -14,6 +14,7 @@
 		AADE6A7A22CA3EAB00A58C7F /* IONodeAttributes.c in Sources */ = {isa = PBXBuildFile; fileRef = AADE6A6C22CA3EAB00A58C7F /* IONodeAttributes.c */; };
 		AADE6A7D22CA3EAB00A58C7F /* IODriverBase.c in Sources */ = {isa = PBXBuildFile; fileRef = AADE6A6F22CA3EAB00A58C7F /* IODriverBase.c */; };
 		AADE6A7E22CA3EAB00A58C7F /* IODevice.c in Sources */ = {isa = PBXBuildFile; fileRef = AADE6A7722CA3EAB00A58C7F /* IODevice.c */; };
+		AADE6A8022CA4B6F00A58C7F /* IODeviceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AADE6A7F22CA4B6F00A58C7F /* IODeviceTests.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -52,6 +53,7 @@
 		AADE6A7522CA3EAB00A58C7F /* IODriverBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IODriverBase.h; sourceTree = "<group>"; };
 		AADE6A7622CA3EAB00A58C7F /* deviceTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = deviceTree.h; sourceTree = "<group>"; };
 		AADE6A7722CA3EAB00A58C7F /* IODevice.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IODevice.c; sourceTree = "<group>"; };
+		AADE6A7F22CA4B6F00A58C7F /* IODeviceTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IODeviceTests.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +90,7 @@
 				AADE6A1A22CA109100A58C7F /* catch.hpp */,
 				AADE6A1B22CA109100A58C7F /* main.cpp */,
 				AADE6A6722CA3E6F00A58C7F /* IONodeTests.cpp */,
+				AADE6A7F22CA4B6F00A58C7F /* IODeviceTests.cpp */,
 			);
 			path = tests;
 			sourceTree = "<group>";
@@ -125,12 +128,12 @@
 				AADE6A6E22CA3EAB00A58C7F /* deviceTree.c */,
 				AADE6A6F22CA3EAB00A58C7F /* IODriverBase.c */,
 				AADE6A7022CA3EAB00A58C7F /* IODevice.h */,
+				AADE6A7722CA3EAB00A58C7F /* IODevice.c */,
 				AADE6A7122CA3EAB00A58C7F /* IONode.h */,
 				AADE6A7222CA3EAB00A58C7F /* ACPIBuilder.h */,
 				AADE6A7322CA3EAB00A58C7F /* DriverKit.h */,
 				AADE6A7522CA3EAB00A58C7F /* IODriverBase.h */,
 				AADE6A7622CA3EAB00A58C7F /* deviceTree.h */,
-				AADE6A7722CA3EAB00A58C7F /* IODevice.c */,
 			);
 			path = DriverKit;
 			sourceTree = "<group>";
@@ -196,6 +199,7 @@
 				AADE6A7E22CA3EAB00A58C7F /* IODevice.c in Sources */,
 				AADE6A7D22CA3EAB00A58C7F /* IODriverBase.c in Sources */,
 				AADE6A6822CA3E6F00A58C7F /* IONodeTests.cpp in Sources */,
+				AADE6A8022CA4B6F00A58C7F /* IODeviceTests.cpp in Sources */,
 				AADE6A7A22CA3EAB00A58C7F /* IONodeAttributes.c in Sources */,
 				AADE6A7822CA3EAB00A58C7F /* IONode.c in Sources */,
 			);

@@ -105,6 +105,7 @@ size_t  IONodeGetAttrCount( const IONode* node )
 */
 IOAttribute* IONodeGetAttr( const IONode* node, const char*name)
 {
+    
     IOAttribute* attr = NULL;
     HASH_FIND_STR(node->attributes, name, attr);
     return attr;
@@ -112,6 +113,29 @@ IOAttribute* IONodeGetAttr( const IONode* node, const char*name)
 
 OSError IONodeGetAttribute(const IONode* node, const char*name , IOData *data)
 {
+    IOAttribute* attr = NULL;
+    HASH_FIND_STR(node->attributes, name, attr);
+    if (attr)
+    {
+        data->type = attr->type;
+        
+        switch (data->type)
+        {
+            case IODataType_Invalid:
+                break;
+                
+            case IODataType_Numeric:
+                data->data.val = attr->data.v;
+                
+            case IODataType_Pointer :
+                data->data.ptr = attr->data.ptr;
+                
+            case IODataType_String :
+                data->data.str = attr->data.ptr;
+                
+            return OSError_None;
+        }
+    }
     if( !node->GetAttr)
         return OSError_Unimplemented;
     
