@@ -23,22 +23,6 @@ extern const char IONodeAttributeDeviceID[];
 extern const char IONodeAttributeVendorName[];
 extern const char IONodeAttributeDeviceName[];
 
-
-typedef struct
-{
-    char id[10];
-    int type;
-    
-    union
-    {
-        void* ptr;
-        uint64_t v;
-    } data;
-    
-    UT_hash_handle hh; /* makes this structure hashable */
-    
-} IOAttribute;
-
 typedef enum
 {
     IODataType_Invalid,
@@ -46,6 +30,24 @@ typedef enum
     IODataType_String,
     IODataType_Pointer,
 } IODataType;
+
+typedef struct
+{
+    char id[10];
+    IODataType type;
+    
+    union
+    {
+        void* ptr;
+        uint64_t v;
+        const char* str;
+    } data;
+    
+    UT_hash_handle hh; /* makes this structure hashable */
+    
+} IOAttribute;
+
+
 
 typedef struct
 {

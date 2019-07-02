@@ -61,15 +61,15 @@ IONode* IONodeGetChildByName( const IONode* node, const char* name) NO_NULL_POIN
 
 #define IONodeForEach( node, el) kset_foreach( (&(node)->base) , el)
 
-SOFA_DEPRECATED("") OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data );
+//SOFA_DEPRECATED("") OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data );
 //SOFA_DEPRECATED("") size_t  IONodeGetAttrCount( const IONode* node ) NO_NULL_POINTERS;
-SOFA_DEPRECATED("") IOAttribute* IONodeGetAttr( const IONode* node, const char*name) NO_NULL_POINTERS;
+//SOFA_DEPRECATED("") IOAttribute* IONodeGetAttr( const IONode* node, const char*name) NO_NULL_POINTERS;
 
 
 OSError IONodeGetAttribute(const IONode* node, const char*name , IOData *data) NO_NULL_POINTERS;
 
 
-#define IOAttributeForEach(node ,tmp ,el) HASH_ITER(hh ,node->attributes ,el ,tmp)
+//#define IOAttributeForEach(node ,tmp ,el) HASH_ITER(hh ,node->attributes ,el ,tmp)
 
 
 const char* IONodeGetName( const IONode*node) NO_NULL_POINTERS;

@@ -260,7 +260,7 @@ retry:
     
     if (drive->capabilities & ATA_CAP_LBA)
     {
-        printf("ata_read ata_select_drive\n");
+        
         /* Use LBA mode */
         ata_select_drive(ctx,drive, drive->mode);
         
@@ -268,8 +268,10 @@ retry:
         io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_ERROR, 0);
         
         /* Send sectors count and LBA */
+        
         if (drive->mode == ATA_MODE_LBA48)
         {
+            
             io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_SECCOUNT0, (count >> 8) & 0xFF);
             io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA0, (uint8_t) (lba >> (8 * 3)));
             io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA1, (uint8_t) (lba >> (8 * 4)));
@@ -282,7 +284,7 @@ retry:
         io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA2, (uint8_t) (lba >> (8 * 2)));
         
         
-        printf("ata_read ata_wait 1\n");
+        
         /* Send read command */
         ata_wait(ctx,drive);
         
@@ -295,37 +297,40 @@ retry:
             io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_CMD, ATA_CMD_READ_SECTORS);
         }
         
-        printf("ata_read ata_wait 2\n");
+        
         ata_wait(ctx,drive);
         
-        size_t _count = count;
         
+        
+        int err;
+        
+        if ((err = ata_poll(ctx,drive, 1)))
+        {
+            
+            /* retry */
+            if (err == -ATA_ERROR_ABRT)
+            {
+                printf("ata: retrying...\n");
+                
+                for (int i = 0; i < 5; ++i)
+                    ata_wait(ctx,drive);
+                goto retry;
+            }
+            
+            return -EIO;
+        }
+        size_t _count = count/2;
+        int i=0;
         while (_count--)
         {
-            int err;
-            printf("ata_read ata_poll 2\n");
-            if ((err = ata_poll(ctx,drive, 1)))
-            {
-                
-                /* retry */
-                if (err == -ATA_ERROR_ABRT)
-                {
-                    printf("ata: retrying...\n");
-                    
-                    for (int i = 0; i < 5; ++i)
-                        ata_wait(ctx,drive);
-                    goto retry;
-                }
-                
-                return -EIO;
-            }
+            
             
             /* FIXME */
             //__insw(drive->base.addr + ATA_REG_DATA, 256, buf);
             char *_buf = buf;
             
-            printf("ata_read start getting datas\n");
-            for (int i = 0; i < 256; ++i)
+            
+            //for (int i = 0; i < 256; ++i)
             {
                 
                 uint16_t x;
@@ -333,14 +338,27 @@ retry:
                 int err = io_in16(&ctx->opsIO.io_port_ops, drive->base+ ATA_REG_DATA , &x);
                 assert(!err);
                 
-                _buf[2*i+0] = x & 0xFFFF;
-                _buf[2*i+1] = (x >> 8) & 0xFFFF;
+                uint8_t v1 = x & 0xFFFF;
+                uint8_t v2 = (x >> 8) & 0xFFFF;
+                //printf("0X%x 0X%x \n" , v1 , v2);
                 
-                printf("0X%x 0X%x \n" , _buf[2*i+0],_buf[2*i+1]);
+                
+                if(2*i+1 < count-1)
+                {
+                    _buf[2*i+0] = v1;
+                    _buf[2*i+1] = v2;
+                }
+                else
+                {
+                    printf("Error at %i/%i \n" , i ,count);
+                }
+                
+                i++;
+                
             }
             
-            buf += 512;
-        }
+            //buf += 512;
+        } // end while
         
         if (ata_poll(ctx,drive, 0))
         {

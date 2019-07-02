@@ -43,7 +43,7 @@ OSError ThreadInit(Thread* thread)
     
     kobject_init(&thread->obj);
     thread->obj.k_name = threadDefaultName;
-    thread->obj.class = &threadClass;
+    thread->obj._class = &threadClass;
     thread->threadID = _idCounter++;
     
     return OSError_None;

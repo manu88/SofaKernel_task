@@ -207,7 +207,7 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
                 
                 if( c->hid == 0x105D041 )//com
                 {
-                    
+                    /*
                     uint16_t comID = 0;
                     
                     IOAttribute* a = NULL;
@@ -224,9 +224,8 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
                         }
                         
                     }
+                     */
                     
-                    IOAttribute* idAttr = IONodeGetAttr(c, "_UID");
-                    uint64_t v = idAttr->data.v;
                     
                     IOComDevice* dev = kmalloc( sizeof(IOComDevice));
                     ALWAYS_ASSERT(dev);

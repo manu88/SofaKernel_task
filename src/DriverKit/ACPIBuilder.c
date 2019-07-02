@@ -160,12 +160,13 @@ static int _DeviceTree_onSmallItem(AMLDecompiler* decomp,const ParserContext* co
     
     ALWAYS_ASSERT(current);
     
+    /*
     uint8_t* dataCpy = kmalloc(bufferSize);
     ALWAYS_ASSERT(dataCpy);
     memcpy(dataCpy, buffer, bufferSize);
     
-    IONodeAddAttr(current, treeCtx->expectedName, itemType, dataCpy);
-
+    IONodeAddAttr(current, treeCtx->expectedName, IODataType_Pointer, dataCpy);
+     */
     return 0;
 }
 
@@ -307,11 +308,12 @@ static int _DeviceTree_onValue(AMLDecompiler* decomp,const ParserContext* contex
     {
         currentNode->hid = value;
     }
+    /*
     else
     {
-        IONodeAddAttr(currentNode, treeCtx->expectedName, 0,(void*) value);
+        IONodeAddAttr(currentNode, treeCtx->expectedName, IODataType_String,(void*) value);
     }
-    
+    */
     treeCtx->expectedName[0] = 0;
     return 0;
 }

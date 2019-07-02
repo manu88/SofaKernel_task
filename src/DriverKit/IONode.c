@@ -77,7 +77,7 @@ IONode* IONodeGetChildByName( const IONode* node, const char* name)
     
     return NULL;
 }
-
+/*
 OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data )
 {
     if (name == NULL || strlen(name) == 0)
@@ -97,12 +97,12 @@ OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data )
     return OSError_None;
 }
 
-/*
+
 size_t  IONodeGetAttrCount( const IONode* node )
 {
     return HASH_COUNT(node->attributes);
 }
-*/
+
 IOAttribute* IONodeGetAttr( const IONode* node, const char*name)
 {
     
@@ -110,7 +110,7 @@ IOAttribute* IONodeGetAttr( const IONode* node, const char*name)
     HASH_FIND_STR(node->attributes, name, attr);
     return attr;
 }
-
+*/
 OSError IONodeGetAttribute(const IONode* node, const char*name , IOData *data)
 {
     IOAttribute* attr = NULL;
@@ -118,7 +118,7 @@ OSError IONodeGetAttribute(const IONode* node, const char*name , IOData *data)
     if (attr)
     {
         data->type = attr->type;
-        
+        kprintf("IONodeGetAttribute has attribute '%s'\n" , name);
         switch (data->type)
         {
             case IODataType_Invalid:

@@ -62,6 +62,7 @@ static void testRead(KernelTaskContext* ctx, ATADrive* drive);
 static void DriveInit(KernelTaskContext* ctx, ATADrive* drive)
 {
     printf("DriveInit\n");
+    ata_soft_reset(ctx, drive);
     testRead(ctx, drive);
 }
 
@@ -247,16 +248,20 @@ static void testRead(KernelTaskContext* ctx, ATADrive* drive)
     
     struct ext2_superblock sb = {0};
     
-    printf("size of buf is %zi\n" ,sizeof(struct ext2_superblock) );
+    printf("size of buf is %zi max lba %i sig is at offset %zi\n" ,sizeof(struct ext2_superblock) , drive->max_lba ,
+           offsetof(struct ext2_superblock, ext2_signature) );
     
-    ssize_t ret = ata_read(ctx, drive, 1024, sizeof(struct ext2_superblock), &sb);
+    // The first 1024 bytes of the disk, the "boot block", are reserved
+    // for the partition boot sectors and are unused by the Ext2 filesystem
+    
+    ssize_t ret = ata_read(ctx, drive, 2 /* * lba(512)*/,sizeof(struct ext2_superblock), &sb);
     
     printf("ata_read returns %i\n" , ret);
     
     /* Valid Ext2? */
     if (sb.ext2_signature != EXT2_SIGNATURE)
     {
-        printf("Invalid signature !\n");
+        printf("Invalid signature 0X%X!\n" , sb.ext2_signature);
     }
     else
     {

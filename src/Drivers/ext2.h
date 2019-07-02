@@ -10,7 +10,7 @@
 
 #include "../Sofa.h"
 
-#define EXT2_SIGNATURE  0xEF53
+#define EXT2_SIGNATURE  (uint16_t) 0xEF53
 
 struct ext2_optional_features_flags {
     uint8_t preallocate_for_directories : 1;

@@ -64,60 +64,6 @@ OSError DriverKitInit(struct kset* root, const uint8_t* fromDatas, size_t buffer
     return ret;
 }
 
-
-
-
-static void _printObject(const IONode* object , int indent)
-{
-    
-    for(int i =0;i<indent;i++)
-        printf("|\t");
-    
-    printf("|'%s'  \n" , object->base.obj.k_name   );//, child->type == INodeType_Folder? "Folder":"File");
-    
-    
-    
-    
-    for(int i =0;i<indent+1;i++)
-        printf("|\t");
-    
-    if (isEisaId(object->hid))
-    {
-        char eisaID[8] = "";
-        if(getEisaidString( object->hid , eisaID))
-        {
-            printf("- HID '%s' \n" ,  eisaID);
-        }
-    }
-    else
-    {
-        printf("- HID 0x%llx \n" ,  object->hid);
-    }
-
-    
-    struct kobject *child = NULL;
-    kset_foreach( ((struct kset*)object), child)
-    {
-        _printObject((IONode*)child, indent +1);
-        /*
-         if (child->type == INodeType_Folder)
-         {
-         _printNode(child , indent + 1);
-         }
-         */
-    }
-}
-
-void DriverKitDump()
-{
-    printf("--- DriverKit Tree ---\n");
-    
-    _printObject((const IONode*) &_dkContext.driverKitNode , 0);
-    
-    printf("--- DriverKit Tree ---\n");
-}
-
-
 static OSError _CallDriverInit(IODriverBase* driver)
 {
     if( driver->driverMethods->init)
