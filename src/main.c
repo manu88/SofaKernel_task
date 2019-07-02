@@ -18,7 +18,7 @@
 #include <string.h>
 #include "Sofa.h"
 #include "Bootstrap.h"
-#include "FileSystem/FileSystem.h"
+#include "FileSystem/VFS.h"
 
 #include "DriverKit/DriverKit.h"
 

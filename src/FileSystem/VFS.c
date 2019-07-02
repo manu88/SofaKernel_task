@@ -16,7 +16,7 @@
  */
 
 
-#include "FileSystem.h"
+#include "VFS.h"
 
 static struct
 {
