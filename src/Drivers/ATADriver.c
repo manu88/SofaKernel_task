@@ -1,10 +1,19 @@
-//
-//  ATADriver.c
-//  kernel_taskSofaV2
-//
-//  Created by Manuel Deneu on 30/06/2019.
-//  Copyright © 2019 Manuel Deneu. All rights reserved.
-//
+/*
+ * This file is part of the Sofa project
+ * Copyright (c) 2018 Manuel Deneu.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <pci/pci.h>
 #include "../Bootstrap.h"
@@ -12,6 +21,7 @@
 #include "ATADriver.h"
 #include "../DriverKit/IODevice.h"
 #include "../DriverKit/DriverKit.h"
+#include "../FileSystem/VFS.h"
 
 #include "ext2.h"
 
@@ -266,6 +276,12 @@ static void testRead(KernelTaskContext* ctx, ATADrive* drive)
         return ;
     }
 
+    
+    // register ext2 fs, if not already added
+    OSError err =  VFSRegisterEXT2Module();
+    
+    ALWAYS_ASSERT( err == OSError_None || err == OSError_AlreadyInSet);
+    
     printf("VALID signature !\n");
     printf("inodes_count : %i\n",sb.inodes_count);
     printf("blocks_count : %i\n",sb.blocks_count);

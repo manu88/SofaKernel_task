@@ -89,6 +89,7 @@ typedef enum
     OSError_ParsingError = -20,
     OSError_Unimplemented = -100,
     OSError_NotSupportedDevice,
+    OSError_AlreadyInSet,
     
 } OSError;
 

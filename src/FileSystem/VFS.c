@@ -36,6 +36,22 @@ struct kobject* VFSInit( )
 
 OSError VFSRegisterFSModule( FSModule* module)
 {
+    if( kset_contains(&_FSNode.base, (struct kobject *)module))
+    {
+        return OSError_AlreadyInSet;
+    }
+    
+    if( !module->isLoaded)
+    {
+        printf("Load module '%s'\n" , module->obj.k_name);
+        OSError ret = module->methods->init(module);
+        if(  ret != OSError_None)
+        {
+            return ret;
+        }
+        module->isLoaded = 1;
+    }
+    
     OSError ret = kset_append(&_FSNode.base, (struct kobject *)module);
     
     if( ret == OSError_None)
@@ -48,5 +64,6 @@ OSError VFSRegisterFSModule( FSModule* module)
 
 OSError VFSRegisterEXT2Module()
 {
+    EXT2fsInit();
     return VFSRegisterFSModule(ext2fs);
 }
