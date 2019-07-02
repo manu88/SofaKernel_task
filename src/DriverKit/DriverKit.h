@@ -43,4 +43,6 @@ OSError DriverKitRegisterInterupt(IODriverBase* base, uint32_t intNum) NO_NULL_A
 // add a device to '/dev'
 OSError DriverKitRegisterDevice(IODevice* device ) NO_NULL_POINTERS;
 
+IODevice* DriverKitGetDevice( const char*name) NO_NULL_POINTERS;
+
 SOFA_END_DCL

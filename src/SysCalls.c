@@ -35,12 +35,24 @@ int SC_kill  (seL4_CPtr cap, int id)
 
 int SC_spawn (seL4_CPtr cap)
 {
-    seL4_MessageInfo_t msg = seL4_MessageInfo_new(0, 0, 0, 1);
+    seL4_MessageInfo_t msg = seL4_MessageInfo_new(0, 0, 0, 2);
     seL4_SetMR(0,  SysCallNum_spawn);
     //seL4_SetMR(1 , id);
     msg = seL4_Call(cap , msg);
     
     ALWAYS_ASSERT( seL4_GetMR(0) == SysCallNum_spawn);
+    
+    return -seL4_GetMR(1);
+}
+
+int SC_mount(seL4_CPtr cap)
+{
+    seL4_MessageInfo_t msg = seL4_MessageInfo_new(0, 0, 0, 2);
+    seL4_SetMR(0,  SysCallNum_mount);
+    //seL4_SetMR(1 , id);
+    msg = seL4_Call(cap , msg);
+    
+    ALWAYS_ASSERT( seL4_GetMR(0) == SysCallNum_mount);
     
     return -seL4_GetMR(1);
 }

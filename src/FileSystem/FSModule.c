@@ -21,11 +21,15 @@
 
 static OSError DEFAULT_init(struct _FSModule* module);
 static OSError DEFAULT_deinit(struct _FSModule* module);
+static OSError DEFAULT_probe(struct _FSModule* module, IODevice* device );
+static OSError DEFAULT_mount(struct _FSModule* module,const char *dir, int flags, void *data);
 
-FSModuleMethods defaultMethods =
+static FSModuleMethods defaultMethods =
 {
     DEFAULT_init,
-    DEFAULT_deinit
+    DEFAULT_deinit,
+    DEFAULT_probe,
+    DEFAULT_mount
 };
 
 OSError FSModuleInit(FSModule* module, const char* name)
@@ -40,10 +44,26 @@ OSError FSModuleInit(FSModule* module, const char* name)
 
 static OSError DEFAULT_init(struct _FSModule* module)
 {
+    UNUSED_PARAMETER(module);
     return OSError_None;
 }
 
 static OSError DEFAULT_deinit(struct _FSModule* module)
 {
+    UNUSED_PARAMETER(module);
     return OSError_None;
+}
+static OSError DEFAULT_probe(struct _FSModule* module, IODevice* device )
+{
+    return OSError_Unimplemented;
+}
+
+
+static OSError DEFAULT_mount(struct _FSModule* module,const char *dir, int flags, void *data)
+{
+    UNUSED_PARAMETER(module);
+    UNUSED_PARAMETER(dir);
+    UNUSED_PARAMETER(flags);
+    UNUSED_PARAMETER(data);
+    return OSError_Unimplemented;
 }

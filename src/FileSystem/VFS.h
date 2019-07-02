@@ -21,6 +21,7 @@
 #include "../KObject/KObject.h"
 #include "FSModule.h"
 
+typedef struct _IODevice IODevice;
 
 
 struct kobject* VFSInit( void);
@@ -29,3 +30,6 @@ struct kobject* VFSInit( void);
 OSError VFSRegisterFSModule( FSModule* module) NO_NULL_POINTERS;
 
 OSError VFSRegisterEXT2Module(void);
+
+
+OSError VFSMount(IODevice* dev , const char* path ) NO_NULL_POINTERS;

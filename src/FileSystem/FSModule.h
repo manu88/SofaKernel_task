@@ -22,11 +22,14 @@
 #include "../KObject/KObject.h"
 
 struct _FSModule;
-
+typedef struct _IODevice IODevice;
 typedef struct
 {
     OSError (*init)(struct _FSModule* module);
     OSError (*deinit)(struct _FSModule* module);
+    
+    OSError (*probe)(struct _FSModule* module, IODevice* device );
+    OSError (*mount)(struct _FSModule* module,const char *dir, int flags, void *data);
     
 } FSModuleMethods;
 

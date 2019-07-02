@@ -18,6 +18,7 @@
 
 #include "VFS.h"
 #include "EXT2fs.h"
+#include "../DriverKit/IODevice.h"
 
 static struct
 {
@@ -66,4 +67,36 @@ OSError VFSRegisterEXT2Module()
 {
     EXT2fsInit();
     return VFSRegisterFSModule(ext2fs);
+}
+
+static FSModule* VFSGetFileSystemFromDevice( IODevice* dev)
+{
+    struct kobject *obj = NULL;
+    kset_foreach(&_FSNode.base, obj)
+    {
+        FSModule* mod = (FSModule*) obj;
+        
+        OSError ret = mod->methods->probe(mod , dev);
+        if( ret == OSError_None)
+            return mod;
+        
+    }
+    return NULL;
+}
+
+OSError VFSMount(IODevice* dev , const char* path )
+{
+    printf("VFSMount device '%s' to '%s' \n" , dev->base.k_name , path);
+    
+    FSModule* probedFS = VFSGetFileSystemFromDevice(dev);
+    
+    
+    if( probedFS == NULL)
+    {
+        return OSError_NotSupportedFS;
+    }
+    int flags = 0;
+    OSError ret =  ext2fs->methods->mount(probedFS , path ,flags, dev );
+    
+    return ret;
 }

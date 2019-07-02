@@ -12,7 +12,8 @@
 #include "Thread.h"
 #include "ThreadManager.h"
 #include "Utils.h"
-
+#include "FileSystem/VFS.h"
+#include "DriverKit/DriverKit.h"
 
 // THis is gross. But only temporary
 static uint32_t counter = 0;
@@ -124,6 +125,21 @@ static void handleSpawn(KernelTaskContext* context, seL4_MessageInfo_t message)
     seL4_Reply( message );
 }
 
+static void handleMount(KernelTaskContext* context, seL4_MessageInfo_t message)
+{
+    int err = -EINVAL;
+    seL4_SetMR(0,SysCallNum_mount);
+    seL4_SetMR(1, err );
+    
+    IODevice* dev = DriverKitGetDevice("hda");
+    if( dev)
+    {
+        VFSMount(dev, "SomePath");
+    }
+    
+    seL4_Reply( message );
+}
+
 void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL4_Word sender_badge)
 {
     if( _context == NULL)
@@ -147,6 +163,9 @@ void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL
         case SysCallNum_spawn:
             handleSpawn(context , message);
             break;
+            
+        case SysCallNum_mount:
+            handleMount(context, message);
             
         default:
             break;

@@ -153,6 +153,18 @@ static int DoAttr( const char* args)
 
 }
 
+static int DoMount( const char* args)
+{
+    char deviceName[128] = "";
+    char path[128]       = "";
+    
+    if( sscanf(args , "%s %s" , deviceName , path) == 2)
+    {
+        return SC_mount(_thread->ipc_ep_cap);
+    }
+    return -EINVAL;
+}
+
 static int execCmd( const char* cmd)
 {
     ALWAYS_ASSERT(_root);
@@ -190,6 +202,16 @@ static int execCmd( const char* cmd)
         {
             kobject_printTree((struct kobject*) _root);
         }
+    }
+    else if( startsWith("mount ", cmd))
+    {
+        const char* arg = cmd + strlen("attr ");
+        
+        if( arg)
+        {
+            return DoMount(arg);
+        }
+        return -EINVAL;
     }
     else if( startsWith("ps", cmd))
     {

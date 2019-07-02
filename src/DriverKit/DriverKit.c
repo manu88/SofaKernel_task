@@ -184,3 +184,7 @@ OSError DriverKitRegisterDevice(IODevice* device )
     return kset_append(&_dkContext.exportedDevicesTree, (struct kobject *)device);
 }
 
+IODevice* DriverKitGetDevice( const char*name)
+{
+    return (IODevice*) kset_getChildByName(&_dkContext.exportedDevicesTree, name);
+}
