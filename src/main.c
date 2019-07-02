@@ -196,7 +196,7 @@ static OSError baseSystemInit(KernelTaskContext *context)
 {
     kprintf("Base System Init\n");
     
-    struct kobject* fsNode = FileSystemInit();
+    struct kobject* fsNode = VFSInit();
     ALWAYS_ASSERT( fsNode);
     
     ALWAYS_ASSERT_NO_ERR(kset_append(&root, fsNode));

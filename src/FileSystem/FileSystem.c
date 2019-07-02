@@ -26,7 +26,7 @@ static struct
 
 const char fsNodeName[] = "FileSystem";
 
-struct kobject* FileSystemInit( )
+struct kobject* VFSInit( )
 {
     kset_initWithName(&_FSNode.base, fsNodeName);
     

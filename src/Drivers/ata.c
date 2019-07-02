@@ -319,9 +319,9 @@ retry:
             
             return -EIO;
         }
-        size_t _count = count/2;
+        size_t _count = count;
         int i=0;
-        while (_count--)
+        while (_count)
         {
             
             
@@ -343,17 +343,18 @@ retry:
                 //printf("0X%x 0X%x \n" , v1 , v2);
                 
                 
-                if(2*i+1 < count-1)
-                {
-                    _buf[2*i+0] = v1;
-                    _buf[2*i+1] = v2;
-                }
+                //if(2*i+1 < count-1)
+                //{
+                    _buf[i] = v1;
+                    _buf[i+1] = v2;
+                /*}
                 else
                 {
                     printf("Error at %i/%i \n" , i ,count);
                 }
-                
-                i++;
+                */
+                i+=2;
+                _count-=2;
                 
             }
             

@@ -20,4 +20,4 @@
 #include "../Sofa.h"
 #include "../KObject/KObject.h"
 
-struct kobject* FileSystemInit( void);
+struct kobject* VFSInit( void);
