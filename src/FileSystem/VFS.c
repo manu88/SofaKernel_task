@@ -17,6 +17,7 @@
 
 
 #include "VFS.h"
+#include "EXT2fs.h"
 
 static struct
 {
@@ -24,11 +25,28 @@ static struct
 
 } _FSNode = {0};
 
-const char fsNodeName[] = "FileSystem";
+const char fsNodeName[] = "VirtualFileSystem";
 
 struct kobject* VFSInit( )
 {
     kset_initWithName(&_FSNode.base, fsNodeName);
     
     return (struct kobject*) &_FSNode.base;
+}
+
+OSError VFSRegisterFSModule( FSModule* module)
+{
+    OSError ret = kset_append(&_FSNode.base, (struct kobject *)module);
+    
+    if( ret == OSError_None)
+    {
+        
+    }
+    return ret;
+}
+
+
+OSError VFSRegisterEXT2Module()
+{
+    return VFSRegisterFSModule(ext2fs);
 }

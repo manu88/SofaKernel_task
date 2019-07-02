@@ -19,5 +19,13 @@
 
 #include "../Sofa.h"
 #include "../KObject/KObject.h"
+#include "FSModule.h"
+
+
 
 struct kobject* VFSInit( void);
+
+
+OSError VFSRegisterFSModule( FSModule* module) NO_NULL_POINTERS;
+
+OSError VFSRegisterEXT2Module(void);
