@@ -116,8 +116,8 @@ static OSError PCIRelease(IODriverBase *driver  )
     return OSError_Some;
 }
 
-static ssize_t _ComRead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  );
-static ssize_t _ComWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  );
+static ssize_t _ComRead(IODevice* dev,uint64_t offset, uint8_t* toBuf,  size_t maxBufSize  );
+static ssize_t _ComWrite(IODevice* dev,uint64_t offset, const uint8_t* buf , size_t bufSize  );
 
 
 static IODeviceCallbacks _ComMethods =
@@ -330,8 +330,9 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
 
 
 
-static  ssize_t _ComRead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  )
+static  ssize_t _ComRead(IODevice* dev,uint64_t offset, uint8_t* toBuf,  size_t maxBufSize  )
 {
+    UNUSED_PARAMETER(offset);
     IOComDevice* self = (IOComDevice*) dev;
 #ifndef SOFA_TESTS_ONLY
     int c = ps_cdev_getchar(&self->_dev);
@@ -349,8 +350,9 @@ static  ssize_t _ComRead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  )
 #endif
 }
 
-static ssize_t _ComWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  )
+static ssize_t _ComWrite(IODevice* dev,uint64_t offset, const uint8_t* buf , size_t bufSize  )
 {
+    UNUSED_PARAMETER(offset);
     IOComDevice* self = (IOComDevice*) dev;
     
     for(size_t i=0;i<bufSize;++i)

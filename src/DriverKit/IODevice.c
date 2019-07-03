@@ -19,26 +19,34 @@
 #include "../KObject/KObject.h"
 #include "IODevice.h"
 
-static  ssize_t _DefaultRead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  )
+static  ssize_t _DefaultRead(IODevice* dev,uint64_t offset, uint8_t* toBuf,  size_t maxBufSize  )
 {
     UNUSED_PARAMETER(dev);
     UNUSED_PARAMETER(toBuf);
     UNUSED_PARAMETER(maxBufSize);
+    UNUSED_PARAMETER(offset);
     return OSError_Unimplemented;
 }
 
-static ssize_t _DefaultWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  )
+static ssize_t _DefaultWrite(IODevice* dev,uint64_t offset, const uint8_t* buf , size_t bufSize  )
 {
     UNUSED_PARAMETER(dev);
     UNUSED_PARAMETER(buf);
     UNUSED_PARAMETER(bufSize);
+    UNUSED_PARAMETER(offset);
+    return OSError_Unimplemented;
+}
+
+static OSError _Defaultioctl(IODevice* dev, int request, void *argp)
+{
     return OSError_Unimplemented;
 }
 
 static IODeviceCallbacks _defaultDevMethods =
 {
     _DefaultRead,
-    _DefaultWrite
+    _DefaultWrite,
+    _Defaultioctl
 };
 
 

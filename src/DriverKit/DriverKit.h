@@ -40,7 +40,7 @@ OSError DriverKitDoMatching( KernelTaskContext* context);
 // Per driver operations
 OSError DriverKitRegisterInterupt(IODriverBase* base, uint32_t intNum) NO_NULL_ARGS(1, 1);
 
-// add a device to '/dev'
+// add a device to '/dev' and sets its context
 OSError DriverKitRegisterDevice(IODevice* device ) NO_NULL_POINTERS;
 
 IODevice* DriverKitGetDevice( const char*name) NO_NULL_POINTERS;

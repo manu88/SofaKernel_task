@@ -20,22 +20,35 @@
 
 SOFA_BEGIN_DCL
 
+
+typedef enum
+{
+        IOCTL_Reset = 1,
+} IOCTLRequests;
 extern const KClass *IODeviceClass;
 typedef struct _IODevice IODevice;
+typedef struct _KernelTaskContext KernelTaskContext;
 
 typedef struct
 {
-    ssize_t (*read)(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  ) NO_NULL_POINTERS;
-    ssize_t (*write)(IODevice* dev, const uint8_t* buf , size_t bufSize  ) NO_NULL_POINTERS;
+    ssize_t (*read)(IODevice* dev, uint64_t offset,uint8_t* toBuf,  size_t maxBufSize  ) NO_NULL_POINTERS;
+    ssize_t (*write)(IODevice* dev,uint64_t offset, const uint8_t* buf , size_t bufSize  ) NO_NULL_POINTERS;
+    OSError (*ioctl)(IODevice* dev, int request, void *argp);
     
 } IODeviceCallbacks;
 
+//!  IODevice
+/*!
+ Represents an exported device that may or may not be attached to a real system Node (nodeRef).
+ */
 typedef struct _IODevice
 {
     struct kobject base;
-    IONode* nodeRef;
+    IONode* nodeRef; // attached system node. Can be NULL if the Device is 'virtual'
     
     IODeviceCallbacks* methods;
+    
+    KernelTaskContext * ctx; // will be set when attaching Device to DriverKit
 
 } IODevice;
 
@@ -43,14 +56,19 @@ typedef struct _IODevice
 OSError IODeviceInit(IODevice* dev, IONode* fromNode, const char* name) NO_NULL_POINTERS;
 
 
-static inline NO_NULL_POINTERS ssize_t IODeviceRead( IODevice* dev, uint8_t* toBuf , size_t maxBufSize)
+static inline NO_NULL_POINTERS ssize_t IODeviceRead( IODevice* dev,uint64_t offset, void* toBuf , size_t maxBufSize)
 {
-    return dev->methods->read(dev, toBuf , maxBufSize);
+    return dev->methods->read(dev,offset, toBuf , maxBufSize);
 }
 
-static inline NO_NULL_POINTERS ssize_t IODeviceWrite( IODevice* dev, const uint8_t* buf , size_t bufSize)
+static inline NO_NULL_POINTERS ssize_t IODeviceWrite( IODevice* dev,uint64_t offset, const void* buf , size_t bufSize)
 {
-    return dev->methods->write(dev, buf , bufSize);
+    return dev->methods->write(dev,offset, buf , bufSize);
+}
+
+static inline NO_NULL_ARGS(1, 1) OSError IODeviceCtl(IODevice* dev, int request, void *argp)
+{
+    return dev->methods->ioctl(dev , request , argp);
 }
 
 SOFA_END_DCL

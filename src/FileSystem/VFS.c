@@ -90,7 +90,6 @@ OSError VFSMount(IODevice* dev , const char* path )
     
     FSModule* probedFS = VFSGetFileSystemFromDevice(dev);
     
-    
     if( probedFS == NULL)
     {
         return OSError_NotSupportedFS;

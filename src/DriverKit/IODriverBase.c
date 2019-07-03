@@ -22,15 +22,14 @@ static OSError _Default_init(IODriverBase *driver  ) NO_NULL_POINTERS;
 static OSError _Default_release(IODriverBase *driver  ) NO_NULL_POINTERS;
 static OSError _Default_probeDevice(IODriverBase* driver , IONode* node, KernelTaskContext* ctx) NO_NULL_POINTERS;
 
+
 static IODriverCallbacks _defaultMethods =
 {
     _Default_init,
     _Default_release,
     _Default_probeDevice,
-    NULL // interupt
+    NULL, // interupt
     
-    //OSError (*start)(IODriverBase *driver  );
-    //OSError (*stop)(IODriverBase *driver  );
     
 };
 
@@ -59,3 +58,5 @@ static OSError _Default_probeDevice(IODriverBase* driver , IONode* node,KernelTa
 {
     return OSError_Unimplemented;
 }
+
+

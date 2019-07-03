@@ -135,4 +135,4 @@ void ata_select_drive(KernelTaskContext* ctx, ATADrive *drive, uint32_t mode);
 
 
 ssize_t ata_read(KernelTaskContext* ctx, ATADrive *drive, uint64_t lba, size_t count, void *buf);
-ssize_t ata_write(KernelTaskContext* ctx, ATADrive *drive, uint64_t lba, size_t count, void *buf);
+ssize_t ata_write(KernelTaskContext* ctx, ATADrive *drive, uint64_t lba, size_t count, const void *buf);

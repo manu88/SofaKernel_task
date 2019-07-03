@@ -29,6 +29,8 @@ static struct _DKContext
     
     struct kset exportedDevicesTree;
     
+    KernelTaskContext *_ctx;
+    
 } _dkContext = {0};
 
 static const char driverKitNodeName[] = "DriverKit";
@@ -166,6 +168,7 @@ OSError DriverKitDoMatching(KernelTaskContext* context)
     OSError ret = OSError_None;
     
     
+    _dkContext._ctx = context;
     ret = _DriverKitTryProbeNodeAndChildren(&_dkContext.deviceTree , context);
     
     kprintf("DriverKit : End matching process \n" );
@@ -181,7 +184,14 @@ OSError DriverKitRegisterInterupt(IODriverBase* base, uint32_t intNum)
 
 OSError DriverKitRegisterDevice(IODevice* device )
 {
-    return kset_append(&_dkContext.exportedDevicesTree, (struct kobject *)device);
+    ALWAYS_ASSERT(_dkContext._ctx != NULL); // must be set a this point
+    OSError ret = kset_append(&_dkContext.exportedDevicesTree, (struct kobject *)device);
+    
+    if( ret == OSError_None)
+    {
+        device->ctx = _dkContext._ctx;
+    }
+    return ret;
 }
 
 IODevice* DriverKitGetDevice( const char*name)

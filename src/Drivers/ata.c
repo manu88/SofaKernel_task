@@ -261,6 +261,7 @@ ssize_t ata_read(KernelTaskContext* ctx, ATADrive *drive, uint64_t lba, size_t c
 {
     //printk("pio_read(drive=%p, lba=%ld, count=%d, buf=%p)\n", drive, lba, count, buf);
     
+    int i=0;
     int retry_count = 0;
     
 retry:
@@ -329,7 +330,7 @@ retry:
             return -EIO;
         }
         size_t _count = count;
-        int i=0;
+        
         while (_count)
         {
             
@@ -375,14 +376,15 @@ retry:
             return -EINVAL;
         }
     }
-    else {
+    else
+    {
         /* TODO CHS */
     }
     
-    return 0;
+    return i;
     
 }
-ssize_t ata_write(KernelTaskContext* ctx, ATADrive *drive, uint64_t lba, size_t count, void *buf)
+ssize_t ata_write(KernelTaskContext* ctx, ATADrive *drive, uint64_t lba, size_t count,const void *buf)
 {
     return -1;
 }

@@ -28,7 +28,8 @@
 #include "Shell.h"
 
 #include "Drivers/PCIDriver.h"
-
+#include "SysCalls.h"
+#include "SysCallHandler.h"
 
 #define IRQ_EP_BADGE       BIT(seL4_BadgeBits - 1)
 #define IRQ_BADGE_TIMER    (1 << 0)
@@ -43,8 +44,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include "SysCalls.h"
-#include "SysCallHandler.h"
+
 
 static uint8_t* readAndFillBuffer(const char* fromFile , size_t* bufSize)
 {
@@ -201,6 +201,10 @@ static OSError baseSystemInit(KernelTaskContext *context)
     
     ALWAYS_ASSERT_NO_ERR(kset_append(&root, fsNode));
     kobject_put(fsNode);
+    
+    OSError err =  VFSRegisterEXT2Module();
+    
+    ALWAYS_ASSERT( err == OSError_None || err == OSError_AlreadyInSet);
     
     ALWAYS_ASSERT_NO_ERR( PCIDriverInit(&_pciDriver) );
     ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDriver( (IODriverBase*)&_pciDriver) );

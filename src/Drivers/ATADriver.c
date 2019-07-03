@@ -36,17 +36,21 @@ static IODriverCallbacks ATAMethods =
 {
     NULL, // init
     NULL, // release
-    ATAProbeDevice
+    ATAProbeDevice,
+    NULL, // interrupts
+    
     
 };
 
 
-static ssize_t ATARead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  ) NO_NULL_POINTERS;
-static ssize_t ATAWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  ) NO_NULL_POINTERS;
+static ssize_t ATARead(IODevice* dev,uint64_t offset, uint8_t* toBuf,  size_t maxBufSize  ) NO_NULL_POINTERS;
+static ssize_t ATAWrite(IODevice* dev,uint64_t offset, const uint8_t* buf , size_t bufSize  ) NO_NULL_POINTERS;
+static OSError ATAioctl(IODevice* dev, int request, void *argp);
 static IODeviceCallbacks ataMethods =
 {
     ATARead,
-    ATAWrite
+    ATAWrite,
+    ATAioctl,
 };
 
 
@@ -73,7 +77,7 @@ static void DriveInit(KernelTaskContext* ctx, ATADrive* drive)
 {
     printf("DriveInit\n");
     ata_soft_reset(ctx, drive);
-    testRead(ctx, drive);
+    //testRead(ctx, drive);
 }
 
 static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx)
@@ -231,30 +235,49 @@ static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
 }
 
 
-static ssize_t ATARead(IODevice* dev, uint8_t* toBuf,  size_t maxBufSize  )
+static ssize_t ATARead(IODevice* dev,uint64_t offset, uint8_t* toBuf,  size_t maxBufSize  )
 {
     IONode* hdNode = dev->nodeRef;
     ALWAYS_ASSERT(hdNode);
     ATADrive* drive = (ATADrive*) hdNode->impl;
+    
     ALWAYS_ASSERT(drive);
-    return 0;
+    return ata_read(dev->ctx, drive, offset, maxBufSize, toBuf);
 }
 
-static ssize_t ATAWrite(IODevice* dev, const uint8_t* buf , size_t bufSize  )
+static ssize_t ATAWrite(IODevice* dev,uint64_t offset, const uint8_t* buf , size_t bufSize  )
 {
     IONode* hdNode = dev->nodeRef;
     ALWAYS_ASSERT(hdNode);
     ATADrive* drive = (ATADrive*) hdNode->impl;
     ALWAYS_ASSERT(drive);
     
-    return 0;
+    return ata_write(dev->ctx, drive, offset, bufSize, buf);
 }
 
+static OSError ATAioctl(IODevice* dev, int request, void *argp)
+{
+    IONode* hdNode = dev->nodeRef;
+    ALWAYS_ASSERT(hdNode);
+    ATADrive* drive = (ATADrive*) hdNode->impl;
+    ALWAYS_ASSERT(drive);
+    
+    switch (request)
+    {
+        case IOCTL_Reset:
+            ata_soft_reset(dev->ctx, drive);
+            return OSError_None;
+            
+        default:
+            return OSError_ArgError;
+    }
+    
+}
 
 static void testRead(KernelTaskContext* ctx, ATADrive* drive)
 {
     printf("Test read \n");
-    
+    ata_soft_reset(ctx, drive);
     
     struct ext2_superblock sb = {0};
     
@@ -282,55 +305,6 @@ static void testRead(KernelTaskContext* ctx, ATADrive* drive)
     
     ALWAYS_ASSERT( err == OSError_None || err == OSError_AlreadyInSet);
     
-    printf("VALID signature !\n");
-    printf("inodes_count : %i\n",sb.inodes_count);
-    printf("blocks_count : %i\n",sb.blocks_count);
-    printf("su_blocks_count : %i\n",sb.su_blocks_count);
-    printf("unallocated_blocks_count : %i\n",sb.unallocated_blocks_count);
-    printf("unallocated_inodes_count : %i\n",sb.unallocated_inodes_count);
-    printf("su_block_number : %i\n",sb.su_block_number);
-    printf("block_size : %i\n",sb.block_size);
-    printf("fragment_size : %i\n",sb.fragment_size);
-    printf("blocks_per_block_group : %i\n",sb.blocks_per_block_group);
-    printf("fragments_per_block_group : %i\n",sb.fragments_per_block_group);
-    printf("inodes_per_block_group : %i\n",sb.inodes_per_block_group);
-    printf("last_mount_time : %i\n",sb.last_mount_time);
-    printf("last_written_time : %i\n",sb.last_written_time);
-    printf("times_mounted : %i\n",sb.times_mounted);  // after last fsck
-    printf("allowed_times_mounted : %i\n",sb.allowed_times_mounted);
-    printf("ext2_signature : %i\n",sb.ext2_signature);
-    printf("filesystem_state : %i\n",sb.filesystem_state);
-    printf("on_error : %i\n",sb.on_error);
-    printf("minor_version : %i\n",sb.minor_version);
-    printf("last_fsck : %i\n",sb.last_fsck);
-    printf("time_between_fsck : %i\n",sb.time_between_fsck);  // Time allowed between fsck(s)
-    printf("os_id : %i\n",sb.os_id);
-    printf("major_version : %i\n",sb.major_version);
-    printf("uid : %i\n",sb.uid);
-    printf("gid : %i\n",sb.gid);
     
-    
-    printf("fsid: ");//
-    for(int i=0;i<16;i++)
-        printf("%X" , sb.fsid[i]);
-    printf("\n");
-    //'%s' \n",sb.fsid);
-    printf("name: '%s' \n",(const char*)sb.name);
-    printf("path_last_mounted_to: '%s' \n",sb.path_last_mounted_to);
-    
-    size_t bs = 1024UL << sb.block_size;
-    printf("\n Block Size : %zi \n" , bs);
-    
-    struct ext2_block_group_descriptor blockGroupDesc = {0};
-    
-    ret = ata_read(ctx, drive, 3 /* * lba(512)*/,sizeof(struct ext2_block_group_descriptor), &blockGroupDesc);
-    
-    printf("-- ext2_block_group_descriptor\n ");
-    printf("block_usage_bitmap : %u\n",blockGroupDesc.block_usage_bitmap);
-    printf("inode_usage_bitmap : %u\n",blockGroupDesc.inode_usage_bitmap);
-    printf("inode_table : %u\n",blockGroupDesc.inode_table);
-    printf("unallocated_blocks_count : %u\n",blockGroupDesc.unallocated_blocks_count);
-    printf("unallocated_inodes_count : %u\n",blockGroupDesc.unallocated_inodes_count);
-    printf("directories_count : %u\n",blockGroupDesc.directories_count);
     
 }

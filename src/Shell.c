@@ -42,7 +42,7 @@ OSError ShellRun(Thread* thread, IODevice* comDev ,struct kset *root)
     while(1)
     {
         uint8_t b = 0;
-        ssize_t ret =  IODeviceRead(comDev, &b, 1);
+        ssize_t ret =  IODeviceRead(comDev, 0,&b, 1);
         
         if( b == '\n' || b == '\r')
         {
@@ -59,7 +59,7 @@ OSError ShellRun(Thread* thread, IODevice* comDev ,struct kset *root)
         }
         else
         {
-            IODeviceWrite(comDev, &b, 1);
+            IODeviceWrite(comDev,0, &b, 1);
             cmd[cmdPos++] = b;
             
             
@@ -90,7 +90,7 @@ static int DoWrite( const char* args)
         
         if( dev && kobjectIsKindOf(dev, IODeviceClass))
         {
-            ssize_t r =  IODeviceWrite(dev, (const uint8_t*) &data, strlen(data));
+            ssize_t r =  IODeviceWrite(dev,0, (const uint8_t*) &data, strlen(data));
             if( r < 0)
             {
                 return (int) r;
