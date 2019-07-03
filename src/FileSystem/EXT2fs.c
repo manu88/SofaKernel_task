@@ -88,15 +88,9 @@ static OSError ext2_probe(struct _FSModule* module, IODevice* device )
     
     
     
-    /* Valid Ext2? */
-    if (sb.ext2_signature != EXT2_SIGNATURE)
-    {
-        printf("Invalid signature 0X%X!\n" , sb.ext2_signature);
-        
-        return OSError_NotSupportedDevice;
-    }
     
-    printf("ext2_probe : Signature is matching on drive '%s'\n" , device->base.k_name);
+    
+    //printf("ext2_probe : Signature is matching on drive '%s'\n" , device->base.k_name);
     
     
     printf("inodes_count : %i\n",sb.inodes_count);
@@ -136,6 +130,15 @@ static OSError ext2_probe(struct _FSModule* module, IODevice* device )
     
     size_t bs = 1024UL << sb.block_size;
     printf("\n Block Size : %zi \n" , bs);
+    
+    /* Valid Ext2? */
+    if (sb.ext2_signature != EXT2_SIGNATURE)
+    {
+        printf("Invalid signature 0X%X!\n" , sb.ext2_signature);
+        
+        return OSError_NotSupportedDevice;
+    }
+    
     
     struct ext2_block_group_descriptor blockGroupDesc = {0};
     

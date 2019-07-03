@@ -43,7 +43,7 @@ static const char *ata_error_string(uint8_t err)
     }
 }
 
-static void ata_wait(KernelTaskContext* ctx, ATADrive *drive)
+void ata_wait(KernelTaskContext* ctx, ATADrive *drive)
 {
     //printf("ata_wait \n");
     for (int i = 0; i < 4; ++i)

@@ -21,8 +21,14 @@
 #include "../KObject/KObject.h"
 #include "FSModule.h"
 
-typedef struct _IODevice IODevice;
 
+
+typedef struct
+{
+    IODevice *dev;
+} FileSystem;
+
+typedef struct _IODevice IODevice;
 
 struct kobject* VFSInit( void);
 

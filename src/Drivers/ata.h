@@ -128,6 +128,7 @@ typedef struct
     char     model[41];
 } ATADrive;
 
+void ata_wait(KernelTaskContext* ctx, ATADrive *drive) NO_NULL_POINTERS;
 void ata_disable_IRQ(KernelTaskContext* ctx, ATADrive *drive) NO_NULL_POINTERS;
 void ata_soft_reset( KernelTaskContext* ctx, ATADrive *drive) NO_NULL_POINTERS;
 uint8_t ata_detect_drive(KernelTaskContext* ctx, ATADrive *drive) NO_NULL_POINTERS;

@@ -185,7 +185,7 @@ static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
                         const char* hdName = (i == 0? "hda" : (i == 1? "hdb" :(i == 2? "hdc" :  "hdd" )));
                         IONodeInit(hdNode, hdName);
                         hdNode->impl = &drives[i];
-                        
+                        hdNode->_attachedDriver = driver;
                         IONodeAddChild(node, hdNode);
                         kobject_put((struct kobject *)hdNode);
                         
@@ -197,11 +197,10 @@ static OSError ATAProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
                                 hdDev->methods = &ataMethods;
                                 DriveInit(ctx, &drives[i]);
                                 hdDev->nodeRef = hdNode;
+                                
                                 //hdNode->hid = &drives[i];
                                 DriverKitRegisterDevice(hdDev);
                                 kobject_put((struct kobject *)hdDev);
-                                
-                                
                             }
                             else
                             {
@@ -257,6 +256,7 @@ static ssize_t ATAWrite(IODevice* dev,uint64_t offset, const uint8_t* buf , size
 
 static OSError ATAioctl(IODevice* dev, int request, void *argp)
 {
+    printf("ATAioctl request %i\n" , request);
     IONode* hdNode = dev->nodeRef;
     ALWAYS_ASSERT(hdNode);
     ATADrive* drive = (ATADrive*) hdNode->impl;
@@ -266,6 +266,7 @@ static OSError ATAioctl(IODevice* dev, int request, void *argp)
     {
         case IOCTL_Reset:
             ata_soft_reset(dev->ctx, drive);
+            ata_disable_IRQ(dev->ctx, drive);
             return OSError_None;
             
         default:
