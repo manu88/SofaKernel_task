@@ -39,6 +39,7 @@ typedef struct _FSModule
     
     FSModuleMethods *methods;
     uint8_t isLoaded:1;
+
 } FSModule;
 
 

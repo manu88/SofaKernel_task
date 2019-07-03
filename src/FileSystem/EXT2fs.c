@@ -74,6 +74,7 @@ static OSError ext2_probe(struct _FSModule* module, IODevice* device )
     printf("EXT2FS probing '%s'\n" , device->base.k_name);
  
     IODeviceCtl(device, IOCTL_Reset, NULL);
+    
     struct ext2_superblock sb = {0};
     
 
@@ -81,18 +82,15 @@ static OSError ext2_probe(struct _FSModule* module, IODevice* device )
     // for the partition boot sectors and are unused by the Ext2 filesystem
     
     ssize_t ret = IODeviceRead(device, 2, &sb, sizeof(struct ext2_superblock));
-    
+
     printf("ext2_probe  : IODeviceRead returns %zi\n" , ret);
     if( ret < 0)
         return (OSError)ret;
     
     
-    
-    
-    
     //printf("ext2_probe : Signature is matching on drive '%s'\n" , device->base.k_name);
     
-    
+    /*
     printf("inodes_count : %i\n",sb.inodes_count);
     printf("blocks_count : %i\n",sb.blocks_count);
     printf("su_blocks_count : %i\n",sb.su_blocks_count);
@@ -127,9 +125,10 @@ static OSError ext2_probe(struct _FSModule* module, IODevice* device )
     //'%s' \n",sb.fsid);
     printf("name: '%s' \n",(const char*)sb.name);
     printf("path_last_mounted_to: '%s' \n",sb.path_last_mounted_to);
-    
+    */
     size_t bs = 1024UL << sb.block_size;
     printf("\n Block Size : %zi \n" , bs);
+    
     
     /* Valid Ext2? */
     if (sb.ext2_signature != EXT2_SIGNATURE)

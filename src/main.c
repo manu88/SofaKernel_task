@@ -149,6 +149,8 @@ static OSError earlySystemInit(KernelTaskContext *context)
     int error =  sel4platsupport_new_io_mapper(context->vspace, context->vka, &io_mapper);
     ALWAYS_ASSERT(error == 0);
     
+    
+    
     acpi_t* acpi = acpi_init(io_mapper);
     
     ALWAYS_ASSERT(acpi != NULL);
@@ -188,6 +190,13 @@ static OSError earlySystemInit(KernelTaskContext *context)
     
     error = TimerInit(context , notification_path.capPtr);
     ALWAYS_ASSERT( error == 0);
+    
+    // we reserve the timer ID 0 for us
+    // so that threads always have a timerID > 0 so that we can distinguish unallocated ids(0)
+    uint32_t KernTasktimerID = 0;
+    ALWAYS_ASSERT(tm_alloc_id_at(&context->tm , 0) == 0);
+    ALWAYS_ASSERT( KernTasktimerID == 0);
+    
 #endif
     return OSError_None;
 }
@@ -417,6 +426,8 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
         //kprintf("[kernTask] Listening...\n");
         message = seL4_Recv(epPtr, &sender_badge);
         //kprintf("[kernTask] Got a message\n");
+        
+        
 
         label = seL4_MessageInfo_get_label(message);
         
@@ -448,63 +459,67 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
             
             processTimer(context ,sender_badge);
         }
-        else if (label == seL4_VMFault)
+        else
         {
-            
-            
             Thread* callingThread = ThreadManagerGetThreadWithID( sender_badge);
             
             ALWAYS_ASSERT( callingThread);
-            
-            printf("[kernTask] VM Fault from %li Thread '%s' %i \n",sender_badge ,ThreadGetName(callingThread ) , callingThread->threadID );
-            
-            
-            OSError err = ThreadManagerRemoveThread(callingThread);
-            ALWAYS_ASSERT_NO_ERR(err);
-            
-            ThreadRelease(&shellThread , &context->vka, &context->vspace);
-            
-            /*
-            if( callingThread == &shellThread)
+            if (label == seL4_VMFault)
             {
-                startShell(context);
+                
+                
+                
+                
+                printf("[kernTask] VM Fault from %li Thread '%s' %i \n",sender_badge ,ThreadGetName(callingThread ) , callingThread->threadID );
+                
+                
+                OSError err = ThreadManagerRemoveThread(callingThread);
+                ALWAYS_ASSERT_NO_ERR(err);
+                
+                ThreadRelease(&shellThread , &context->vka, &context->vspace);
+                
+                /*
+                if( callingThread == &shellThread)
+                {
+                    startShell(context);
+                }
+                 */
+                printf("Remaining ref count from thread : %i\n" , callingThread->threadID);
+                
+                struct kobject * threadManager = kobjectResolve("/ThreadManager", &root);
+                
+                kobject_printTree(threadManager);
+                
+                
             }
-             */
-            printf("Remaining ref count from thread : %i\n" , callingThread->threadID);
-            
-            struct kobject * threadManager = kobjectResolve("/ThreadManager", &root);
-            
-            kobject_printTree(threadManager);
-            
-            
-        }
-        else if( label == seL4_CapFault)
-        {
-            printf("[kernTask] CAP Fault \n");
-        }
-        
-        else if (label == seL4_NoFault)
-        {
-            //printf("[kernTask] Syscall from %li (%i args) \n" ,sender_badge, seL4_MessageInfo_get_length(message));
-            processSysCall(context , message , sender_badge);
-            
-            /*
-            Process* senderProcess =  ProcessTableGetByPID( sender_badge);
-            
-            if(!senderProcess)
+            else if( label == seL4_CapFault)
             {
-                printf("kernel_task : no sender process for badge %li\n", sender_badge);
-                assert(0);
-                continue;
+                printf("[kernTask] CAP Fault \n");
             }
             
-            processSyscall(context,senderProcess , message , sender_badge );
-             */
-        }
-         
-        else
-        {
-            printf("kernel_task.ProcessLoop : other msg \n");
+            else if (label == seL4_NoFault)
+            {
+                //printf("[kernTask] Syscall from %li (%i args) \n" ,sender_badge, seL4_MessageInfo_get_length(message));
+                processSysCall(context ,callingThread, message , sender_badge);
+                
+                /*
+                Process* senderProcess =  ProcessTableGetByPID( sender_badge);
+                
+                if(!senderProcess)
+                {
+                    printf("kernel_task : no sender process for badge %li\n", sender_badge);
+                    assert(0);
+                    continue;
+                }
+                
+                processSyscall(context,senderProcess , message , sender_badge );
+                 */
+            }
+            
+            else
+            {
+                printf("kernel_task.ProcessLoop : other msg \n");
+            }
         }
     } // end while(1)
 }

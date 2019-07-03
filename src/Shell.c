@@ -285,17 +285,17 @@ static int execCmd( const char* cmd)
             return -EINVAL;
         }
         
-        int secs = atoi(arg);
+        int millis = atoi(arg);
         
-        if( secs <= 0)
+        if( millis <= 0)
         {
             return -EINVAL;
         }
         
         //seL4_DebugDumpScheduler();
         
-        printf("[Shell] asks to sleep for %i seconds\n" , secs);
-        return SC_usleep(_thread->ipc_ep_cap, secs);
+        //printf("[Shell] asks to sleep for %i seconds\n" , secs);
+        return SC_usleep(_thread->ipc_ep_cap, millis);
 
 
     }

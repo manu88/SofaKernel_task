@@ -24,7 +24,10 @@ SOFA_BEGIN_DCL
 typedef enum
 {
         IOCTL_Reset = 1,
+
 } IOCTLRequests;
+
+
 extern const KClass *IODeviceClass;
 typedef struct _IODevice IODevice;
 typedef struct _KernelTaskContext KernelTaskContext;

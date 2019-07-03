@@ -48,7 +48,9 @@ typedef struct _Thread
     uint32_t threadID;
     seL4_CPtr ipc_ep_cap;
     
+    uint32_t timerID; // > 0 if allocated
     
+    seL4_CPtr reply;
     
 } Thread;
 

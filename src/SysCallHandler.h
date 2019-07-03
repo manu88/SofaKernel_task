@@ -10,4 +10,5 @@
 
 #include "Bootstrap.h"
 
-void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL4_Word sender_badge);
+typedef struct _Thread Thread;
+void processSysCall(KernelTaskContext* context , Thread* callingThread,seL4_MessageInfo_t message, seL4_Word sender_badge);

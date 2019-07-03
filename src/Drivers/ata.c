@@ -189,7 +189,8 @@ uint8_t ata_detect_drive(KernelTaskContext* ctx, ATADrive *drive)
         drive->capabilities = *(uint16_t *) (ide_ident + ATA_IDENT_CAPABILITIES);
         drive->command_sets = *(uint32_t *) (ide_ident + ATA_IDENT_COMMANDSETS);
         
-        if (drive->command_sets & (1 << 26)) {
+        if (drive->command_sets & (1 << 26))
+        {
             /* 48-bit LBA */
             uint32_t high  = *(uint32_t *) (ide_ident + ATA_IDENT_MAX_LBA);
             uint32_t low   = *(uint32_t *) (ide_ident + ATA_IDENT_MAX_LBA_EXT);
@@ -214,6 +215,7 @@ uint8_t ata_detect_drive(KernelTaskContext* ctx, ATADrive *drive)
         printf("ata%d: Command Sets: 0x%x\n", drive->id, drive->command_sets);
         printf("ata%d: Max LBA: 0x%x\n", drive->id, drive->max_lba);
         printf("ata%d: Model: %s\n", drive->id, drive->model);
+        printf("ata%d: Mode : 0x%x\n" ,drive->id , drive->mode);
         printf("-----------\n");
     }
     
@@ -222,7 +224,6 @@ uint8_t ata_detect_drive(KernelTaskContext* ctx, ATADrive *drive)
 
 void ata_disable_IRQ(KernelTaskContext* ctx, ATADrive *drive)
 {
-    //printf("start ata_disable_IRQ \n");
     io_out8(&ctx->opsIO.io_port_ops, drive->base + ATA_REG_CONTROL, 0x2);
 }
 
@@ -281,7 +282,6 @@ retry:
         
         if (drive->mode == ATA_MODE_LBA48)
         {
-            
             io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_SECCOUNT0, (count >> 8) & 0xFF);
             io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA0, (uint8_t) (lba >> (8 * 3)));
             io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA1, (uint8_t) (lba >> (8 * 4)));
@@ -292,9 +292,7 @@ retry:
         io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA0, (uint8_t) (lba >> (8 * 0)));
         io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA1, (uint8_t) (lba >> (8 * 1)));
         io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_LBA2, (uint8_t) (lba >> (8 * 2)));
-        
-        
-        
+
         /* Send read command */
         ata_wait(ctx,drive);
         
@@ -306,12 +304,9 @@ retry:
         {
             io_out8(&ctx->opsIO.io_port_ops,drive->base + ATA_REG_CMD, ATA_CMD_READ_SECTORS);
         }
-        
-        
+
         ata_wait(ctx,drive);
-        
-        
-        
+
         int err;
         
         if ((err = ata_poll(ctx,drive, 1)))
@@ -333,13 +328,10 @@ retry:
         
         while (_count)
         {
-            
-            
             /* FIXME */
             //__insw(drive->base.addr + ATA_REG_DATA, 256, buf);
             char *_buf = buf;
-            
-            
+
             //for (int i = 0; i < 256; ++i)
             {
                 

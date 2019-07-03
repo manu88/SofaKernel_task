@@ -16,20 +16,20 @@
 #include "DriverKit/DriverKit.h"
 
 // THis is gross. But only temporary
-static uint32_t counter = 0;
+//static uint32_t counter = 0;
 static KernelTaskContext* _context = NULL;
 
 
 static int OnTime(uintptr_t token)
 {
+
     ALWAYS_ASSERT(_context);
-    seL4_CPtr reply = (seL4_CPtr) token;
-    ALWAYS_ASSERT(reply);
     
-    int err = tm_deregister_cb(&_context->tm  , counter-1);
-    ALWAYS_ASSERT(err == 0);
+    Thread* callingThread = (Thread*) token;
+    //seL4_CPtr reply = (seL4_CPtr) token;
+    ALWAYS_ASSERT(callingThread->reply);
     
-    err = tm_free_id(&_context->tm , counter-1);
+    int err = tm_deregister_cb(&_context->tm  , callingThread->timerID);
     ALWAYS_ASSERT(err == 0);
     
     //printf("ON TIME \n");
@@ -38,19 +38,36 @@ static int OnTime(uintptr_t token)
     seL4_SetMR(0, SysCallNum_nanosleep);
     seL4_SetMR(1, 0); // sucess
     
-    seL4_Send(reply , tag);
+    seL4_Send(callingThread->reply , tag);
     
-    cnode_delete(_context,reply);
+    cnode_delete(_context,callingThread->reply);
+    callingThread->reply = NULL;
 }
 
-static void handleSleep(KernelTaskContext* context,seL4_MessageInfo_t message)
+static void handleSleep(KernelTaskContext* context,Thread* callingThread,seL4_MessageInfo_t message)
 {
+    
+    if( callingThread->timerID == 0)
+    {
+        
+        int err = tm_alloc_id(&context->tm , &callingThread->timerID);
+        if( err != 0)
+        {
+            seL4_SetMR(0,SysCallNum_nanosleep);
+            seL4_SetMR(1, -EPERM );
+            seL4_Reply( message );
+            
+        }
+    }
+    
+    ALWAYS_ASSERT(callingThread->timerID > 0);
+    ALWAYS_ASSERT( callingThread->reply == NULL);
     int seconds = seL4_GetMR(1);
     //kprintf("Sleep %i seconds\n" , seconds);
     int error = -ENOSYS;
     
-    seL4_CPtr reply = get_free_slot(context);
-    if( reply == 0)
+    callingThread->reply = get_free_slot(context);
+    if( callingThread->reply == NULL)
     {
         seL4_SetMR(0,SysCallNum_nanosleep);
         seL4_SetMR(1, -EINVAL );
@@ -58,24 +75,28 @@ static void handleSleep(KernelTaskContext* context,seL4_MessageInfo_t message)
         return;
     }
     
-    error = cnode_savecaller( context, reply );
+    error = cnode_savecaller( context, callingThread->reply );
     if( error != 0)
     {
-        cnode_delete(context , reply);
+        cnode_delete(context , callingThread->reply);
+        callingThread->reply = NULL;
         seL4_SetMR(0,SysCallNum_nanosleep);
         seL4_SetMR(1, -EINVAL );
         seL4_Reply( message );
         return;
     }
     
-    int err = TimerAllocAndRegisterOneShot(&context->tm , seconds*NS_IN_MS /* To nano seconds*/,  counter++, OnTime, (uintptr_t) reply );
+    
+    
+    int err = tm_register_rel_cb( &context->tm , seconds*NS_IN_MS , callingThread->timerID , OnTime , callingThread);
+    //TimerAllocAndRegisterOneShot(&context->tm , seconds*NS_IN_MS /* To nano seconds*/,  counter++, OnTime, (uintptr_t) reply );
     if( err != 0)
     {
         kprintf("TimerAllocAndRegisterOneShot err %i\n" , err);
     }
     ALWAYS_ASSERT_NO_ERR(err);
     
-    
+
     /*
     seL4_SetMR(0,SysCallNum_Sleep);
     seL4_SetMR(1, 0 );
@@ -84,7 +105,7 @@ static void handleSleep(KernelTaskContext* context,seL4_MessageInfo_t message)
 }
 
 
-static void handleKill(KernelTaskContext* context, seL4_MessageInfo_t message)
+static void handleKill(KernelTaskContext* context,Thread* callingThread, seL4_MessageInfo_t message)
 {
     long idToKill = seL4_GetMR(1);
     
@@ -113,7 +134,7 @@ static void handleKill(KernelTaskContext* context, seL4_MessageInfo_t message)
     seL4_Reply( message );
 }
 
-static void handleSpawn(KernelTaskContext* context, seL4_MessageInfo_t message)
+static void handleSpawn(KernelTaskContext* context, Thread* callingThread,seL4_MessageInfo_t message)
 {
     printf("Spawn\n");
     int err = -EACCES;
@@ -125,7 +146,7 @@ static void handleSpawn(KernelTaskContext* context, seL4_MessageInfo_t message)
     seL4_Reply( message );
 }
 
-static void handleMount(KernelTaskContext* context, seL4_MessageInfo_t message)
+static void handleMount(KernelTaskContext* context, Thread* callingThread,seL4_MessageInfo_t message)
 {
     int err = -EINVAL;
     seL4_SetMR(0,SysCallNum_mount);
@@ -140,7 +161,7 @@ static void handleMount(KernelTaskContext* context, seL4_MessageInfo_t message)
     seL4_Reply( message );
 }
 
-void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL4_Word sender_badge)
+void processSysCall(KernelTaskContext* context , Thread* callingThread,seL4_MessageInfo_t message, seL4_Word sender_badge)
 {
     if( _context == NULL)
     {
@@ -153,19 +174,19 @@ void processSysCall(KernelTaskContext* context , seL4_MessageInfo_t message, seL
     switch (sysCallID)
     {
         case SysCallNum_nanosleep:
-            handleSleep(context,message);
+            handleSleep(context,callingThread,message);
             break;
             
         case SysCallNum_kill:
-            handleKill(context , message);
+            handleKill(context , callingThread,message);
             break;
             
         case SysCallNum_spawn:
-            handleSpawn(context , message);
+            handleSpawn(context ,callingThread, message);
             break;
             
         case SysCallNum_mount:
-            handleMount(context, message);
+            handleMount(context,callingThread, message);
             
         default:
             break;

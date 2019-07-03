@@ -71,7 +71,7 @@ OSError ATADriverInit( ATADriver* driver)
     return ret;
 }
 
-static void testRead(KernelTaskContext* ctx, ATADrive* drive);
+
 
 static void DriveInit(KernelTaskContext* ctx, ATADrive* drive)
 {
@@ -268,13 +268,13 @@ static OSError ATAioctl(IODevice* dev, int request, void *argp)
             ata_soft_reset(dev->ctx, drive);
             ata_disable_IRQ(dev->ctx, drive);
             return OSError_None;
-            
+        
         default:
             return OSError_ArgError;
     }
     
 }
-
+/*
 static void testRead(KernelTaskContext* ctx, ATADrive* drive)
 {
     printf("Test read \n");
@@ -288,11 +288,11 @@ static void testRead(KernelTaskContext* ctx, ATADrive* drive)
     // The first 1024 bytes of the disk, the "boot block", are reserved
     // for the partition boot sectors and are unused by the Ext2 filesystem
     
-    ssize_t ret = ata_read(ctx, drive, 2 /* * lba(512)*/,sizeof(struct ext2_superblock), &sb);
+    ssize_t ret = ata_read(ctx, drive, 2 ,sizeof(struct ext2_superblock), &sb);
     
     printf("ata_read returns %i\n" , ret);
     
-    /* Valid Ext2? */
+ 
     if (sb.ext2_signature != EXT2_SIGNATURE)
     {
         printf("Invalid signature 0X%X!\n" , sb.ext2_signature);
@@ -309,3 +309,4 @@ static void testRead(KernelTaskContext* ctx, ATADrive* drive)
     
     
 }
+*/
