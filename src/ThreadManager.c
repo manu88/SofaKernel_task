@@ -19,6 +19,10 @@ static struct _ThreadManagerContext
     
 } _threadManagerCtx;
 
+struct kset* GetThreadManager()
+{
+    return &_threadManagerCtx.set;
+}
 
 OSError ThreadManagerInit()
 {
@@ -31,11 +35,13 @@ OSError ThreadManagerInit()
 
 OSError ThreadManagerAddThread( Thread* thread)
 {
+    printf("ThreadManagerAddThread\n");
     return kset_append(&_threadManagerCtx.set, (struct kobject *)thread);
 }
 
 OSError ThreadManagerRemoveThread( Thread* thread)
 {
+    printf("ThreadManagerRemoveThread\n");
     return kset_remove(&_threadManagerCtx.set, (struct kobject *)thread);
 }
 

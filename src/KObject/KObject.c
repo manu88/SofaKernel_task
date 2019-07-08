@@ -132,7 +132,6 @@ void kset_initWithName(struct kset* set , const char* name)
 
 OSError kset_append(struct kset*set , struct kobject* obj)
 {
-
     DL_APPEND(set->_listHead, obj);
     kobject_get(obj); // inc ref count
     obj->_parent = &set->obj;
@@ -178,7 +177,7 @@ struct kobject* kset_getChildByName( const struct kset* set , const char* name )
     struct kobject* obj = NULL;
     kset_foreach( set, obj)
     {
-        if ( strcmp( obj->k_name  , name) == 0)
+        if ( obj &&  strcmp( obj->k_name  , name) == 0)
         {
             return obj;
         }
@@ -191,11 +190,13 @@ struct kobject* kset_getChildByName( const struct kset* set , const char* name )
 
 static void _printOBJ( const struct kobject* obj , int indent)
 {
+    ALWAYS_ASSERT(obj);
     for(int i =0;i<indent;i++)
         kprintf("|\t");
     
     char desc[MAX_DESC_SIZE] = "";
     
+    ALWAYS_ASSERT(obj->_class);
     obj->_class->getInfos(obj , desc);
     
     kprintf("'%s' %s %p refc %i %s\n" , obj->k_name, obj->_class->name, (const void*)obj, obj->kref.refcount, desc);
@@ -226,7 +227,7 @@ struct kobject* kobjectResolve( const char* path_ , struct kset* startNode )
     
     
     char* path = strdup(path_);
-    
+    ALWAYS_ASSERT(path);
     static const char delim[] = "/";
     
     char* token = strtok(path, delim);
@@ -235,7 +236,10 @@ struct kobject* kobjectResolve( const char* path_ , struct kset* startNode )
     
     while ( token != NULL )
     {
-        ret = (struct kset *) kset_getChildByName(ret, token);// InodeGetChildByName(ret ,token);
+        if (kobject_isSet((const struct kobject *)ret))
+            ret = (struct kset *) kset_getChildByName(ret, token);// InodeGetChildByName(ret ,token);
+        else
+            ret = NULL;
 
         if(!ret)
         {

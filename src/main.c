@@ -98,6 +98,7 @@ static void lateSystemInit(KernelTaskContext *ctx);
 
 /* ****** */
 static struct kset root = {0};
+struct kset* RootObject = &root;
 static const char rootNodeName[] = "root";
 
 
@@ -215,11 +216,13 @@ static OSError baseSystemInit(KernelTaskContext *context)
     
     ALWAYS_ASSERT( err == OSError_None || err == OSError_AlreadyInSet);
     
+#ifndef SOFA_TESTS_ONLY
     ALWAYS_ASSERT_NO_ERR( PCIDriverInit(&_pciDriver) );
+
     ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDriver( (IODriverBase*)&_pciDriver) );
     kobject_put((struct kobject *)&_pciDriver);
     
-    
+#endif
     
     
     ALWAYS_ASSERT_NO_ERR( DriverKitDoMatching( context) );
@@ -229,7 +232,7 @@ static OSError baseSystemInit(KernelTaskContext *context)
 
 static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  );
 
-
+#ifndef SOFA_TESTS_ONLY
 static int OnTime(uintptr_t token)
 {
     printf("ON TIME\n");
@@ -253,13 +256,15 @@ static void ThreadTest2(Thread *self, void *arg, void *ipc_buf)
     
     while (1)
     {
-        SC_usleep(self->ipc_ep_cap, 200000);
+        SC_usleep(self->ipc_ep_cap, 5000);
+        printf("Thread %i Did sleep\n" , self->threadID);
     }
 }
 
 static void TestThreadIsReleased( struct kobject *obj)
 {
     Thread* thread = (Thread*) obj;
+    
     
     printf("TEST THREAD %i IS RELEASED \n" , thread->threadID);
     
@@ -269,7 +274,7 @@ static void TestThreadIsReleased( struct kobject *obj)
 }
 static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
 {
-    IODevice* comDev =(IODevice*) kset_getChildByName(kset_getChildByName(&root, "Devices") , "COM1");
+    IODevice* comDev =(IODevice*) kset_getChildByName( (struct kset*) kset_getChildByName(&root, "Devices") , "COM1");
     ALWAYS_ASSERT(comDev);
     
     ShellRun( self,comDev ,&root);
@@ -320,10 +325,10 @@ static Thread* ThreadPrepare(KernelTaskContext *ctx, Thread* thread , ThreadEntr
     return thread;
 }
 
-void spawnTest(KernelTaskContext *ctx)
+void spawnTest(KernelTaskContext *ctx, Thread* parent)
 {
     Thread* testThread = kmalloc(sizeof(Thread));
-    
+    ALWAYS_ASSERT(testThread);
     ALWAYS_ASSERT( ThreadPrepare(ctx, testThread, ThreadTest2) == testThread);
     
     testThread->obj.methods.release = TestThreadIsReleased;
@@ -332,9 +337,10 @@ void spawnTest(KernelTaskContext *ctx)
     ALWAYS_ASSERT_NO_ERR(ret);
     
     kobject_put((struct kobject *)testThread);
-    ThreadSetParent(testThread, NULL);
+    ThreadSetParent(testThread, parent);
     ALWAYS_ASSERT_NO_ERR(ThreadStart(testThread , NULL , 1) );
 }
+
 
 static void startShell(KernelTaskContext* ctx)
 {
@@ -352,6 +358,7 @@ static void startShell(KernelTaskContext* ctx)
     ALWAYS_ASSERT_NO_ERR(ThreadStart(&shellThread , NULL , 1) );
 
 }
+#endif
 static void lateSystemInit(KernelTaskContext *ctx)
 {
     kprintf("Late System Init\n");
@@ -361,8 +368,9 @@ static void lateSystemInit(KernelTaskContext *ctx)
     ALWAYS_ASSERT_NO_ERR(ret);
     
     kset_append(&root, ThreadManagerGetHandle() );
-    
+#ifndef SOFA_TESTS_ONLY
     startShell(ctx);
+#endif
     int err = 0;
     
     

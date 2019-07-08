@@ -33,7 +33,7 @@ OSError IONodeInit(IONode* device, const char* name)
     device->base.obj.k_name =  strdup(name);
     
     device->base.obj._class = &ioNodeClass;
-    device->attributes = NULL;
+    //device->attributes = NULL;
     
     //strncpy(device->name, name, 32);
     
@@ -113,6 +113,7 @@ IOAttribute* IONodeGetAttr( const IONode* node, const char*name)
 */
 OSError IONodeGetAttribute(const IONode* node, const char*name , IOData *data)
 {
+    /*
     IOAttribute* attr = NULL;
     HASH_FIND_STR(node->attributes, name, attr);
     if (attr)
@@ -136,6 +137,7 @@ OSError IONodeGetAttribute(const IONode* node, const char*name , IOData *data)
             return OSError_None;
         }
     }
+     */
     if( !node->GetAttr)
         return OSError_Unimplemented;
     

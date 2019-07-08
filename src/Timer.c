@@ -17,6 +17,7 @@
 
 #include "Timer.h"
 #include "Sofa.h"
+#include "Thread.h"
 
 #ifndef SOFA_TESTS_ONLY
 #include <platsupport/local_time_manager.h>
@@ -76,6 +77,14 @@ int TimerAllocAndRegister(time_manager_t *tm , uint64_t period_ns, uint64_t star
         }
         return err;
 } 
+
+
+OSError TimerCancelFromThread( Thread* thread)
+{
+    int err = tm_deregister_cb(_tm  , thread->timerID);
+    
+    return err;
+}
 #endif
 
 uint64_t GetCurrentTime()

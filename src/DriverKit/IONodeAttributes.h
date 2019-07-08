@@ -30,7 +30,7 @@ typedef enum
     IODataType_String,
     IODataType_Pointer,
 } IODataType;
-
+/*
 typedef struct
 {
     char id[10];
@@ -43,11 +43,11 @@ typedef struct
         const char* str;
     } data;
     
-    UT_hash_handle hh; /* makes this structure hashable */
+    UT_hash_handle hh; // makes this structure hashable
     
 } IOAttribute;
 
-
+*/
 
 typedef struct
 {

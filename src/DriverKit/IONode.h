@@ -45,7 +45,7 @@ typedef struct _IONode
     uint64_t hid;
     IODriverBase* _attachedDriver;
     
-    IOAttribute* attributes;
+    //IOAttribute* attributes;
     
     OSError (*GetAttr)(const struct _IONode* , const char*name , IOData *data) NO_NULL_POINTERS;
     IONodeType type;

@@ -56,3 +56,16 @@ int SC_mount(seL4_CPtr cap)
     
     return -seL4_GetMR(1);
 }
+
+
+int SC_ps(seL4_CPtr cap)
+{
+    seL4_MessageInfo_t msg = seL4_MessageInfo_new(0, 0, 0, 2);
+    seL4_SetMR(0,  SysCallNum_debug);
+    seL4_SetMR(1 , SysCallDebugID_ps);
+    seL4_Send(cap , msg);
+    
+    ALWAYS_ASSERT( seL4_GetMR(0) == SysCallNum_debug);
+    
+    return 0;
+}

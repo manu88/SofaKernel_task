@@ -32,11 +32,16 @@ typedef int (*timeout_cb_fn_t)(uintptr_t token);
 #include "Bootstrap.h"
 #include <stdint.h>
 
+typedef struct _Thread Thread;
+
 int TimerInit(KernelTaskContext* ctx , seL4_CPtr notifCap);
 
 int TimerAllocAndRegister(time_manager_t *tm , uint64_t period_ns, uint64_t start, uint32_t id, timeout_cb_fn_t callback, uintptr_t token);
 
 int TimerAllocAndRegisterOneShot(time_manager_t *tm , uint64_t rel_ns, uint32_t id,  timeout_cb_fn_t callback, uintptr_t token);
 
+OSError TimerCancelFromThread( Thread* thread) NO_NULL_POINTERS;
 
 uint64_t GetCurrentTime(void);
+
+

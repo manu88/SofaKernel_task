@@ -56,11 +56,13 @@ typedef struct _KernelTaskContext
 #endif
 } KernelTaskContext;
 
-
+extern struct kset* RootObject; // created in main.c -> earlySystemInit
 int bootstrapSystem(KernelTaskContext* context) NO_NULL_POINTERS;
 
 
 void* kmalloc(size_t size) NO_NULL_POINTERS WARN_UNUSED_RESULT;
 void kfree(void *);
 
-void spawnTest(KernelTaskContext *ctx);
+
+typedef struct _Thread Thread;
+void spawnTest(KernelTaskContext *ctx , Thread* parent);

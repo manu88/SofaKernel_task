@@ -15,7 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SOFA_TESTS_ONLY
 #include <pci/pci.h>
+#endif
 #include "../Bootstrap.h"
 #include "ata.h"
 #include "ATADriver.h"

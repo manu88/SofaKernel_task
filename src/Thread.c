@@ -16,6 +16,7 @@
  */
 
 #include "Thread.h"
+#include "Timer.h"
 #include <assert.h>
 #include <stdio.h>
 
@@ -68,6 +69,7 @@ void ThreadSetParent( Thread* thread , Thread* parent)
 
 void ThreadRelease(Thread* thread,vka_t *vka, vspace_t *alloc)
 {
+    TimerCancelFromThread(thread); // cancel any pending timer
     sel4utils_clean_up_thread(vka,alloc, &thread->thread);
     
     kobject_put(&thread->obj);

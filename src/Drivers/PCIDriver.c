@@ -17,9 +17,9 @@
 
 #ifndef SOFA_TESTS_ONLY
 #include <platsupport/chardev.h>
+#include <pci/pci.h>
 #endif
 
-#include <pci/pci.h>
 #include "PCIDriver.h"
 #include "../DriverKit/IODevice.h"
 #include "../Bootstrap.h"

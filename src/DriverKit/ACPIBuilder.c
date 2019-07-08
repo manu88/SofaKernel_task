@@ -68,13 +68,20 @@ static IONode* resolveNodeRelativeTo(const AMLName* name , IONode* current, IONo
     
     ALWAYS_ASSERT(root);
     
-    
     if (AMLNameIsRoot(name))
         return root;
     
-    for(int i=0;i<AMLNameCountParents(name);++i)
+    if( AMLNameHasPrefixRoot(name))
     {
-        current =  (IONode*) kobject_getParent(&current->base.obj);// current->base.obj.parent;
+        current = root;
+    }
+    else
+    {
+        for(int i=0;i<AMLNameCountParents(name);++i)
+        {
+            
+            current =  (IONode*) kobject_getParent(&current->base.obj);
+        }
     }
     
     for (int i=0;i<AMLNameCountSegments(name);++i)
@@ -96,27 +103,8 @@ static IONode* resolveNodeRelativeTo(const AMLName* name , IONode* current, IONo
             }
             current = newN;
         }
-        //kset_getChildByName
     }
-    /*
-    IODevice* newScope = malloc(sizeof(IODevice));
-    
-    if(IODeviceInit(newScope, "NAME") != OSError_None)
-    {
-        free(newScope);
-        
-        return NULL;//AMLParserError_ElementAllocError;
-    }
-    
-    
-    if(IODeviceAddChild(current, newScope) != OSError_None)
-    {
-        free(newScope);
-        return NULL;//AMLParserError_UnexpectedValue;
-    }
-    
-    return newScope;
-     */
+
     return current;
 }
 
@@ -239,6 +227,9 @@ static int _DeviceTree_startScope(AMLDecompiler* decomp,const ParserContext* con
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
+    
+    
+
     IONode* newScope = resolveNodeRelativeTo(&scpe->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef);
     ALWAYS_ASSERT(newScope);
     
@@ -263,8 +254,10 @@ static int _DeviceTree_startDevice(AMLDecompiler* decomp,const ParserContext* co
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     
+    
     IONode* newScope = resolveNodeRelativeTo(&device->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef );
     ALWAYS_ASSERT(newScope);
+
     
     StackPush(&treeCtx->devStack, newScope);
     return 0;
@@ -342,7 +335,6 @@ static int _DeviceTree_startPackage(AMLDecompiler* decomp,const ParserContext* c
 
 static int _DeviceTree_onPackageElement(AMLDecompiler* decomp,const ParserContext* context, const ACPIPackageElement* element)
 {
-    
     
     return 0;
 }

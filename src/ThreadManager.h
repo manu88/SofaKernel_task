@@ -12,6 +12,8 @@
 typedef struct _Thread Thread;
 
 
+
+struct kset* GetThreadManager(void);
 OSError ThreadManagerInit(void);
 OSError ThreadManagerAddThread( Thread* thread) NO_NULL_POINTERS;
 OSError ThreadManagerRemoveThread( Thread* thread) NO_NULL_POINTERS;

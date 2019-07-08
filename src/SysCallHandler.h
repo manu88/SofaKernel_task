@@ -8,6 +8,11 @@
 
 #pragma once
 
+#ifdef SOFA_TESTS_ONLY
+typedef int seL4_MessageInfo_t;
+typedef int seL4_Word;
+#endif
+
 #include "Bootstrap.h"
 
 typedef struct _Thread Thread;

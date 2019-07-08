@@ -17,9 +17,17 @@
 
 #pragma once
 #include "Sofa.h"
+
 #ifndef SOFA_TESTS_ONLY
 #include <sel4utils/thread.h>
 #include <sel4utils/thread_config.h>
+#else
+typedef int sel4utils_thread_t;
+typedef int vka_t;
+typedef int vspace_t;
+typedef int sel4utils_thread_config_t;
+typedef int seL4_Word;
+typedef int vka_object_t;
 #endif
 #include "Bootstrap.h"
 #include "KObject/KObject.h"
@@ -43,12 +51,12 @@ typedef struct _Thread
     sel4utils_thread_t thread;
     ThreadEntryPoint entryPoint;
     
-    struct _Thread* parent;
+    struct _Thread* parent; // Null means attached to the rootTask
     ThreadState state;
     uint32_t threadID;
-    seL4_CPtr ipc_ep_cap;
+    seL4_CPtr ipc_ep_cap; // The minted cap for the thread to communicate with the root task
     
-    uint32_t timerID; // > 0 if allocated
+    uint32_t timerID; // > 0 if allocated. Used to sleep
     
     seL4_CPtr reply;
     
@@ -67,9 +75,14 @@ OSError ThreadConfigureWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
                                     vka_object_t rootEndpoint,
                                     seL4_Word ipc_badge) NO_NULL_ARGS(1 ,4);
 
+
 static inline OSError ThreadSetPriority(Thread* thread , uint8_t priority)
 {
+#ifndef SOFA_TESTS_ONLY
 	return seL4_TCB_SetPriority(thread->thread.tcb.cptr, seL4_CapInitThreadTCB ,  priority);
+#else
+    return OSError_Unimplemented;
+#endif
 }
 
 

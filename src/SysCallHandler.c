@@ -27,6 +27,7 @@ static int OnTime(uintptr_t token)
     
     Thread* callingThread = (Thread*) token;
     //seL4_CPtr reply = (seL4_CPtr) token;
+    
     ALWAYS_ASSERT(callingThread->reply);
     
     int err = tm_deregister_cb(&_context->tm  , callingThread->timerID);
@@ -61,13 +62,13 @@ static void handleSleep(KernelTaskContext* context,Thread* callingThread,seL4_Me
     }
     
     ALWAYS_ASSERT(callingThread->timerID > 0);
-    ALWAYS_ASSERT( callingThread->reply == NULL);
+    ALWAYS_ASSERT( callingThread->reply == 0);
     int seconds = seL4_GetMR(1);
     //kprintf("Sleep %i seconds\n" , seconds);
     int error = -ENOSYS;
     
     callingThread->reply = get_free_slot(context);
-    if( callingThread->reply == NULL)
+    if( callingThread->reply == 0)
     {
         seL4_SetMR(0,SysCallNum_nanosleep);
         seL4_SetMR(1, -EINVAL );
@@ -142,7 +143,7 @@ static void handleSpawn(KernelTaskContext* context, Thread* callingThread,seL4_M
     seL4_SetMR(0,SysCallNum_spawn);
     seL4_SetMR(1, err );
     
-    spawnTest(context);
+    spawnTest(context , callingThread);
     seL4_Reply( message );
 }
 
@@ -159,6 +160,23 @@ static void handleMount(KernelTaskContext* context, Thread* callingThread,seL4_M
     }
     
     seL4_Reply( message );
+}
+
+static void handleDebug(KernelTaskContext* context, Thread* callingThread,seL4_MessageInfo_t message)
+{
+    ALWAYS_ASSERT(RootObject);
+    switch ((SysCallDebugIDs) seL4_GetMR(1))
+    {
+        case SysCallDebugID_ps:
+            // no need to reply
+            printf("[KernTask] PS syscall\n");
+
+            kobject_printTree((struct kobject *) GetThreadManager());
+            break;
+            
+        default:
+            break;
+    }
 }
 
 void processSysCall(KernelTaskContext* context , Thread* callingThread,seL4_MessageInfo_t message, seL4_Word sender_badge)
@@ -187,6 +205,9 @@ void processSysCall(KernelTaskContext* context , Thread* callingThread,seL4_Mess
             
         case SysCallNum_mount:
             handleMount(context,callingThread, message);
+            
+        case SysCallNum_debug:
+            handleDebug(context,callingThread, message);
             
         default:
             break;
