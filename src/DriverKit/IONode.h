@@ -18,6 +18,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <ACPIDesc.h>
 #include "../Sofa.h"
 #include "../KObject/KObject.h"
 
@@ -59,6 +60,7 @@ OSError IONodeRemoveChild( IONode* node, IONode* child) NO_NULL_POINTERS;
 
 IONode* IONodeGetChildByName( const IONode* node, const char* name) NO_NULL_POINTERS;
 
+
 #define IONodeForEach( node, el) kset_foreach( (&(node)->base) , el)
 
 //SOFA_DEPRECATED("") OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data );
@@ -79,5 +81,12 @@ static inline NO_NULL_POINTERS IONodeType IONodeGetType( const IONode* node)
 {
     return node->type;
 }
+
+
+typedef struct
+{
+    IONode node;
+    ACPIDevice dev;
+} IONodeACPI;
 
 SOFA_END_DCL

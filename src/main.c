@@ -216,17 +216,17 @@ static OSError baseSystemInit(KernelTaskContext *context)
     
     ALWAYS_ASSERT( err == OSError_None || err == OSError_AlreadyInSet);
     
-#ifndef SOFA_TESTS_ONLY
+
     ALWAYS_ASSERT_NO_ERR( PCIDriverInit(&_pciDriver) );
 
     ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDriver( (IODriverBase*)&_pciDriver) );
     kobject_put((struct kobject *)&_pciDriver);
     
-#endif
+
     
     
     ALWAYS_ASSERT_NO_ERR( DriverKitDoMatching( context) );
-    
+    kobject_printTree(&root.obj);
     return OSError_None;
 }
 

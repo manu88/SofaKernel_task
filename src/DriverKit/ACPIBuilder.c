@@ -25,6 +25,8 @@
 #include "ACPIBuilder.h"
 #include "deviceTree.h"
 
+
+
 int StackInit(Stack* stack)
 {
     ALWAYS_ASSERT(stack);
@@ -93,7 +95,7 @@ static IONode* resolveNodeRelativeTo(const AMLName* name , IONode* current, IONo
             if(newN == NULL)
             {
                 //printf("Create '%s' node\n" , toBuffer);
-                newN = kmalloc(sizeof(IONode));
+                newN = kmalloc(sizeof(IONodeACPI));
                 ALWAYS_ASSERT(newN);
                 ALWAYS_ASSERT(IONodeInit(newN, toBuffer) == OSError_None);
                 ALWAYS_ASSERT(IONodeAddChild(current, newN) == OSError_None);
@@ -255,9 +257,12 @@ static int _DeviceTree_startDevice(AMLDecompiler* decomp,const ParserContext* co
     ALWAYS_ASSERT(treeCtx);
     
     
-    IONode* newScope = resolveNodeRelativeTo(&device->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef );
+    IONodeACPI* newScope =(IONode*) resolveNodeRelativeTo(&device->name, StackTop(&treeCtx->devStack), treeCtx->rootDevRef );
+    newScope->dev = *device;
+    
     ALWAYS_ASSERT(newScope);
 
+    
     
     StackPush(&treeCtx->devStack, newScope);
     return 0;
@@ -267,6 +272,9 @@ static int _DeviceTree_endDevice(AMLDecompiler* decomp,const ParserContext* cont
     DeviceTreeContext* treeCtx =(DeviceTreeContext*) decomp->userData;
     ALWAYS_ASSERT(treeCtx);
     ALWAYS_ASSERT(StackTop(&treeCtx->devStack));
+    
+    
+    
     StackPop(&treeCtx->devStack);
     
     return 0;
@@ -282,6 +290,8 @@ static int _DeviceTree_startName(AMLDecompiler* decomp,const ParserContext* cont
     
     ALWAYS_ASSERT(treeCtx->expectedName[0] == 0);
     memcpy(treeCtx->expectedName, name, 5);
+    
+    
     
     return 0;
 }
@@ -301,6 +311,8 @@ static int _DeviceTree_onValue(AMLDecompiler* decomp,const ParserContext* contex
     {
         currentNode->hid = value;
     }
+    
+    
     /*
     else
     {

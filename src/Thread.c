@@ -72,6 +72,14 @@ void ThreadRelease(Thread* thread,vka_t *vka, vspace_t *alloc)
     TimerCancelFromThread(thread); // cancel any pending timer
     sel4utils_clean_up_thread(vka,alloc, &thread->thread);
     
+    // delete the cap
+    int err = seL4_CNode_Delete(
+                                seL4_CapInitThreadCNode,
+                                thread->ipc_ep_cap,
+                                seL4_WordBits);
+    
+    assert(err == 0);
+    
     kobject_put(&thread->obj);
 }
 
@@ -108,7 +116,6 @@ OSError ThreadConfigureWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
                           seL4_WordBits,
                           seL4_AllRights,
                           ipc_badge
-                          //IPC_FAULT_ENDPOINT_BADGE(ipc_badge)
                           );
     ZF_LOGF_IF(err != 0, "Failed to mint badged fault endpoint for thread");
     /**/

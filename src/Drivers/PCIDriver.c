@@ -94,10 +94,12 @@ OSError PCIDriverInit( PCIDriver* driver)
     {
         driver->base.driverMethods = &PCIMethods;
         driver->isaNode = NULL;
-        
+#ifndef SOFA_TESTS_ONLY
         ALWAYS_ASSERT_NO_ERR(ATADriverInit(&_ataDriver));
+
         ALWAYS_ASSERT_NO_ERR(DriverKitRegisterDriver((IODriverBase *)&_ataDriver));
         kobject_put((struct kobject *) &_ataDriver);
+#endif
     }
     
     
@@ -142,7 +144,7 @@ static int _ScanPCIDevices(KernelTaskContext* context)
 
 OSError IONodeGetAttrPCI(const IONode* node, const char*attrName , IOData *data)
 {
-
+#ifndef SOFA_TESTS_ONLY
     const libpci_device_t* implDev = (const libpci_device_t*) node->impl;
     ALWAYS_ASSERT(implDev);
     
@@ -183,7 +185,7 @@ OSError IONodeGetAttrPCI(const IONode* node, const char*attrName , IOData *data)
         data->data.str = implDev->vendor_name;
         return OSError_None;
     }
-
+#endif
     return OSError_ArgError;
 }
 static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskContext* ctx)
@@ -207,6 +209,21 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
                 
                 if( c->hid == 0x105D041 )//com
                 {
+                    
+                    IONodeACPI* acpiNode = (IONodeACPI*) c;
+                    
+                    ACPINamedResource outRes = {0};
+                    ACPIScopeGetNamedResource(&acpiNode->dev, "_CRS", &outRes);
+                    
+                    if( outRes.type == ACPIObject_Type_SmallItem && outRes.size == sizeof(IOPortDescriptor))
+                    {
+                        const IOPortDescriptor* ioDesc = (const IOPortDescriptor*) outRes.data;
+                        printf(" rangeMinBaseAddr %x\n" , ioDesc->rangeMinBaseAddr);
+                        printf(" rangeMaxBaseAddr %x\n" , ioDesc->rangeMaxBaseAddr);
+                        printf(" baseAlign %x\n" , ioDesc->baseAlign);
+                        printf(" rangeLen %x\n" , ioDesc->rangeLen);
+                        printf(" isDecoder %x\n" , ioDesc->isDecoder);
+                    }
                     /*
                     uint16_t comID = 0;
                     
@@ -254,7 +271,8 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
                 
             }
         } // end isaNode
-        
+
+#ifndef SOFA_TESTS_ONLY
         int numPciDevices = _ScanPCIDevices(ctx);
         libpci_device_t* ideDev = libpci_find_device_bdf(0 , 0x01,0x01);
         
@@ -307,6 +325,8 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
             netNode->base.impl = netDev;
             ALWAYS_ASSERT_NO_ERR(IONodeAddChild(node, netNode));
         }
+        
+#endif
         // do we have an IDE storage device?
         /*
         
@@ -354,10 +374,13 @@ static ssize_t _ComWrite(IODevice* dev,uint64_t offset, const uint8_t* buf , siz
 {
     UNUSED_PARAMETER(offset);
     IOComDevice* self = (IOComDevice*) dev;
-    
+#ifndef SOFA_TESTS_ONLY
     for(size_t i=0;i<bufSize;++i)
     {
         ps_cdev_putchar(&self->_dev , (int) buf[i]);
     }
     return bufSize;
+#else
+    return OSError_Some;
+#endif
 }

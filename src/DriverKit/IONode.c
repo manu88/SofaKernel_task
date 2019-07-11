@@ -22,7 +22,7 @@
 static void IONodegetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
 
 
-static const KClass ioNodeClass = KClassMake( "IONode", IONodegetInfos,NULL /*Release*/);
+static const KClass ioNodeClass = KClassMake(  "IONode", IONodegetInfos,NULL /*Release*/);
 const KClass *IONodeClass = &ioNodeClass;
 
 OSError IONodeInit(IONode* device, const char* name)
@@ -77,40 +77,7 @@ IONode* IONodeGetChildByName( const IONode* node, const char* name)
     
     return NULL;
 }
-/*
-OSError IONodeAddAttr( IONode* node ,const char*name , int type , void*data )
-{
-    if (name == NULL || strlen(name) == 0)
-    {
-        return OSError_ArgError;
-    }
-    
-    IOAttribute* attr = kmalloc(sizeof(IOAttribute));
-    ALWAYS_ASSERT(attr);
-    
-    strcpy(attr->id, name);
-    attr->type = type;
-    attr->data.ptr = data;
-    
-    HASH_ADD_STR(node->attributes, id, attr);
-    
-    return OSError_None;
-}
 
-
-size_t  IONodeGetAttrCount( const IONode* node )
-{
-    return HASH_COUNT(node->attributes);
-}
-
-IOAttribute* IONodeGetAttr( const IONode* node, const char*name)
-{
-    
-    IOAttribute* attr = NULL;
-    HASH_FIND_STR(node->attributes, name, attr);
-    return attr;
-}
-*/
 OSError IONodeGetAttribute(const IONode* node, const char*name , IOData *data)
 {
     /*

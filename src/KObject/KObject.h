@@ -83,6 +83,7 @@ typedef void (*KobjectRelease)(struct kobject *);
  */
 typedef struct _KClass
 {
+    
     const char* name;
     
     void (*getInfos)(const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
@@ -95,7 +96,7 @@ typedef struct _KClass
  @param getInfos a function to get informations about a certain instance
  @param release a release function thas is deprecated
  */
-#define KClassMake( name , getInfos,release) { name  , getInfos,release}
+#define KClassMake( name , getInfos,release ) { name  , getInfos,release}
 
 
 /*!
