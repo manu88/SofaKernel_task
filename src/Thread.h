@@ -46,19 +46,20 @@ typedef enum
 
 typedef struct _Thread
 {
-    struct kobject obj;
-    
-    sel4utils_thread_t thread;
-    ThreadEntryPoint entryPoint;
+    struct kobject obj; // must remains first
     
     struct _Thread* parent; // Null means attached to the rootTask
     ThreadState state;
     uint32_t threadID;
     seL4_CPtr ipc_ep_cap; // The minted cap for the thread to communicate with the root task
-    
     uint32_t timerID; // > 0 if allocated. Used to sleep
-    
     seL4_CPtr reply;
+    
+    //
+    sel4utils_thread_t thread;
+    ThreadEntryPoint entryPoint;
+    
+    
     
 } Thread;
 

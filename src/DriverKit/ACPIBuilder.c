@@ -291,8 +291,6 @@ static int _DeviceTree_startName(AMLDecompiler* decomp,const ParserContext* cont
     ALWAYS_ASSERT(treeCtx->expectedName[0] == 0);
     memcpy(treeCtx->expectedName, name, 5);
     
-    
-    
     return 0;
 }
 

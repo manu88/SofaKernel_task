@@ -103,9 +103,6 @@ static struct kset root = {0};
 struct kset* RootObject = &root;
 static const char rootNodeName[] = "root";
 
-
-
-
 /* ****** */
 // globals to remove at some point
 

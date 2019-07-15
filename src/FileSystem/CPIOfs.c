@@ -16,6 +16,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #ifndef SOFA_TESTS_ONLY
 #include <cpio/cpio.h>
 #endif
@@ -67,7 +68,7 @@ static void CPIODumpContent(struct cpio_info *info)
 {
     kprintf("----- CPIO Content (%zi files) --- \n" , info->file_count);
     
-    uint8_t **buf = malloc( info->file_count);
+    char **buf = malloc( info->file_count);
     assert(buf);
     
     for(int i=0;i<info->file_count;i++)
@@ -79,7 +80,6 @@ static void CPIODumpContent(struct cpio_info *info)
     
     unsigned long len = _cpio_archive_end - _cpio_archive;
     cpio_ls(_cpio_archive ,len, buf, info->file_count);
-    
     
     
     for(int i=0;i<info->file_count;i++)
