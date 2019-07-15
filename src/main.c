@@ -24,6 +24,7 @@
 
 #include "Timer.h"
 #include "Thread.h"
+#include "Process.h"
 #include "ThreadManager.h"
 #include "Shell.h"
 
@@ -233,7 +234,7 @@ static OSError baseSystemInit(KernelTaskContext *context)
     
     
     ALWAYS_ASSERT_NO_ERR( DriverKitDoMatching( context) );
-    kobject_printTree(&root.obj);
+    //kobject_printTree(&root.obj);
     return OSError_None;
 }
 
@@ -378,15 +379,35 @@ static void lateSystemInit(KernelTaskContext *ctx)
 #ifndef SOFA_TESTS_ONLY
     startShell(ctx);
 #endif
-    int err = 0;
+    //int err = 0;
     
+// Test Process
 
+    kprintf("Test Process\n");
+    
+    Process initProcess = {0};
+    
+    if( ProcessInit(&initProcess) == OSError_None)
+    {
+        if( ProcessStart(ctx, &initProcess, "init") == OSError_None)
+        {
+            printf("ProcessStart OK\n");
+            ThreadManagerAddThread((Thread *)&initProcess);
+        }
+    }
+    else
+    {
+        printf("Error process Init \n");
+    }
 
+    
+// END Test Process
 #ifndef SOFA_TESTS_ONLY
     //int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, 0);
     //ALWAYS_ASSERT_NO_ERR(err);
     
     kprintf("Start Looping\n");
+    
     processLoop(ctx, ctx->rootTaskEP.cptr);
 #endif
     //kobject_printTree(&root);

@@ -183,8 +183,11 @@ static void handleDebug(KernelTaskContext* context, Thread* callingThread,seL4_M
 
             kobject_printTree((struct kobject *) GetThreadManager());
             break;
-            
+        case SysCallDebugID_sched:
+            seL4_DebugDumpScheduler();
+            break;
         default:
+            assert(0);
             break;
     }
 }

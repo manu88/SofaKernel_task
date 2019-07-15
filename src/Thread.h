@@ -76,6 +76,7 @@ typedef struct _KernelThread
 } KernelThread;
 
 // -------- Thread methods
+OSError ThreadInitBase( Thread* thread) NO_NULL_POINTERS;
 void ThreadRelease(Thread* thread ,vka_t *vka, vspace_t *alloc) NO_NULL_POINTERS;
 
 void ThreadSetParent( Thread* thread , Thread* parent) NO_NULL_ARGS(1, 1);

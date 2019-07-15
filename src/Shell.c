@@ -216,10 +216,10 @@ static int execCmd( const char* cmd)
     else if( startsWith("ps", cmd))
     {
         SC_ps(_thread->ipc_ep_cap);
-        //struct kobject * threadManager = kobjectResolve("/ThreadManager", _root);
-        
-        //kobject_printTree(threadManager);
-        
+    }
+    else if( startsWith("sched", cmd))
+    {
+        SC_sched(_thread->ipc_ep_cap);
     }
     else if( startsWith("kill ", cmd))
     {

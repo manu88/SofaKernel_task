@@ -38,6 +38,7 @@ typedef enum
 typedef enum
 {
     SysCallDebugID_ps,
+    SysCallDebugID_sched,
 } SysCallDebugIDs;
 
 
@@ -51,3 +52,4 @@ int SC_spawn (seL4_CPtr cap);
 int SC_mount (seL4_CPtr cap);
 
 int SC_ps(seL4_CPtr cap);
+int SC_sched(seL4_CPtr cap);

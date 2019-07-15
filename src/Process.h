@@ -16,13 +16,19 @@
  */
 
 #pragma once
+#include <sel4utils/process.h>
 #include "Sofa.h"
 #include "Thread.h"
 
-typedef struct _Process;
+typedef struct _Process
 {
     Thread base;
+    
+    sel4utils_process_t _process;
 } Process;
 
 
 OSError ProcessInit( Process* process) NO_NULL_POINTERS;
+
+
+OSError ProcessStart(KernelTaskContext* context, Process* process,const char* imageName ) NO_NULL_POINTERS;

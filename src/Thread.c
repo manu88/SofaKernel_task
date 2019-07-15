@@ -37,7 +37,7 @@ static void _KernelThreadStart(void *arg0, void *arg1, void *ipc_buf)
 	self->entryPoint(self , arg1 , ipc_buf);
 }
 
-static OSError ThreadInitBase( Thread* thread)
+OSError ThreadInitBase( Thread* thread)
 {
     ALWAYS_ASSERT(thread);
     
@@ -53,8 +53,13 @@ OSError KernelThreadInit(KernelThread* thread)
 {
     memset(thread , 0 , sizeof(KernelThread));
     
-    return ThreadInitBase(&thread->base);
+    OSError err = ThreadInitBase(&thread->base);
     
+    if( err == OSError_None)
+    {
+        thread->base.type = ThreadType_Kernel;
+    }
+    return err;
 }
 
 
@@ -83,14 +88,21 @@ void ThreadRelease(Thread* thread,vka_t *vka, vspace_t *alloc)
         KernelThread* self = (KernelThread*) thread;
         sel4utils_clean_up_thread(vka,alloc, &self->thread);
     }
-    // delete the cap
-    int err = seL4_CNode_Delete(
+    else if( thread->type == ThreadType_User)
+    {
+        kprintf("ThreadRelease Todo : add cleanup code for process\n");
+    }
+    
+    if(thread->ipc_ep_cap )
+    {
+        // delete the cap
+        int err = seL4_CNode_Delete(
                                 seL4_CapInitThreadCNode,
                                 thread->ipc_ep_cap,
                                 seL4_WordBits);
     
-    assert(err == 0);
-    
+        assert(err == 0);
+    }
     kobject_put(&thread->obj);
     
 }
