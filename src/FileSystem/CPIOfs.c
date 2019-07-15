@@ -19,6 +19,12 @@
 #include <string.h>
 #ifndef SOFA_TESTS_ONLY
 #include <cpio/cpio.h>
+#else
+struct cpio_info
+{
+    size_t file_count;
+    size_t max_path_sz;
+};
 #endif
 #include "CPIOfs.h"
 
@@ -35,6 +41,7 @@ static const char name[] = "cpiofs";
 
 
 static void CPIODumpContent(struct cpio_info *info);
+
 OSError CPIOfsInit()
 {
     struct cpio_info info;

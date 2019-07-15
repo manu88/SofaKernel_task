@@ -81,13 +81,13 @@
 
 typedef enum
 {
-    OSError_None      = 0,
-    OSError_Some      = -1,
+    OSError_None                 = 0,
+    OSError_Some                 = -1,
     
-    OSError_ArgError     = -2,
-    OSError_InitError    = -10,
-    OSError_ParsingError = -20,
-    OSError_Unimplemented = -100,
+    OSError_ArgError             = -2,
+    OSError_InitError            = -10,
+    OSError_ParsingError         = -20,
+    OSError_Unimplemented        = -100,
     OSError_NotSupportedDevice,
     OSError_NotSupportedFS,
     OSError_AlreadyInSet,

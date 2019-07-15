@@ -106,7 +106,7 @@ static const char rootNodeName[] = "root";
 /* ****** */
 // globals to remove at some point
 
-static Thread shellThread;
+static KernelThread shellThread;
 
 PCIDriver _pciDriver;
 
@@ -288,17 +288,17 @@ static void ThreadShell(Thread *self, void *arg, void *ipc_buf)
 
 }
 
-static Thread* ThreadPrepare(KernelTaskContext *ctx, Thread* thread , ThreadEntryPoint entryPoint)
+static Thread* KernelThreadPrepare(KernelTaskContext *ctx, KernelThread* thread , ThreadEntryPoint entryPoint)
 {
-    OSError err = ThreadInit(thread);
+    OSError err = KernelThreadInit(thread);
     if( err != OSError_None)
         return NULL;
     
-    ALWAYS_ASSERT( thread->threadID >= 1);
+    ALWAYS_ASSERT( thread->base.threadID >= 1);
     
-    seL4_Word threadBadge = thread->threadID;
+    seL4_Word threadBadge = thread->base.threadID;
     
-    err = ThreadConfigureWithFaultEndPoint(ctx, thread, &ctx->vka, &ctx->vspace, ctx->rootTaskEP, threadBadge);
+    err = KernelThreadConfigureWithFaultEndPoint(ctx, thread, &ctx->vka, &ctx->vspace, ctx->rootTaskEP, threadBadge);
     
     
     if( err != OSError_None)
@@ -311,14 +311,14 @@ static Thread* ThreadPrepare(KernelTaskContext *ctx, Thread* thread , ThreadEntr
     /* allocate a cspace slot for the IPC endpoint */
     err = vka_cspace_alloc(
                            &ctx->vka,
-                           &thread->ipc_ep_cap);
+                           &thread->base.ipc_ep_cap);
     ZF_LOGF_IF(err != 0, "Failed to allocate thread IPC endpoint");
     
     
     /* create a badged IPC endpoint for the thread */
     err = seL4_CNode_Mint(
                           simple_get_cnode(&ctx->simple),
-                          thread->ipc_ep_cap,
+                          thread->base.ipc_ep_cap,
                           seL4_WordBits,
                           seL4_CapInitThreadCNode,
                           ctx->rootTaskEP.cptr,
@@ -334,24 +334,24 @@ static Thread* ThreadPrepare(KernelTaskContext *ctx, Thread* thread , ThreadEntr
 
 void spawnTest(KernelTaskContext *ctx, Thread* parent)
 {
-    Thread* testThread = kmalloc(sizeof(Thread));
+    KernelThread* testThread = kmalloc(sizeof(KernelThread));
     ALWAYS_ASSERT(testThread);
-    ALWAYS_ASSERT( ThreadPrepare(ctx, testThread, ThreadTest2) == testThread);
+    ALWAYS_ASSERT( KernelThreadPrepare(ctx, testThread, ThreadTest2) == testThread);
     
-    testThread->obj.methods.release = TestThreadIsReleased;
+    testThread->base.obj.methods.release = TestThreadIsReleased;
     OSError ret = ThreadManagerAddThread(testThread);
     
     ALWAYS_ASSERT_NO_ERR(ret);
     
     kobject_put((struct kobject *)testThread);
     ThreadSetParent(testThread, parent);
-    ALWAYS_ASSERT_NO_ERR(ThreadStart(testThread , NULL , 1) );
+    ALWAYS_ASSERT_NO_ERR(KernelThreadStart(testThread , NULL , 1) );
 }
 
 
 static void startShell(KernelTaskContext* ctx)
 {
-    Thread* t = ThreadPrepare(ctx , &shellThread , ThreadShell);
+    Thread* t = KernelThreadPrepare(ctx , &shellThread , ThreadShell);
     ALWAYS_ASSERT(t);
     
     ThreadSetName(&shellThread ,"Shell");
@@ -362,7 +362,7 @@ static void startShell(KernelTaskContext* ctx)
     
     kobject_put((struct kobject *)&shellThread);
     
-    ALWAYS_ASSERT_NO_ERR(ThreadStart(&shellThread , NULL , 1) );
+    ALWAYS_ASSERT_NO_ERR(KernelThreadStart(&shellThread , NULL , 1) );
 
 }
 #endif
@@ -380,30 +380,7 @@ static void lateSystemInit(KernelTaskContext *ctx)
 #endif
     int err = 0;
     
-    
-/* ---- ---- ---- ---- ---- ---- ---- ---- ---- */
-/*
-    Thread* testThread = kmalloc(sizeof(Thread));
-    ALWAYS_ASSERT( ThreadPrepare(ctx, testThread, ThreadTest) == testThread);
-    
-    testThread->obj.methods.release = TestThreadIsReleased;
-    ret = ThreadManagerAddThread(testThread);
-    
-    ALWAYS_ASSERT_NO_ERR(ret);
-    
-    kobject_put((struct kobject *)testThread);
-    ThreadSetParent(testThread, NULL);
-    ALWAYS_ASSERT_NO_ERR(ThreadStart(testThread , NULL , 1) );
-*/
-    /*
-    for (int i=0;i<4;i++)
-    {
-        spawnTest(ctx);
-    }
-     */
-    
-    
-/* ---- ---- ---- ---- ---- ---- ---- ---- ---- */
+
 
 #ifndef SOFA_TESTS_ONLY
     //int err = TimerAllocAndRegister(&ctx->tm , 1000*NS_IN_MS, 0, 0, OnTime, 0);

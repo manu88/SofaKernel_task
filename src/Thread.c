@@ -29,18 +29,17 @@ static void ThreadGetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SI
 static const KClass threadClass = KClassMake("Thread", ThreadGetInfos,NULL /*Release*/);
 //const KClass *ThreadClass = &threadClass;
 
-static void _ThreadStart(void *arg0, void *arg1, void *ipc_buf)
+static void _KernelThreadStart(void *arg0, void *arg1, void *ipc_buf)
 {
-	Thread* self = (Thread*) arg0;
+	KernelThread* self = (KernelThread*) arg0;
 	assert(self);
-
 
 	self->entryPoint(self , arg1 , ipc_buf);
 }
 
-OSError ThreadInit(Thread* thread)
+static OSError ThreadInitBase( Thread* thread)
 {
-    memset(thread , 0 , sizeof(Thread));
+    ALWAYS_ASSERT(thread);
     
     kobject_init(&thread->obj);
     thread->obj.k_name = threadDefaultName;
@@ -48,6 +47,14 @@ OSError ThreadInit(Thread* thread)
     thread->threadID = _idCounter++;
     
     return OSError_None;
+}
+
+OSError KernelThreadInit(KernelThread* thread)
+{
+    memset(thread , 0 , sizeof(KernelThread));
+    
+    return ThreadInitBase(&thread->base);
+    
 }
 
 
@@ -70,8 +77,12 @@ void ThreadSetParent( Thread* thread , Thread* parent)
 void ThreadRelease(Thread* thread,vka_t *vka, vspace_t *alloc)
 {
     TimerCancelFromThread(thread); // cancel any pending timer
-    sel4utils_clean_up_thread(vka,alloc, &thread->thread);
     
+    if( thread->type == ThreadType_Kernel)
+    {
+        KernelThread* self = (KernelThread*) thread;
+        sel4utils_clean_up_thread(vka,alloc, &self->thread);
+    }
     // delete the cap
     int err = seL4_CNode_Delete(
                                 seL4_CapInitThreadCNode,
@@ -81,14 +92,15 @@ void ThreadRelease(Thread* thread,vka_t *vka, vspace_t *alloc)
     assert(err == 0);
     
     kobject_put(&thread->obj);
+    
 }
 
-OSError ThreadConfigure(Thread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig)
+OSError KernelThreadConfigure(KernelThread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig)
 {
 	return sel4utils_configure_thread_config(vka , parent , /*alloc*/parent , fromConfig , &thread->thread);
 }
 
-OSError ThreadConfigureWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
+OSError KernelThreadConfigureWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
                                     vka_t *vka,
                                     vspace_t *parent,
                                     vka_object_t rootEndpoint,
@@ -122,15 +134,23 @@ OSError ThreadConfigureWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
     
     threadConf = thread_config_fault_endpoint(threadConf , fault_ep);
     
-    return ThreadConfigure(thread , &ctx->vka, &ctx->vspace, threadConf);
+    return KernelThreadConfigure(thread , &ctx->vka, &ctx->vspace, threadConf);
 }
 
 
-
-
-OSError ThreadStart(Thread* thread , void* arg,   int resume)
+OSError KernelThreadSetPriority(KernelThread* thread , uint8_t priority)
 {
-	return sel4utils_start_thread(&thread->thread , _ThreadStart , thread , arg , resume);
+    
+#ifndef SOFA_TESTS_ONLY
+    return seL4_TCB_SetPriority(thread->thread.tcb.cptr, seL4_CapInitThreadTCB ,  priority);
+#else
+    return OSError_Unimplemented;
+#endif
+}
+
+OSError KernelThreadStart(KernelThread* thread , void* arg,   int resume)
+{
+	return sel4utils_start_thread(&thread->thread , _KernelThreadStart , thread , arg , resume);
 }
 
 

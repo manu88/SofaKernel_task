@@ -36,7 +36,12 @@ struct _Thread;
 
 typedef void (*ThreadEntryPoint)(struct _Thread *self, void *arg, void *ipc_buf);
 
-
+typedef enum
+{
+    ThreadType_Kernel,
+    ThreadType_User,
+    
+} ThreadType;
 
 typedef enum
 {
@@ -44,9 +49,11 @@ typedef enum
         ThreadState_Suspended,
 } ThreadState;
 
+
 typedef struct _Thread
 {
     struct kobject obj; // must remains first
+    ThreadType type;
     
     struct _Thread* parent; // Null means attached to the rootTask
     ThreadState state;
@@ -55,40 +62,43 @@ typedef struct _Thread
     uint32_t timerID; // > 0 if allocated. Used to sleep
     seL4_CPtr reply;
     
-    //
+} Thread;
+
+typedef struct _KernelThread
+{
+    Thread base;
+    
     sel4utils_thread_t thread;
     ThreadEntryPoint entryPoint;
     
     
     
-} Thread;
+} KernelThread;
 
-/* Will init everything except the Sel4 Thread */
-OSError ThreadInit(Thread* thread) NO_NULL_POINTERS;
+// -------- Thread methods
 void ThreadRelease(Thread* thread ,vka_t *vka, vspace_t *alloc) NO_NULL_POINTERS;
 
-OSError ThreadConfigure(Thread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig) NO_NULL_ARGS(1 ,3);
+void ThreadSetParent( Thread* thread , Thread* parent) NO_NULL_ARGS(1, 1);
+OSError ThreadSetName(Thread* thread , const char* name) NO_NULL_POINTERS;
+const char* ThreadGetName( const Thread* thread) NO_NULL_POINTERS;
+
+/* Will init everything except the Sel4 Thread */
+OSError KernelThreadInit(KernelThread* thread) NO_NULL_POINTERS;
+OSError KernelThreadSetPriority(KernelThread* thread , uint8_t priority);
+
+
+
+// --------  KernelThread methods
+
+OSError KernelThreadConfigure(KernelThread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig) NO_NULL_ARGS(1 ,3);
 
 // init a thread with an endpoint. This endpoint will be minted with the provided badge.
-OSError ThreadConfigureWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
+OSError KernelThreadConfigureWithFaultEndPoint(KernelTaskContext *ctx,Thread* thread ,
                                     vka_t *vka,
                                     vspace_t *parent,
                                     vka_object_t rootEndpoint,
                                     seL4_Word ipc_badge) NO_NULL_ARGS(1 ,4);
 
-
-static inline OSError ThreadSetPriority(Thread* thread , uint8_t priority)
-{
-#ifndef SOFA_TESTS_ONLY
-	return seL4_TCB_SetPriority(thread->thread.tcb.cptr, seL4_CapInitThreadTCB ,  priority);
-#else
-    return OSError_Unimplemented;
-#endif
-}
+OSError KernelThreadStart(KernelThread* thread , void* arg,  int resume) ;
 
 
-OSError ThreadStart(Thread* thread , void* arg,  int resume) ;
-
-void ThreadSetParent( Thread* thread , Thread* parent) NO_NULL_ARGS(1, 1);
-OSError ThreadSetName(Thread* thread , const char* name) NO_NULL_POINTERS;
-const char* ThreadGetName( const Thread* thread) NO_NULL_POINTERS;
