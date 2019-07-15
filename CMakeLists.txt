@@ -17,12 +17,18 @@ include(${KERNEL_HELPERS_PATH})
 
 project(kernel_task C) # create a new C project called 'init' 
 
+
+# list of apps to include in the cpio archive
+get_property(cpio_apps GLOBAL PROPERTY apps_property)
+
+MakeCPIO(archive.o "${cpio_apps}")
+
 file(GLOB deps src/*.c src/*/*.c)
 list(SORT deps)
 
-add_executable(kernel_task ${deps} )
+add_executable(kernel_task ${deps} archive.o)
 
-target_link_libraries(kernel_task sel4muslcsys  muslc libACPI sel4platsupport platsupport sel4allocman pci sel4 )
+target_link_libraries(kernel_task sel4muslcsys  muslc libACPI sel4platsupport platsupport sel4allocman pci sel4 cpio )
 DeclareRootserver(kernel_task)
 #add_subdirectory(apps/sel4test-tests)
 #add_subdirectory(apps/sel4test-driver)

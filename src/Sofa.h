@@ -91,6 +91,7 @@ typedef enum
     OSError_NotSupportedDevice,
     OSError_NotSupportedFS,
     OSError_AlreadyInSet,
+    OSError_DeviceNotFound,
     
 } OSError;
 

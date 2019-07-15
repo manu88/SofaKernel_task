@@ -217,7 +217,7 @@ static OSError baseSystemInit(KernelTaskContext *context)
     
     OSError err = CPIOfsInit();
     kprintf("CPIOfsInit : %i\n" , err);
-    if( err == OSError_None)
+    if( err == OSError_None && cpiofs) 
     {
         VFSRegisterFSModule(cpiofs);
     }

@@ -1,13 +1,30 @@
-//
-//  CPIOfs.c
-//  kernel_taskSofaV2
-//
-//  Created by Manuel Deneu on 15/07/2019.
-//  Copyright © 2019 Manuel Deneu. All rights reserved.
-//
+/*
+ * This file is part of the Sofa project
+ * Copyright (c) 2018 Manuel Deneu.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
+#ifndef SOFA_TESTS_ONLY
+#include <cpio/cpio.h>
+#endif
 #include "CPIOfs.h"
 
+
+/* The linker will link this symbol to the start address  *
+ * of an archive of attached applications.                */
+extern char _cpio_archive[];
+extern char _cpio_archive_end[];
 
 static FSModule _cpiofs = {0};
 FSModule* cpiofs = &_cpiofs;
@@ -16,6 +33,15 @@ static const char name[] = "cpiofs";
 
 OSError CPIOfsInit()
 {
+    struct cpio_info info;
+    unsigned long len = _cpio_archive_end - _cpio_archive;
+    
+    if(cpio_info(_cpio_archive, len , &info) != 0)
+    {
+        kprintf("Error gettings CPIO archive\n");
+        cpiofs = NULL;
+        return OSError_DeviceNotFound;
+    }
     // check if already init
     if( _cpiofs.obj.k_name != NULL)
         return OSError_None;
@@ -24,6 +50,7 @@ OSError CPIOfsInit()
     
     if( err == OSError_None)
     {
+        cpiofs = &_cpiofs;
         //_cpiofs.methods = &cpiofsMethods;
     }
     return err;

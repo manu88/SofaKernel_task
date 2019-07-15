@@ -19,6 +19,7 @@
 
 #include "FSModule.h"
 
+// might be NULL !
 extern FSModule* cpiofs;
 
 OSError CPIOfsInit(void);
