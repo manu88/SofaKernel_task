@@ -22,7 +22,7 @@
 static FSModule _ext2fs = {0};
 FSModule* ext2fs = &_ext2fs;
 
-const char name[] = "ext2fs";
+static const char name[] = "ext2fs";
 
 
 static OSError ext2_init(struct _FSModule* module);
@@ -40,6 +40,7 @@ static FSModuleMethods ext2Methods =
 
 OSError EXT2fsInit()
 {
+    // check if already init
     if( _ext2fs.obj.k_name != NULL)
         return OSError_None;
     

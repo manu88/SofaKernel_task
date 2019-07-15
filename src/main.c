@@ -31,6 +31,8 @@
 #include "SysCalls.h"
 #include "SysCallHandler.h"
 
+#include "FileSystem/CPIOfs.h"
+
 #define IRQ_EP_BADGE       BIT(seL4_BadgeBits - 1)
 #define IRQ_BADGE_TIMER    (1 << 0)
 #define IRQ_BADGE_NETWORK  (1 << 1)
@@ -212,7 +214,15 @@ static OSError baseSystemInit(KernelTaskContext *context)
     ALWAYS_ASSERT_NO_ERR(kset_append(&root, fsNode));
     kobject_put(fsNode);
     
-    OSError err =  VFSRegisterEXT2Module();
+    
+    OSError err = CPIOfsInit();
+    kprintf("CPIOfsInit : %i\n" , err);
+    if( err == OSError_None)
+    {
+        VFSRegisterFSModule(cpiofs);
+    }
+    
+    err =  VFSRegisterEXT2Module();
     
     ALWAYS_ASSERT( err == OSError_None || err == OSError_AlreadyInSet);
     
