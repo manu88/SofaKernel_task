@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
 #ifndef SOFA_TESTS_ONLY
 #include <cpio/cpio.h>
 #endif
@@ -31,6 +32,8 @@ FSModule* cpiofs = &_cpiofs;
 
 static const char name[] = "cpiofs";
 
+
+static void CPIODumpContent(struct cpio_info *info);
 OSError CPIOfsInit()
 {
     struct cpio_info info;
@@ -51,7 +54,40 @@ OSError CPIOfsInit()
     if( err == OSError_None)
     {
         cpiofs = &_cpiofs;
+        
+        kprintf("CPIO Module is OK\n");
+        CPIODumpContent(&info);
         //_cpiofs.methods = &cpiofsMethods;
     }
     return err;
+}
+
+
+static void CPIODumpContent(struct cpio_info *info)
+{
+    kprintf("----- CPIO Content (%zi files) --- \n" , info->file_count);
+    
+    uint8_t **buf = malloc( info->file_count);
+    assert(buf);
+    
+    for(int i=0;i<info->file_count;i++)
+    {
+        buf[i] = malloc(info->max_path_sz );
+        assert(buf[i]);
+        memset(buf[i] , 0 , info->max_path_sz);
+    }
+    
+    unsigned long len = _cpio_archive_end - _cpio_archive;
+    cpio_ls(_cpio_archive ,len, buf, info->file_count);
+    
+    
+    
+    for(int i=0;i<info->file_count;i++)
+    {
+        kprintf("'%s'\n" , buf[i]);
+        free(buf[i]);
+    }
+    
+    free(buf);
+    kprintf("----- END CPIO Content --- \n");
 }

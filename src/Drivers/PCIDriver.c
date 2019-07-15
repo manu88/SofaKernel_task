@@ -218,11 +218,11 @@ static OSError PCIProbeDevice(IODriverBase* driver , IONode* node,KernelTaskCont
                     if( outRes.type == ACPIObject_Type_SmallItem && outRes.size == sizeof(IOPortDescriptor))
                     {
                         const IOPortDescriptor* ioDesc = (const IOPortDescriptor*) outRes.data;
-                        printf(" rangeMinBaseAddr %x\n" , ioDesc->rangeMinBaseAddr);
-                        printf(" rangeMaxBaseAddr %x\n" , ioDesc->rangeMaxBaseAddr);
-                        printf(" baseAlign %x\n" , ioDesc->baseAlign);
-                        printf(" rangeLen %x\n" , ioDesc->rangeLen);
-                        printf(" isDecoder %x\n" , ioDesc->isDecoder);
+                        //printf(" rangeMinBaseAddr %x\n" , ioDesc->rangeMinBaseAddr);
+                        //printf(" rangeMaxBaseAddr %x\n" , ioDesc->rangeMaxBaseAddr);
+                        //printf(" baseAlign %x\n" , ioDesc->baseAlign);
+                        //printf(" rangeLen %x\n" , ioDesc->rangeLen);
+                        //printf(" isDecoder %x\n" , ioDesc->isDecoder);
                     }
                     /*
                     uint16_t comID = 0;
