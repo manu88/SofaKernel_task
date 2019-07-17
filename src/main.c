@@ -479,12 +479,8 @@ static void processLoop(KernelTaskContext* context, seL4_CPtr epPtr  )
             ALWAYS_ASSERT( callingThread);
             if (label == seL4_VMFault)
             {
-                
-                
-                
-                
+
                 printf("[kernTask] VM Fault from %li Thread '%s' %i \n",sender_badge ,ThreadGetName(callingThread ) , callingThread->threadID );
-                
                 
                 OSError err = ThreadManagerRemoveThread(callingThread);
                 ALWAYS_ASSERT_NO_ERR(err);

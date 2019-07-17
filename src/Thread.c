@@ -17,6 +17,7 @@
 
 #include "Thread.h"
 #include "Timer.h"
+#include "Process.h"
 #include <assert.h>
 #include <stdio.h>
 
@@ -25,19 +26,17 @@ static  uint32_t _idCounter = 1; // 0 is kernel_task's root thread
 
 static void ThreadGetInfos( const struct kobject *obj , char outDesc[MAX_DESC_SIZE] );
 
-
 static const KClass threadClass = KClassMake("Thread", ThreadGetInfos,NULL /*Release*/);
-//const KClass *ThreadClass = &threadClass;
 
 static void _KernelThreadStart(void *arg0, void *arg1, void *ipc_buf)
 {
 	KernelThread* self = (KernelThread*) arg0;
 	assert(self);
 
-	self->entryPoint(self , arg1 , ipc_buf);
+	self->entryPoint(self , arg1 , NULL);
 }
 
-OSError ThreadInitBase( Thread* thread)
+OSError ThreadInitBase( Thread* thread, ThreadType type)
 {
     ALWAYS_ASSERT(thread);
     
@@ -45,7 +44,7 @@ OSError ThreadInitBase( Thread* thread)
     thread->obj.k_name = threadDefaultName;
     thread->obj._class = &threadClass;
     thread->threadID = _idCounter++;
-    
+    thread->type = type;
     return OSError_None;
 }
 
@@ -53,15 +52,10 @@ OSError KernelThreadInit(KernelThread* thread)
 {
     memset(thread , 0 , sizeof(KernelThread));
     
-    OSError err = ThreadInitBase(&thread->base);
+    OSError err = ThreadInitBase(&thread->base , ThreadType_Kernel);
     
-    if( err == OSError_None)
-    {
-        thread->base.type = ThreadType_Kernel;
-    }
     return err;
 }
-
 
 OSError ThreadSetName(Thread* thread , const char* name)
 {
@@ -90,7 +84,8 @@ void ThreadRelease(Thread* thread,vka_t *vka, vspace_t *alloc)
     }
     else if( thread->type == ThreadType_User)
     {
-        kprintf("ThreadRelease Todo : add cleanup code for process\n");
+        Process* self = (Process*) thread;
+        sel4utils_destroy_process(&self->_process , vka);
     }
     
     if(thread->ipc_ep_cap )

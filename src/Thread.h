@@ -76,20 +76,24 @@ typedef struct _KernelThread
 } KernelThread;
 
 // -------- Thread methods
-OSError ThreadInitBase( Thread* thread) NO_NULL_POINTERS;
+
+// called by ProcessInit & KernelThreadInit
+OSError ThreadInitBase( Thread* thread , ThreadType type) NO_NULL_ARGS(1, 1);
 void ThreadRelease(Thread* thread ,vka_t *vka, vspace_t *alloc) NO_NULL_POINTERS;
 
 void ThreadSetParent( Thread* thread , Thread* parent) NO_NULL_ARGS(1, 1);
 OSError ThreadSetName(Thread* thread , const char* name) NO_NULL_POINTERS;
 const char* ThreadGetName( const Thread* thread) NO_NULL_POINTERS;
 
-/* Will init everything except the Sel4 Thread */
-OSError KernelThreadInit(KernelThread* thread) NO_NULL_POINTERS;
-OSError KernelThreadSetPriority(KernelThread* thread , uint8_t priority);
+
 
 
 
 // --------  KernelThread methods
+
+/* Will init everything except the Sel4 Thread */
+OSError KernelThreadInit(KernelThread* thread) NO_NULL_POINTERS;
+OSError KernelThreadSetPriority(KernelThread* thread , uint8_t priority);
 
 OSError KernelThreadConfigure(KernelThread* thread , vka_t *vka, vspace_t *parent, sel4utils_thread_config_t fromConfig) NO_NULL_ARGS(1 ,3);
 

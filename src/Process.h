@@ -30,5 +30,4 @@ typedef struct _Process
 
 OSError ProcessInit( Process* process) NO_NULL_POINTERS;
 
-
 OSError ProcessStart(KernelTaskContext* context, Process* process,const char* imageName ) NO_NULL_POINTERS;
